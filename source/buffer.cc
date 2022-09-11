@@ -36,12 +36,16 @@ namespace phoenix {
 				return _m_data.size();
 			}
 
+			[[nodiscard]] bool dynamic() const noexcept override {
+				return false;
+			}
+
 			[[nodiscard]] const std::byte* array() const override {
 				return _m_data.data();
 			}
 
 			void read(std::byte* buf, std::uint64_t size, std::uint64_t offset) const override {
-				if (offset + size > this->size()) {
+				if (offset > this->size() || offset + size > this->size()) {
 					throw buffer_underflow {offset, size, "in backing"};
 				}
 
@@ -55,16 +59,37 @@ namespace phoenix {
 					throw buffer_readonly {};
 				}
 
-				if (offset + size > this->size()) {
+				if (offset > this->size() || offset + size > this->size()) {
 					throw buffer_overflow {offset, size, "in backing"};
 				}
 
 				std::copy_n(buf, size, const_cast<std::byte*>(_m_data.data()) + static_cast<long>(offset));
 			}
 
-		private:
+		protected:
 			std::vector<std::byte> _m_data;
 			bool _m_readonly;
+		};
+
+		class dynamic_backing : public heap_backing {
+		public:
+			dynamic_backing(std::uint64_t size) : heap_backing(size) {}
+
+			[[nodiscard]] bool dynamic() const noexcept override {
+				return true;
+			}
+
+			void write([[maybe_unused]] const std::byte* buf,
+			           [[maybe_unused]] std::uint64_t size,
+			           [[maybe_unused]] std::uint64_t offset) override {
+				if (offset > this->size() || offset + size > this->size()) {
+					auto result_size =
+					    std::max(offset + size, static_cast<std::uint64_t>(static_cast<float>(this->size() * 1.5f)));
+					this->_m_data.resize(result_size);
+				}
+
+				std::copy_n(buf, size, const_cast<std::byte*>(_m_data.data()) + static_cast<long>(offset));
+			}
 		};
 
 		/// \brief A buffer backing for memory-mapped files.
@@ -81,6 +106,10 @@ namespace phoenix {
 
 			[[nodiscard]] bool readonly() const noexcept override {
 				return mode == mio::access_mode::read;
+			}
+
+			[[nodiscard]] bool dynamic() const noexcept override {
+				return false;
 			}
 
 			[[nodiscard]] uint64_t size() const noexcept override {
@@ -165,6 +194,10 @@ namespace phoenix {
 
 	buffer buffer::allocate(std::uint64_t size) {
 		return buffer {std::make_shared<detail::heap_backing>(size)};
+	}
+
+	buffer buffer::allocate_flexible(std::uint64_t size) {
+		return buffer {std::make_shared<detail::dynamic_backing>(size)};
 	}
 
 	buffer buffer::of(std::vector<std::byte>&& buf, bool readonly) {
@@ -270,7 +303,7 @@ namespace phoenix {
 
 	std::string buffer::get_string(std::uint64_t size) {
 		if (this->remaining() < size) {
-			throw buffer_overflow {position(), size, "relative string get"};
+			throw buffer_underflow {position(), size, "relative string get"};
 		}
 
 		std::string tmp {};
@@ -281,7 +314,7 @@ namespace phoenix {
 
 	std::string buffer::get_string(std::uint64_t index, std::uint64_t size) const {
 		if (index + size > this->limit()) {
-			throw buffer_overflow {index, size, "absolute string get"};
+			throw buffer_underflow {index, size, "absolute string get"};
 		}
 
 		std::string tmp {};
@@ -375,12 +408,18 @@ namespace phoenix {
 	}
 
 	void buffer::put(const std::byte* buf, std::uint64_t size) {
-		if (this->remaining() < size) {
+		if (!this->_m_backing->dynamic() && this->remaining() < size) {
 			throw buffer_overflow {this->position(), size, "relative bulk put"};
 		}
 
 		_m_backing->write(buf, size, _m_backing_begin + _m_position);
 		_m_position += size;
+
+		if (this->_m_backing->dynamic()) {
+			_m_backing_end = std::max(_m_backing_begin + position(), _m_backing_end);
+			_m_capacity =
+			    _m_backing_begin + _m_capacity < _m_backing_end ? _m_backing_end - _m_backing_begin : _m_capacity;
+		}
 	}
 
 	void buffer::put_string(std::string_view str) {

@@ -78,12 +78,19 @@ namespace phoenix {
 		/// \return `true` if this backing is direct and `false` if not.
 		[[nodiscard]] virtual bool direct() const noexcept = 0;
 
-		/// \brief Returns whether or not this backing is readonly or not.
+		/// \brief Returns whether or not this backing is readonly.
 		///
 		/// A readonly backing is a backing which can not be written to.
 		///
 		/// \return `true` if this backing is read-only and `false` if not.
 		[[nodiscard]] virtual bool readonly() const noexcept = 0;
+
+		/// \brief Returns whether or not this backing is dynamic.
+		///
+		/// Dynamic backings grow automatically when data is written at an out-of-bounds location.
+		///
+		/// \return `true` if this backing is dynamic and `false` if not.
+		[[nodiscard]] virtual bool dynamic() const noexcept = 0;
 
 		/// \brief Returns the number of bytes available in this backing.
 		/// \return The number of bytes available in this backing.
@@ -176,12 +183,18 @@ namespace phoenix {
 		    typename T,
 		    typename = typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type>
 		void _put_t(T value) {
-			if (this->remaining() < sizeof(T)) {
+			if (!this->_m_backing->dynamic() && this->remaining() < sizeof(T)) {
 				throw buffer_overflow {this->position(), sizeof(T)};
 			}
 
 			_m_backing->write((std::byte*) &value, sizeof(T), _m_backing_begin + _m_position);
 			_m_position += sizeof(T);
+
+			if (this->_m_backing->dynamic()) {
+				_m_backing_end = std::max(_m_backing_begin + position(), _m_backing_end);
+				_m_capacity =
+				    _m_backing_begin + _m_capacity < _m_backing_end ? _m_backing_end - _m_backing_begin : _m_capacity;
+			}
 		}
 
 	public:
@@ -765,6 +778,15 @@ namespace phoenix {
 		/// \param size The number of bytes to allocate.
 		/// \return The newly allocated buffer.
 		static buffer allocate(std::uint64_t size);
+
+		/// \brief Allocates a new flexible buffer which grows dynamically with every out-of-bounds write.
+		///
+		/// The allocated buffer will be backed by a vector and thus it will reside on the heap. This backing
+		/// vector can be accessed through #array at any time.
+		///
+		/// \param size The number of bytes to allocate initially.
+		/// \return The newly allocated buffer.
+		static buffer allocate_flexible(std::uint64_t size);
 
 		/// \brief Creates a new buffer from the given vector.
 		///

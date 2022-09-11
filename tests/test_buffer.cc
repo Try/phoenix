@@ -731,4 +731,44 @@ TEST_SUITE("buffer") {
 		auto buf = phoenix::buffer::allocate(10);
 		CHECK_FALSE(empty == buf);
 	}
+
+	TEST_CASE("@flexible") {
+		auto buf = phoenix::buffer::allocate_flexible(4);
+		CHECK(buf.limit() == 4);
+		CHECK(buf.position() == 0);
+		CHECK(buf.remaining() == 4);
+		CHECK(buf.capacity() == 4);
+		CHECK(buf.direct() == false);
+		CHECK(buf.readonly() == false);
+
+		buf.put(0xFF);
+		buf.put_short(-16);
+		buf.put_ushort(16);
+		buf.put_int(-16);
+		buf.put_uint(16);
+		buf.put_long(-16);
+		buf.put_ulong(16);
+		buf.put_float(69.420f);
+		buf.put_double(420.69);
+		buf.put_string("Hi");
+		buf.put_line("Hello, World!");
+		buf.flip();
+
+		CHECK(buf.limit() == 57);
+		CHECK(buf.capacity() == 57);
+
+		CHECK(buf.get() == 0xFF);
+		CHECK(buf.get_short() == -16);
+		CHECK(buf.get_ushort() == 16);
+		CHECK(buf.get_int() == -16);
+		CHECK(buf.get_uint() == 16);
+		CHECK(buf.get_long() == -16);
+		CHECK(buf.get_ulong() == 16);
+		CHECK(buf.get_float() == 69.420f);
+		CHECK(buf.get_double() == 420.69);
+		CHECK(buf.get_string(2) == "Hi");
+		CHECK(buf.get_line() == "Hello, World!");
+
+		CHECK(buf.remaining() == 0);
+	}
 }
