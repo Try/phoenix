@@ -13,7 +13,16 @@ namespace phoenix {
 		proto = 0xB100,
 	};
 
-	model_mesh model_mesh::parse(buffer& in) {
+	model_mesh model_mesh::parse(buffer& buf) {
+		return phoenix::parse<model_mesh>(buf);
+	}
+
+	model_mesh model_mesh::parse(buffer&& buf) {
+		return phoenix::parse<model_mesh>(buf);
+	}
+
+	template <>
+	model_mesh parse<>(buffer& in) {
 		model_mesh msh {};
 		model_mesh_chunk type = model_mesh_chunk::unknown;
 		bool end_mesh = false;

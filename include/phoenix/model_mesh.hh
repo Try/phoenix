@@ -26,16 +26,14 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_API static model_mesh parse(buffer& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::model_mesh>()") PHOENIX_API static model_mesh parse(buffer& buf);
 
 		/// \brief Parses a model mesh from the data in the given buffer.
 		/// \param[in] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed model mesh object.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_API inline static model_mesh parse(buffer&& buf) {
-			return model_mesh::parse(buf);
-		}
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::model_mesh>()") PHOENIX_API static model_mesh parse(buffer&& buf);
 
 	public:
 		/// \brief A list of soft-skin meshes associated with this model mesh.
@@ -47,4 +45,19 @@ namespace phoenix {
 		/// \brief The checksum of the model hierarchy this model was made for.
 		std::uint32_t checksum;
 	};
+
+	/// \brief Parses a model mesh from the data in the given buffer.
+	///
+	/// <p>This implementation is heavily based on the implementation found in
+	/// [ZenLib](https://github.com/Try/ZenLib).</p>
+	///
+	/// \param[in,out] buf The buffer to read from.
+	/// \return The parsed model mesh object.
+	/// \note After this function returns the position of \p buf will be at the end of the parsed object.
+	///       If you would like to keep your buffer immutable, consider passing a copy of it to #parse(buffer&&)
+	///       using buffer::duplicate.
+	/// \throws parser_error if parsing fails.
+	/// \see #parse(buffer&&)
+	template <>
+	model_mesh parse<>(buffer& buf);
 } // namespace phoenix

@@ -5,9 +5,8 @@
 namespace phoenix {
 	model model::parse(buffer& buf) {
 		model tmp {};
-
-		tmp.hierarchy = model_hierarchy::parse(buf);
-		tmp.mesh = model_mesh::parse(buf);
+		tmp.hierarchy = phoenix::parse<model_hierarchy>(buf);
+		tmp.mesh = phoenix::parse<model_mesh>(buf);
 		return tmp;
 	}
 } // namespace phoenix
