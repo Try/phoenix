@@ -96,7 +96,7 @@ namespace phoenix {
 						wld.world_vobs.push_back(std::move(child));
 					}
 				} else if (chnk.object_name == "WayNet") {
-					wld.world_way_net = way_net::parse(*archive);
+					wld.world_way_net = phoenix::parse<way_net>(*archive);
 				} else if (chnk.object_name == "CutscenePlayer") {
 					// TODO: only present in save-games
 

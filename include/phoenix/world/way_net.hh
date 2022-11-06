@@ -36,7 +36,7 @@ namespace phoenix {
 		/// \brief PParses a way-net from the given reader.
 		/// \param in The reader to read from.
 		/// \return The way-net parsed.
-		PHOENIX_INTERNAL static way_net parse(archive_reader& in);
+		PHOENIX_DEPRECATED("use phoenix::parse<phoenix::way_net>()") PHOENIX_INTERNAL static way_net parse(archive_reader& in);
 
 		/// \brief Get the waypoint with the given name.
 		/// \param name The name of the waypoint to get.
@@ -52,7 +52,14 @@ namespace phoenix {
 		std::vector<way_edge> edges;
 
 	private:
+		friend way_net phoenix::parse<>(archive_reader& in);
+
 		std::unordered_map<std::string, std::uint32_t> _m_name_to_waypoint;
 	};
 
+	/// \brief PParses a way-net from the given reader.
+	/// \param ctx The reader to read from.
+	/// \return The way-net parsed.
+	template <>
+	way_net parse<>(archive_reader& ctx);
 } // namespace phoenix

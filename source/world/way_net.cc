@@ -13,6 +13,17 @@ namespace phoenix {
 	}
 
 	way_net way_net::parse(archive_reader& in) {
+		return phoenix::parse<way_net>(in);
+	}
+
+	const way_point* way_net::waypoint(const std::string& name) const {
+		if (auto it = _m_name_to_waypoint.find(name); it != _m_name_to_waypoint.end())
+			return &waypoints[it->second];
+		return nullptr;
+	}
+
+	template <>
+	way_net parse<>(archive_reader& in) {
 		try {
 			way_net net;
 			archive_object obj;
@@ -92,11 +103,5 @@ namespace phoenix {
 		} catch (const buffer_error& exc) {
 			throw parser_error {"way_net", exc, "eof reached"};
 		}
-	}
-
-	const way_point* way_net::waypoint(const std::string& name) const {
-		if (auto it = _m_name_to_waypoint.find(name); it != _m_name_to_waypoint.end())
-			return &waypoints[it->second];
-		return nullptr;
 	}
 } // namespace phoenix
