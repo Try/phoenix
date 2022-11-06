@@ -6,7 +6,7 @@
 TEST_SUITE("messages") {
 	TEST_CASE("messages(parse:g1)") {
 		auto buf = phoenix::buffer::mmap("./samples/ou.proprietary.bin");
-		auto msgs = phoenix::messages::parse(buf);
+		auto msgs = phoenix::parse<phoenix::messages>(buf);
 
 		CHECK_EQ(msgs.blocks.size(), 7360);
 

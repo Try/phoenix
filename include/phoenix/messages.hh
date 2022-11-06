@@ -54,16 +54,14 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_API static messages parse(buffer& path);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::messages>()") PHOENIX_API static messages parse(buffer& path);
 
 		/// \brief Parses a message database from the data in the given buffer.
 		/// \param[in] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed message database object.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_API inline static messages parse(buffer&& path) {
-			return messages::parse(path);
-		}
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::messages>()") PHOENIX_API static messages parse(buffer&& path);
 
 		/// \brief Retrieves a message block by it's name.
 		/// \param name The name of the block to get
@@ -74,4 +72,34 @@ namespace phoenix {
 		/// \brief A list of all message blocks in the database.
 		std::vector<message_block> blocks {};
 	};
+
+	/// \brief Parses a message database from the data in the given buffer.
+	///
+	/// <p>This implementation is heavily based on the implementation found in
+	/// [ZenLib](https://github.com/Try/ZenLib).</p>
+	///
+	/// \param[in,out] buf The buffer to read from.
+	/// \return The parsed message database object.
+	/// \note After this function returns the position of \p buf will be at the end of the parsed object.
+	///       If you would like to keep your buffer immutable, consider passing a copy of it to #parse(buffer&&)
+	///       using buffer::duplicate.
+	/// \throws parser_error if parsing fails.
+	/// \see #parse(buffer&&)
+	template <>
+	messages parse<>(buffer& buf);
+
+	/// \brief Parses a message database from the data in the given buffer.
+	///
+	/// <p>This implementation is heavily based on the implementation found in
+	/// [ZenLib](https://github.com/Try/ZenLib).</p>
+	///
+	/// \param[in,out] ctx The archive reader to read from.
+	/// \return The parsed message database object.
+	/// \note After this function returns the position of \p buf will be at the end of the parsed object.
+	///       If you would like to keep your buffer immutable, consider passing a copy of it to #parse(buffer&&)
+	///       using buffer::duplicate.
+	/// \throws parser_error if parsing fails.
+	/// \see #parse(buffer&&)
+	template <>
+	messages parse<>(archive_reader& ctx);
 } // namespace phoenix
