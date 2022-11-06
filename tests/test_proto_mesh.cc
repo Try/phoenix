@@ -18,7 +18,7 @@ static bool compare_plane(phoenix::plane a, phoenix::plane b) {
 TEST_SUITE("proto_mesh") {
 	TEST_CASE("proto_mesh(parse:?)") {
 		auto in = phoenix::buffer::mmap("./samples/mesh0.mrm");
-		auto mesh = phoenix::proto_mesh::parse(in);
+		auto mesh = phoenix::parse<phoenix::proto_mesh>(in);
 
 		const auto& positions = mesh.positions;
 		CHECK_EQ(positions.size(), 8);

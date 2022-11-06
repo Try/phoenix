@@ -87,16 +87,14 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_API static proto_mesh parse(buffer& in);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::proto_mesh>()") PHOENIX_API static proto_mesh parse(buffer& buf);
 
 		/// \brief Parses a proto mesh from the data in the given buffer.
 		/// \param[in] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed proto mesh.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_API static proto_mesh parse(buffer&& in) {
-			return proto_mesh::parse(in);
-		}
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::proto_mesh>()") PHOENIX_API static proto_mesh parse(buffer&& buf);
 
 		/// \brief Parses a proto mesh directly from the given buffer.
 		///
@@ -109,7 +107,7 @@ namespace phoenix {
 		///       If you would like to keep your buffer immutable, consider passing a copy of it to #parse(buffer&&)
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
-		[[nodiscard]] PHOENIX_INTERNAL static proto_mesh parse_from_section(buffer& in);
+		[[nodiscard]] PHOENIX_INTERNAL static proto_mesh parse_from_section(buffer& buf);
 
 	public:
 		/// \brief The vertex positions associated with the mesh.
@@ -132,4 +130,15 @@ namespace phoenix {
 
 		obb obbox;
 	};
+
+	/// \brief Parses a proto mesh from the data in the given buffer.
+	/// \param[in,out] buf The buffer to read from.
+	/// \return The parsed proto mesh.
+	/// \note After this function returns the position of \p buf will be at the end of the parsed object.
+	///       If you would like to keep your buffer immutable, consider passing a copy of it to #parse(buffer&&)
+	///       using buffer::duplicate.
+	/// \throws parser_error if parsing fails.
+	/// \see #parse(buffer&&)
+	template <>
+	proto_mesh parse<>(buffer& buf);
 } // namespace phoenix

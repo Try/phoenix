@@ -8,38 +8,12 @@ namespace phoenix {
 
 	enum class proto_chunk { unknown, mesh = 0xB100, end = 0xB1FF };
 
-	proto_mesh proto_mesh::parse(buffer& in) {
-		proto_mesh msh {};
-		proto_chunk type = proto_chunk::unknown;
-		bool end_mesh = false;
+	proto_mesh proto_mesh::parse(buffer& buf) {
+		return phoenix::parse<proto_mesh>(buf);
+	}
 
-		do {
-			type = static_cast<proto_chunk>(in.get_ushort());
-
-			auto length = in.get_uint();
-			auto chunk = in.extract(length);
-
-			switch (type) {
-			case proto_chunk::mesh:
-				msh = parse_from_section(chunk);
-				break;
-			case proto_chunk::end:
-				end_mesh = true;
-				break;
-			default:
-				break;
-			}
-
-			if (chunk.remaining() != 0) {
-				PX_LOGW("proto_mesh: ",
-				        chunk.remaining(),
-				        " bytes remaining in section ",
-				        std::hex,
-				        std::uint16_t(type));
-			}
-		} while (!end_mesh);
-
-		return msh;
+	proto_mesh proto_mesh::parse(buffer&& buf) {
+		return phoenix::parse<proto_mesh>(buf);
 	}
 
 	proto_mesh proto_mesh::parse_from_section(buffer& chunk) {
@@ -112,6 +86,41 @@ namespace phoenix {
 
 		// TODO: this might be a vec4 though the values don't make any sense.
 		chunk.skip(0x10);
+		return msh;
+	}
+
+	template <>
+	proto_mesh parse<>(buffer& buf) {
+		proto_mesh msh {};
+		proto_chunk type = proto_chunk::unknown;
+		bool end_mesh = false;
+
+		do {
+			type = static_cast<proto_chunk>(buf.get_ushort());
+
+			auto length = buf.get_uint();
+			auto chunk = buf.extract(length);
+
+			switch (type) {
+			case proto_chunk::mesh:
+				msh = proto_mesh::parse_from_section(chunk);
+				break;
+			case proto_chunk::end:
+				end_mesh = true;
+				break;
+			default:
+				break;
+			}
+
+			if (chunk.remaining() != 0) {
+				PX_LOGW("proto_mesh: ",
+				        chunk.remaining(),
+				        " bytes remaining in section ",
+				        std::hex,
+				        std::uint16_t(type));
+			}
+		} while (!end_mesh);
+
 		return msh;
 	}
 
