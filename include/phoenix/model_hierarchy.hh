@@ -41,7 +41,7 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_API static model_hierarchy parse(buffer& in);
+		[[nodiscard, deprecated("use phoenix::parse<phoenix::model_hierarchy>()")]] PHOENIX_API static model_hierarchy parse(buffer& buf);
 
 		/// \brief Parses a model hierarchy from the data in the given buffer.
 		///
@@ -52,9 +52,7 @@ namespace phoenix {
 		/// \return The parsed model hierarchy object.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_API inline static model_hierarchy parse(buffer&& in) {
-			return model_hierarchy::parse(in);
-		}
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::model_hierarchy>()") PHOENIX_API static model_hierarchy parse(buffer&& buf);
 
 	public:
 		/// \brief The list of nodes this hierarchy consists of.
@@ -72,4 +70,19 @@ namespace phoenix {
 		/// \brief The checksum of this hierarchy.
 		std::uint32_t checksum;
 	};
+
+	/// \brief Parses a model hierarchy from the data in the given buffer.
+	///
+	/// <p>This implementation is heavily based on the implementation found in
+	/// [ZenLib](https://github.com/Try/ZenLib).</p>
+	///
+	/// \param[in,out] buf The buffer to read from.
+	/// \return The parsed model hierarchy object.
+	/// \note After this function returns the position of \p buf will be at the end of the parsed object.
+	///       If you would like to keep your buffer immutable, consider passing a copy of it to #parse(buffer&&)
+	///       using buffer::duplicate.
+	/// \throws parser_error if parsing fails.
+	/// \see #parse(buffer&&)
+	template <>
+	model_hierarchy parse<>(buffer& buf);
 } // namespace phoenix

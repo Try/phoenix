@@ -6,7 +6,7 @@
 TEST_SUITE("model_hierarchy") {
 	TEST_CASE("model_hierarchy(parse:?)") {
 		auto in = phoenix::buffer::mmap("./samples/hierarchy0.mdh");
-		auto mesh = phoenix::model_hierarchy::parse(in);
+		auto mesh = phoenix::parse<phoenix::model_hierarchy>(in);
 
 		CHECK_EQ(mesh.nodes.size(), 7);
 		CHECK_EQ(mesh.nodes[0].name, "BIP01 MUEHLE");

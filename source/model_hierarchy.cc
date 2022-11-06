@@ -5,7 +5,16 @@
 namespace phoenix {
 	enum class hierarchy_chunk { unknown, hierarchy = 0xD100, stats = 0xD110, end = 0xD120 };
 
-	model_hierarchy model_hierarchy::parse(buffer& in) {
+	model_hierarchy model_hierarchy::parse(buffer& buf) {
+		return phoenix::parse<model_hierarchy>(buf);
+	}
+
+	model_hierarchy model_hierarchy::parse(buffer&& buf) {
+		return phoenix::parse<model_hierarchy>(buf);
+	}
+
+	template <>
+	model_hierarchy parse<>(buffer& in) {
 		model_hierarchy hierarchy {};
 
 		hierarchy_chunk type = hierarchy_chunk::unknown;
