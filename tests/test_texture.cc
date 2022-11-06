@@ -8,7 +8,7 @@ using namespace phoenix;
 TEST_SUITE("texture") {
 	TEST_CASE("texture(parse:?)") {
 		auto in = buffer::mmap("./samples/erz.tex");
-		auto texture = texture::parse(in);
+		auto texture = phoenix::parse<phoenix::texture>(in);
 
 		CHECK_EQ(texture.height(), 128);
 		CHECK_EQ(texture.width(), 128);

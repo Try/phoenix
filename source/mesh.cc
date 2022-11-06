@@ -184,7 +184,7 @@ namespace phoenix {
 				lightmap_textures.resize(texture_count);
 
 				for (std::uint32_t i = 0; i < texture_count; ++i) {
-					lightmap_textures[i] = std::make_shared<texture>(texture::parse(chunk));
+					lightmap_textures[i] = std::make_shared<texture>(phoenix::parse<texture>(chunk));
 				}
 
 				auto lightmap_count = chunk.get_uint();
@@ -207,7 +207,7 @@ namespace phoenix {
 					auto origin = chunk.get_vec3();
 					auto normal_a = chunk.get_vec3();
 					auto normal_b = chunk.get_vec3();
-					auto lightmap_texture = texture::parse(chunk);
+					auto lightmap_texture = phoenix::parse<texture>(chunk);
 
 					msh.lightmaps.emplace_back(light_map {std::make_shared<texture>(std::move(lightmap_texture)),
 					                                      {normal_a, normal_b},

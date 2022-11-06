@@ -51,16 +51,14 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_API static texture parse(buffer& in);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::texture>()") PHOENIX_API static texture parse(buffer& buf);
 
 		/// \brief Parses a texture from the data in the given buffer.
 		/// \param[in,out] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed texture.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_API inline static texture parse(buffer&& in) {
-			return parse(in);
-		}
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::texture>()") PHOENIX_API static texture parse(buffer&& buf);
 
 		/// \return The format of the texture.
 		[[nodiscard]] PHOENIX_API inline texture_format format() const noexcept {
@@ -131,6 +129,8 @@ namespace phoenix {
 		texture() = default;
 
 	private:
+		friend texture phoenix::parse<>(buffer& buf);
+
 		texture_format _m_format {};
 		argb _m_palette[ZTEX_PALETTE_ENTRIES] {};
 		std::uint32_t _m_width {};
@@ -143,4 +143,19 @@ namespace phoenix {
 		// Quirk: largest mipmap (level 0) stored at the end of the vector
 		std::vector<std::vector<std::uint8_t>> _m_textures;
 	};
+
+	/// \brief Parses a texture from the data in the given buffer.
+	///
+	/// <p>This implementation is heavily based on the implementation found in
+	/// [ZenLib](https://github.com/Try/ZenLib).
+	///
+	/// \param[in,out] buf The buffer to read from.
+	/// \return The parsed texture.
+	/// \note After this function returns the position of \p buf will be at the end of the parsed object.
+	///       If you would like to keep your buffer immutable, consider passing a copy of it to #parse(buffer&&)
+	///       using buffer::duplicate.
+	/// \throws parser_error if parsing fails.
+	/// \see #parse(buffer&&)
+	template <>
+	texture parse<>(buffer& buf);
 } // namespace phoenix

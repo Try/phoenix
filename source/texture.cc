@@ -45,7 +45,16 @@ namespace phoenix {
 		}
 	}
 
-	texture texture::parse(buffer& in) {
+	texture texture::parse(buffer& buf) {
+		return phoenix::parse<texture>(buf);
+	}
+
+	texture texture::parse(buffer&& buf) {
+		return phoenix::parse<texture>(buf);
+	}
+
+	template <>
+	texture parse<>(buffer& in) {
 		texture tex;
 
 		if (in.get_string(4) != ZTEX_SIGNATURE) {
