@@ -7,7 +7,7 @@ TEST_SUITE("model_script") {
 	TEST_CASE("model_script(parse:?)") {
 		phoenix::logging::use_default_logger();
 		auto buf = phoenix::buffer::mmap("./samples/waran.mds");
-		auto script = phoenix::model_script::parse(buf);
+		auto script = phoenix::parse<phoenix::model_script>(buf);
 
 		CHECK_EQ(script.skeleton.disable_mesh, true);
 		CHECK_EQ(script.skeleton.name, "TestModelMesh.asc");
@@ -169,7 +169,7 @@ TEST_SUITE("model_script") {
 
 	TEST_CASE("model_script(parse:?/binary") {
 		auto buf = phoenix::buffer::mmap("./samples/waran.msb");
-		auto script = phoenix::model_script::parse(buf);
+		auto script = phoenix::parse<phoenix::model_script>(buf);
 
 		CHECK_EQ(script.skeleton.disable_mesh, true);
 		CHECK_EQ(script.skeleton.name, "WAR_BODY");

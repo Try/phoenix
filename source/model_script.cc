@@ -454,6 +454,22 @@ namespace phoenix {
 	}
 
 	model_script model_script::parse(buffer& buf) {
+		return phoenix::parse<model_script>(buf);
+	}
+
+	model_script model_script::parse(buffer&& buf) {
+		return phoenix::parse<model_script>(buf);
+	}
+
+	model_script model_script::parse_binary(buffer& buf) {
+		return phoenix::parse<model_script>(buf);
+	}
+
+	model_script model_script::parse_binary(buffer&& buf) {
+		return phoenix::parse<model_script>(buf);
+	}
+
+	model_script parse<>(buffer& buf) {
 		auto peek = buf.position();
 		auto potential_chunk_type = buf.get_ushort();
 		buf.position(peek);
@@ -463,9 +479,5 @@ namespace phoenix {
 		}
 
 		return parse_source_script(buf);
-	}
-
-	model_script model_script::parse_binary(buffer& buf) {
-		return model_script::parse(buf);
 	}
 } // namespace phoenix
