@@ -101,10 +101,7 @@ namespace phoenix {
 		/// \return The parsed mesh object.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&, const std::vector<std::uint32_t>&)
-		[[nodiscard]] PHOENIX_API inline static mesh
-		parse(buffer&& buf, const std::unordered_set<std::uint32_t>& include_polygons = {}) {
-			return mesh::parse(buf, include_polygons);
-		}
+		[[nodiscard]] PHOENIX_API inline static mesh parse(buffer&& buf, const std::unordered_set<std::uint32_t>& include_polygons = {});
 
 	public:
 		/// \brief The creation date of this mesh.
@@ -134,4 +131,19 @@ namespace phoenix {
 		/// \brief A list of polygons of this mesh.
 		polygon_list polygons {};
 	};
+
+	/// \brief Parses a mesh from the data in the given buffer.
+	///
+	/// <p>This implementation is heavily based on the implementation found in
+	/// [ZenLib](https://github.com/Try/ZenLib).</p>
+	///
+	/// \param[in,out] buf The buffer to read from.
+	/// \return The parsed mesh object.
+	/// \note After this function returns the position of \p buf will be at the end of the parsed object.
+	///       If you would like to keep your buffer immutable, consider passing a copy of it to #parse(buffer&&)
+	///       using buffer::duplicate.
+	/// \throws parser_error if parsing fails.
+	/// \see #parse(buffer&&)
+	template <>
+	mesh parse<>(buffer& ctx);
 } // namespace phoenix

@@ -237,4 +237,13 @@ namespace phoenix {
 		    is_ghost_occluder == b.is_ghost_occluder && is_dynamically_lit == b.is_dynamically_lit &&
 		    sector_index == b.sector_index && is_lod == b.is_lod && normal_axis == b.normal_axis;
 	}
+
+	mesh mesh::parse(buffer&& buf, const std::vector<std::uint32_t>& include_polygons) {
+		return mesh::parse(buf, include_polygons);
+	}
+
+	template <>
+	mesh parse<>(buffer& ctx) {
+		return mesh::parse(ctx);
+	}
 } // namespace phoenix
