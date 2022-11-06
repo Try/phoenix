@@ -29,16 +29,14 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_API static softskin_mesh parse(buffer& in);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::softskin_mesh>()") PHOENIX_API static softskin_mesh parse(buffer& buf);
 
 		/// \brief Parses a soft-skin mesh from the data in the given buffer.
 		/// \param[in] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed soft-skin mesh.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_API inline static softskin_mesh parse(buffer&& in) {
-			return softskin_mesh::parse(in);
-		}
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::softskin_mesh>()") PHOENIX_API static softskin_mesh parse(buffer&& buf);
 
 	public:
 		/// \brief The embedded proto-mesh.
@@ -57,4 +55,14 @@ namespace phoenix {
 		std::vector<std::int32_t> nodes;
 	};
 
+	/// \brief Parses a soft-skin mesh from the data in the given buffer.
+	/// \param[in,out] buf The buffer to read from.
+	/// \return The parsed soft-skin mesh.
+	/// \note After this function returns the position of \p buf will be at the end of the parsed object.
+	///       If you would like to keep your buffer immutable, consider passing a copy of it to #parse(buffer&&)
+	///       using buffer::duplicate.
+	/// \throws parser_error if parsing fails.
+	/// \see #parse(buffer&&)
+	template <>
+	softskin_mesh parse<>(buffer& buf);
 } // namespace phoenix

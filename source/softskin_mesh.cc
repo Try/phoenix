@@ -5,7 +5,16 @@
 namespace phoenix {
 	enum class softmesh_chunk { unknown, header = 0xE100, end = 0xE110, proto = 0xB100, nodes = 0xB1FF };
 
-	softskin_mesh softskin_mesh::parse(buffer& in) {
+	softskin_mesh softskin_mesh::parse(buffer& buf) {
+		return phoenix::parse<softskin_mesh>(buf);
+	}
+
+	softskin_mesh softskin_mesh::parse(buffer&& buf) {
+		return phoenix::parse<softskin_mesh>(buf);
+	}
+
+	template <>
+	softskin_mesh parse<>(buffer& in) {
 		softskin_mesh msh {};
 		softmesh_chunk type = softmesh_chunk::unknown;
 		bool end_mesh = false;
