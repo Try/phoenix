@@ -28,7 +28,7 @@ static const animation_sample G2_SAMPLE499 {glm::vec3 {12.626323699951172, -0.00
 TEST_SUITE("animation") {
 	TEST_CASE("animation(parse:g1)") {
 		auto in = buffer::mmap("./samples/G1/HUMANS-S_FISTRUN.MAN");
-		auto anim = animation::parse(in);
+		auto anim = phoenix::parse<animation>(in);
 
 		auto box0 = anim.bbox;
 		CHECK_EQ(box0.max, glm::vec3 {46.33139419555664f, 67.0935287475586f, 49.88602828979492f});

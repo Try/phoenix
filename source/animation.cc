@@ -64,6 +64,15 @@ namespace phoenix {
 	}
 
 	animation animation::parse(buffer& buf) {
+		return phoenix::parse<animation>(buf);
+	}
+
+	animation animation::parse(buffer&& buf) {
+		return phoenix::parse<animation>(buf);
+	}
+
+	template <>
+	animation parse<>(buffer& buf) {
 		animation anim {};
 		animation_chunk type = animation_chunk::unknown;
 

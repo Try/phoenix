@@ -67,16 +67,14 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_API static animation parse(buffer& in);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::animation>()") PHOENIX_API static animation parse(buffer& buf);
 
 		/// \brief Parses an animation from the data in the given buffer.
 		/// \param[in] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed animation.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_API inline static animation parse(buffer&& in) {
-			return animation::parse(in);
-		}
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::animation>()") PHOENIX_API inline static animation parse(buffer&& buf);
 
 	public:
 		/// \brief The name of the animation
@@ -122,4 +120,19 @@ namespace phoenix {
 		/// \brief A list of model hierarchy node indices.
 		std::vector<std::uint32_t> node_indices;
 	};
+
+	/// \brief Parses an animation from the data in the given buffer.
+	///
+	/// <p>This implementation is heavily based on the implementation found in
+	/// [ZenLib](https://github.com/Try/ZenLib).
+	///
+	/// \param[in,out] buf The buffer to read from.
+	/// \return The parsed animation.
+	/// \note After this function returns the position of \p buf will be at the end of the parsed object.
+	///       If you would like to keep your buffer immutable, consider passing a copy of it to #parse(buffer&&)
+	///       using buffer::duplicate.
+	/// \throws parser_error if parsing fails.
+	/// \see #parse(buffer&&)
+	template <>
+	animation parse<>(buffer& buf);
 } // namespace phoenix
