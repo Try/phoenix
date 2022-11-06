@@ -8,6 +8,11 @@ namespace phoenix {
 	static constexpr auto MATERIAL_VERSION_G1_V108k = 17408;
 
 	material material::parse(archive_reader& in) {
+		return phoenix::parse<material>(in);
+	}
+
+	template <>
+	material parse<>(archive_reader& in) {
 		try {
 			material mat {};
 
@@ -91,5 +96,11 @@ namespace phoenix {
 		} catch (const buffer_error& exc) {
 			throw parser_error {"material", exc, "eof reached"};
 		}
+	}
+
+	template <>
+	material parse<>(buffer& buf) {
+		auto archive = archive_reader::open(buf);
+		return phoenix::parse<material>(*archive);
 	}
 } // namespace phoenix

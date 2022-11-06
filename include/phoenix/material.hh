@@ -1,6 +1,7 @@
 // Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
 // SPDX-License-Identifier: MIT
 #pragma once
+#include "phoenix/Api.hh"
 #include <glm/vec2.hpp>
 #include <phoenix/archive.hh>
 #include <string>
@@ -77,7 +78,7 @@ namespace phoenix {
 		/// \return The parsed material object.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(archive_reader&&) for an owning version this function.
-		[[nodiscard]] PHOENIX_API static material parse(archive_reader& ctx);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::material>()") PHOENIX_API static material parse(archive_reader& ctx);
 
 	public:
 		std::string name;
@@ -105,4 +106,32 @@ namespace phoenix {
 		alpha_function alpha_func {alpha_function::none};
 		glm::vec2 default_mapping {};
 	};
+
+	/// \brief Parses a material from the given *ZenGin* archive.
+	///
+	/// <p>This implementation is heavily based on the implementation found in
+	/// [ZenLib](https://github.com/Try/ZenLib). Changes include the addition of the enumerations
+	/// animation_mapping_mode, wave_mode_type and wave_speed_type and an updated version of alpha_function.</p>
+	///
+	/// \param[in,out] buf The buffer to read from.
+	/// \note After this function returns the position of \p ctx will be at the end of the parsed object.
+	/// \return The parsed material object.
+	/// \throws parser_error if parsing fails.
+	/// \see #parse(archive_reader&&) for an owning version this function.
+	template <>
+	material parse<>(buffer& buf);
+
+	/// \brief Parses a material from the given *ZenGin* archive.
+	///
+	/// <p>This implementation is heavily based on the implementation found in
+	/// [ZenLib](https://github.com/Try/ZenLib). Changes include the addition of the enumerations
+	/// animation_mapping_mode, wave_mode_type and wave_speed_type and an updated version of alpha_function.</p>
+	///
+	/// \param[in,out] ctx The archive reader to read from.
+	/// \note After this function returns the position of \p ctx will be at the end of the parsed object.
+	/// \return The parsed material object.
+	/// \throws parser_error if parsing fails.
+	/// \see #parse(archive_reader&&) for an owning version this function.
+	template <>
+	material parse<>(archive_reader& ctx);
 } // namespace phoenix

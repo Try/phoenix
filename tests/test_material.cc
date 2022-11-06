@@ -14,7 +14,7 @@ TEST_SUITE("material") {
 		auto material_count = archive->read_int();
 		CHECK_EQ(material_count, 1);
 
-		auto m1 = material::parse(*archive);
+		auto m1 = phoenix::parse<material>(*archive);
 
 		CHECK_EQ(m1.name, "BODY");
 		CHECK_EQ(m1.group, material_group::undefined);
@@ -41,7 +41,7 @@ TEST_SUITE("material") {
 		auto material_count = archive->read_int();
 		CHECK_EQ(material_count, 1);
 
-		auto m1 = material::parse(*archive);
+		auto m1 = phoenix::parse<material>(*archive);
 
 		CHECK_EQ(m1.name, "BODY");
 		CHECK_EQ(m1.group, material_group::undefined);

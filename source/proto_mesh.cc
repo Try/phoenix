@@ -76,7 +76,7 @@ namespace phoenix {
 		// read all materials
 		auto mats = archive_reader::open(chunk);
 		for (int32_t i = 0; i < submesh_count; ++i) {
-			msh.materials.emplace_back(material::parse(*mats));
+			msh.materials.emplace_back(phoenix::parse<material>(*mats));
 		}
 
 		if (version == version_g2) {
