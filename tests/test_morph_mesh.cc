@@ -6,7 +6,7 @@
 TEST_SUITE("morph_mesh") {
 	TEST_CASE("morph_mesh(parse:?)") {
 		auto in = phoenix::buffer::mmap("./samples/morph0.mmb");
-		auto mesh = phoenix::morph_mesh::parse(in);
+		auto mesh = phoenix::parse<phoenix::morph_mesh>(in);
 
 		CHECK_EQ(mesh.name, "ITRWSMALLBOW");
 		CHECK_EQ(mesh.morph_positions.size(), 28);

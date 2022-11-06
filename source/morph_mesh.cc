@@ -12,7 +12,16 @@ namespace phoenix {
 		morph = 0xB1FF
 	};
 
-	morph_mesh morph_mesh::parse(buffer& in) {
+	morph_mesh morph_mesh::parse(buffer& buf) {
+		return phoenix::parse<morph_mesh>(buf);
+	}
+
+	morph_mesh morph_mesh::parse(buffer&& buf) {
+		return phoenix::parse<morph_mesh>(buf);
+	}
+
+	template <>
+	morph_mesh parse<>(buffer& in) {
 		morph_mesh msh {};
 		morph_mesh_chunk type = morph_mesh_chunk::unknown;
 

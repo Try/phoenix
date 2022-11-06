@@ -55,16 +55,15 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_API static morph_mesh parse(buffer& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::morph_mesh>()") PHOENIX_API static morph_mesh parse(buffer& buf);
+
 
 		/// \brief Parses a morph mesh from the data in the given buffer.
 		/// \param[in] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed morph mesh.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_API inline static morph_mesh parse(buffer&& buf) {
-			return morph_mesh::parse(buf);
-		}
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::morph_mesh>()") PHOENIX_API static morph_mesh parse(buffer&& buf);
 
 	public:
 		/// \brief The name of the mesh.
@@ -82,4 +81,15 @@ namespace phoenix {
 		/// \brief A list of source files this morph mesh was compiled from.
 		std::vector<morph_source> sources {};
 	};
+
+	/// \brief Parses a morph mesh from the data in the given buffer.
+	/// \param[in,out] buf The buffer to read from.
+	/// \return The parsed morph mesh.
+	/// \note After this function returns the position of \p buf will be at the end of the parsed object.
+	///       If you would like to keep your buffer immutable, consider passing a copy of it to #parse(buffer&&)
+	///       using buffer::duplicate.
+	/// \throws parser_error if parsing fails.
+	/// \see #parse(buffer&&)
+	template <>
+	morph_mesh parse<>(buffer& buf);
 } // namespace phoenix
