@@ -6,29 +6,38 @@ namespace phoenix {
 	font::font(std::string font_name, std::uint32_t font_height, std::vector<glyph> font_glyphs)
 	    : name(std::move(font_name)), height(font_height), glyphs(std::move(font_glyphs)) {}
 
-	font font::parse(buffer& in) {
+	font font::parse(buffer& buf) {
+		return phoenix::parse<font>(buf);
+	}
+
+	font font::parse(buffer&& buf) {
+		return phoenix::parse<font>(buf);
+	}
+
+	template <>
+	font parse<>(buffer& buf) {
 		try {
-			auto version = in.get_line();
+			auto version = buf.get_line();
 			if (version != "1") {
 				throw parser_error {"font", "version mismatch: expected version 1, got " + version};
 			}
 
-			auto name = in.get_line(false);
-			auto height = in.get_uint();
+			auto name = buf.get_line(false);
+			auto height = buf.get_uint();
 
 			std::vector<glyph> glyphs {};
-			glyphs.resize(in.get_uint());
+			glyphs.resize(buf.get_uint());
 
 			for (auto& glyph : glyphs) {
-				glyph.width = in.get();
+				glyph.width = buf.get();
 			}
 
 			for (auto& glyph : glyphs) {
-				glyph.uv[0] = in.get_vec2();
+				glyph.uv[0] = buf.get_vec2();
 			}
 
 			for (auto& glyph : glyphs) {
-				glyph.uv[1] = in.get_vec2();
+				glyph.uv[1] = buf.get_vec2();
 			}
 
 			return font {

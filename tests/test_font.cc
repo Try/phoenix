@@ -17,7 +17,7 @@ static const glyph G2_GLYPH255 {10, {glm::vec2 {0.958984375f, 0.55078125f}, glm:
 TEST_SUITE("font") {
 	TEST_CASE("font(parse:g1)") {
 		auto in = buffer::mmap("./samples/G1/FONT_OLD_10_WHITE_HI.FNT");
-		auto fnt = font::parse(in);
+		auto fnt = phoenix::parse<font>(in);
 
 		CHECK_EQ(fnt.name, "FONT_OLD_10_WHITE_HI.TGA");
 		CHECK_EQ(fnt.height, 17);

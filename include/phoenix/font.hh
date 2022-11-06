@@ -57,14 +57,14 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_API static font parse(buffer& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::font>()") PHOENIX_API static font parse(buffer& buf);
 
 		/// \brief Parses a font from the data in the given buffer.
 		/// \param[in] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed font object.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_API inline static font parse(buffer&& in) {
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::font>()") PHOENIX_API inline static font parse(buffer&& in) {
 			return font::parse(in);
 		}
 
@@ -88,4 +88,21 @@ namespace phoenix {
 		///       how to use them
 		std::vector<glyph> glyphs;
 	};
+
+	/// \brief Parses a font from the data in the given buffer.
+	///
+	/// <p>This implementation is heavily based on the implementation found in
+	/// [ZenLib](https://github.com/Try/ZenLib). The only change to the parsing logic is, that this implementation
+	/// dynamically allocates the number of glyphs from the glyph count stored within the font file. That change is
+	/// incompatible with the original *ZenGin*.</p>
+	///
+	/// \param[in,out] buf The buffer to read from.
+	/// \return The parsed font object.
+	/// \note After this function returns the position of \p buf will be at the end of the parsed object.
+	///       If you would like to keep your buffer immutable, consider passing a copy of it to #parse(buffer&&)
+	///       using buffer::duplicate.
+	/// \throws parser_error if parsing fails.
+	/// \see #parse(buffer&&)
+	template <>
+	font parse<>(buffer& buf);
 } // namespace phoenix
