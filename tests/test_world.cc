@@ -6,7 +6,7 @@
 TEST_SUITE("world") {
 	TEST_CASE("world(parse:g1)") {
 		auto in = phoenix::buffer::mmap("./samples/world.proprietary.zen");
-		auto wld = phoenix::world::parse(in);
+		auto wld = phoenix::parse<phoenix::world>(in);
 
 		auto& mesh = wld.world_mesh;
 		CHECK_EQ(mesh.vertices.size(), 55439);

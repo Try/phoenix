@@ -208,6 +208,19 @@ namespace phoenix {
 	}
 
 	world world::parse(buffer& buf) {
+		return phoenix::parse<world>(buf);
+	}
+
+	world world::parse(buffer&& buf, game_version version) {
+		return world::parse(buf, version);
+	}
+
+	world world::parse(buffer&& buf) {
+		return phoenix::parse<world>(buf);
+	}
+
+	template <>
+	world parse<>(buffer& buf) {
 		auto version = determine_world_version(buf.duplicate());
 		return world::parse(buf, version);
 	}
