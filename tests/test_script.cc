@@ -12,7 +12,7 @@ namespace px = phoenix;
 
 TEST_SUITE("script") {
 	TEST_CASE("script(parse)") {
-		auto scr = phoenix::script::parse("./samples/menu.proprietary.dat");
+		auto scr = phoenix::parse<phoenix::script>(phoenix::buffer::mmap("./samples/menu.proprietary.dat"));
 
 		auto& syms = scr.symbols();
 		CHECK_EQ(syms.size(), 1093);

@@ -580,6 +580,8 @@ namespace phoenix {
 
 	private:
 		friend class script;
+		friend class script phoenix::parse<>(buffer&);
+
 		std::string _m_name;
 		std::variant<std::unique_ptr<std::int32_t[]>,
 		             std::unique_ptr<float[]>,
@@ -630,12 +632,12 @@ namespace phoenix {
 		/// \brief Parses in a compiled daedalus script.
 		/// \param path The path of the script file.
 		/// \return The script parsed
-		[[nodiscard]] PHOENIX_API static script parse(const std::string& path);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::script>()") PHOENIX_API static script parse(const std::string& path);
 
 		/// \brief Parses in a compiled daedalus script.
 		/// \param buf A buffer containing the script data.
 		/// \return The script parsed
-		[[nodiscard]] PHOENIX_API static script parse(phoenix::buffer& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::script>()") PHOENIX_API static script parse(phoenix::buffer& buf);
 
 		/// \brief Registers a member offset
 		/// \param name The name of the member in the script
@@ -830,6 +832,8 @@ namespace phoenix {
 		PHOENIX_API symbol* add_temporary_strings_symbol();
 
 	private:
+		friend script phoenix::parse<>(buffer&);
+
 		std::vector<symbol> _m_symbols;
 		std::unordered_map<std::string, uint32_t> _m_symbols_by_name;
 		std::unordered_map<std::uint32_t, uint32_t> _m_symbols_by_address;
@@ -837,4 +841,10 @@ namespace phoenix {
 		mutable buffer _m_text = buffer::empty();
 		std::uint8_t _m_version {0};
 	};
+
+	/// \brief Parses in a compiled daedalus script.
+	/// \param buf A buffer containing the script data.
+	/// \return The script parsed
+	template <>
+	script parse<>(buffer& buf);
 } // namespace phoenix

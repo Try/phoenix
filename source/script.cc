@@ -85,10 +85,15 @@ namespace phoenix {
 
 	script script::parse(const std::string& file) {
 		auto in = buffer::mmap(file);
-		return parse(in);
+		return phoenix::parse<script>(in);
 	}
 
 	script script::parse(phoenix::buffer& in) {
+		return phoenix::parse<script>(in);
+	}
+
+	template <>
+	script parse<>(buffer& in) {
 		script scr {};
 
 		scr._m_version = in.get();
