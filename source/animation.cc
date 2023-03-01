@@ -1,6 +1,7 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/animation.hh>
+#include "phoenix/animation.hh"
+#include "phoenix/buffer.hh"
 
 #include <cmath>
 
@@ -14,14 +15,17 @@ namespace phoenix {
 	/// \brief The number half way to `SAMPLE_ROTATION_RANGE`.
 	static const std::uint16_t SAMPLE_ROTATION_MID = (1 << 15) - 1;
 
-	enum class animation_chunk {
-		animation = 0xa000u,
-		source = 0xa010u,
-		header = 0xa020u,
-		events = 0xa030u,
-		data = 0xa090u,
-		unknown
+	enum class AnimationChunkType {
+		MARKER = 0xa000u,
+		SOURCE = 0xa010u,
+		HEADER = 0xa020u,
+		EVENTS = 0xa030u,
+		SAMPLES = 0xa090u,
 	};
+
+	bool AnimationSample::operator==(const AnimationSample& other) const noexcept {
+		return this->position == other.position && this->rotation == other.rotation;
+	}
 
 	/// \brief Reads the position of a single animation sample from the given buffer.
 	/// \param in The buffer to read from.
@@ -29,7 +33,7 @@ namespace phoenix {
 	/// \param minimum The value of the smallest position component in the animation (part of its header).
 	/// \return A vector containing the parsed position.
 	/// \see http://phoenix.lmichaelis.de/engine/formats/animation/#sample-positions
-	static glm::vec3 read_sample_position(buffer& in, float scale, float minimum) {
+	static glm::vec3 read_sample_position(Buffer& in, float scale, float minimum) {
 		glm::vec3 v {};
 		v.x = (float) in.get_ushort() * scale + minimum;
 		v.y = (float) in.get_ushort() * scale + minimum;
@@ -41,7 +45,7 @@ namespace phoenix {
 	/// \param in The buffer to read from.
 	/// \return A quaternion containing the parsed rotation.
 	/// \see http://phoenix.lmichaelis.de/engine/formats/animation/#sample-rotations
-	static glm::quat read_sample_quaternion(buffer& in) {
+	static glm::quat read_sample_quaternion(Buffer& in) {
 		glm::quat v {};
 		v.x = ((float) in.get_ushort() - SAMPLE_ROTATION_MID) * SAMPLE_ROTATION_SCALE;
 		v.y = ((float) in.get_ushort() - SAMPLE_ROTATION_MID) * SAMPLE_ROTATION_SCALE;
@@ -50,48 +54,58 @@ namespace phoenix {
 		float len_q = v.x * v.x + v.y * v.y + v.z * v.z;
 
 		if (len_q > 1.0f) {
-			float l = 1.0f / sqrtf(len_q);
+			float l = 1.0f / ::sqrtf(len_q);
 			v.x *= l;
 			v.y *= l;
 			v.z *= l;
 			v.w = 0;
 		} else {
 			// We know the quaternion has to be a unit quaternion, so we can calculate the missing value.
-			v.w = sqrtf(1.0f - len_q);
+			v.w = ::sqrtf(1.0f - len_q);
 		}
 
 		return v;
 	}
 
-	animation animation::parse(buffer& buf) {
-		animation anim {};
-		animation_chunk type = animation_chunk::unknown;
+	Animation Animation::parse(Buffer& buf) {
+		Animation anim {};
+		AnimationChunkType type;
 
 		do {
-			type = static_cast<animation_chunk>(buf.get_ushort());
+			type = static_cast<AnimationChunkType>(buf.get_ushort());
 			auto chunk = buf.extract(buf.get_uint());
 
 			switch (type) {
-			case animation_chunk::header:
-				(void) /* version = */ chunk.get_ushort();
+			case AnimationChunkType::MARKER:
+				break;
+			case AnimationChunkType::SOURCE:
+				// Quirk: This was intended to be a date but the original code uses an uninitialized variable here
+				//        so the actual data stored does not make any sense.
+				(void) Date::parse(chunk);
+
+				anim.source_path = chunk.get_line(false);
+				anim.source_script = chunk.get_line(false);
+				break;
+			case AnimationChunkType::HEADER:
+				(void) /* version = */ chunk.get_ushort(); // Should be 0xc for G2
 				anim.name = chunk.get_line(false);
 				anim.layer = chunk.get_uint();
 				anim.frame_count = chunk.get_uint();
 				anim.node_count = chunk.get_uint();
 				anim.fps = chunk.get_float();
 				anim.fps_source = chunk.get_float();
-				anim.sample_position_range_min = chunk.get_float();
-				anim.sample_position_scalar = chunk.get_float();
-				anim.bbox = bounding_box::parse(chunk);
+				anim.sample_position_min = chunk.get_float();
+				anim.sample_position_scale = chunk.get_float();
+				anim.bbox = AxisAlignedBoundingBox::parse(chunk);
 				anim.next = chunk.get_line(false);
 				break;
-			case animation_chunk::events:
+			case AnimationChunkType::EVENTS:
 				anim.events.reserve(chunk.get_uint());
 
 				for (std::uint32_t i = 0; i < anim.events.size(); ++i) {
 					auto& event = anim.events.emplace_back();
-					event.type = static_cast<animation_event_type>(chunk.get_uint());
-					event.no = chunk.get_uint();
+					event.type = static_cast<AnimationEventType>(chunk.get_uint());
+					event.frame = chunk.get_uint();
 					event.tag = chunk.get_line();
 
 					for (auto& j : event.content) {
@@ -106,7 +120,7 @@ namespace phoenix {
 				}
 
 				break;
-			case animation_chunk::data:
+			case AnimationChunkType::SAMPLES:
 				anim.checksum = chunk.get_uint();
 				anim.node_indices.resize(anim.node_count);
 
@@ -119,25 +133,16 @@ namespace phoenix {
 				for (std::size_t i = 0; i < anim.samples.size(); ++i) {
 					anim.samples[i].rotation = read_sample_quaternion(chunk);
 					anim.samples[i].position =
-					    read_sample_position(chunk, anim.sample_position_scalar, anim.sample_position_range_min);
+					    read_sample_position(chunk, anim.sample_position_scale, anim.sample_position_min);
 				}
 
 				break;
-			case animation_chunk::source:
-				// Quirk: This was intended to be a date but the original code uses an uninitialized variable here
-				//        so the actual data stored does not make any sense.
-				(void) date::parse(chunk);
-
-				anim.source_path = chunk.get_line(false);
-				anim.source_script = chunk.get_line(false);
-				break;
-			case animation_chunk::animation: // the "animation" chunk is always empty
 			default:
 				break;
 			}
 
 			if (chunk.remaining() > 0) {
-				PX_LOGW("animation(\"",
+				PX_LOGW("Animation(\"",
 				        anim.name,
 				        "\"): ",
 				        chunk.remaining(),
@@ -148,5 +153,9 @@ namespace phoenix {
 		} while (buf.remaining() != 0);
 
 		return anim;
+	}
+
+	Animation Animation::parse(Buffer&& in) {
+		return Animation::parse(in);
 	}
 } // namespace phoenix

@@ -1,6 +1,6 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/vdfs.hh>
+#include "phoenix/vdfs.hh"
 
 namespace phoenix {
 	std::time_t dos_to_unix_time(std::uint32_t dos) noexcept {
@@ -47,7 +47,7 @@ namespace phoenix {
 
 	vdf_header::vdf_header(std::string_view comment_text, std::time_t ts) : comment(comment_text), timestamp(ts) {}
 
-	vdf_header vdf_header::read(buffer& in) {
+	vdf_header vdf_header::read(Buffer& in) {
 		vdf_header header {};
 
 		header.comment = in.get_string(VDF_COMMENT_LENGTH);
@@ -121,7 +121,7 @@ namespace phoenix {
 		return const_cast<vdf_entry*>(&*result);
 	}
 
-	vdf_entry vdf_entry::read(buffer& in, std::uint32_t catalog_offset) {
+	vdf_entry vdf_entry::read(Buffer& in, std::uint32_t catalog_offset) {
 		vdf_entry entry {};
 
 		entry.name = in.get_string(VDF_ENTRY_NAME_LENGTH);
@@ -236,7 +236,7 @@ namespace phoenix {
 	}
 
 	vdf_file vdf_file::open(const std::filesystem::path& path) {
-		auto buf = buffer::mmap(path);
+		auto buf = Buffer::mmap(path);
 
 		vdf_file vdf {};
 		vdf.header = vdf_header::read(buf);
@@ -256,7 +256,7 @@ namespace phoenix {
 		return vdf;
 	}
 
-	vdf_file vdf_file::open(phoenix::buffer& buf) {
+	vdf_file vdf_file::open(phoenix::Buffer& buf) {
 		vdf_file vdf {};
 
 		vdf.header = vdf_header::read(buf);

@@ -23,7 +23,7 @@ if (MSVC)
     endif ()
 else ()
     # enable all warnings
-    set(PHOENIX_CXX_FLAGS -Wall -Wextra -Werror -Wconversion -Wshadow -Wpedantic)
+    set(PHOENIX_CXX_FLAGS -Wall -Wextra -Werror -Wconversion -Wpedantic)
 
     # in debug mode, enable sanitizers; note: MinGW does not seem to understand sanitizers on Windows
     if (${CMAKE_BUILD_TYPE} MATCHES "Debug" AND NOT ${PHOENIX_DISABLE_SANITIZERS} AND NOT WIN32)
@@ -167,12 +167,12 @@ if (PHOENIX_BUILD_TESTS AND CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     target_compile_options(phoenix-tests PRIVATE ${PHOENIX_CXX_FLAGS})
 
     if (NOT MSVC)
-        target_compile_options(phoenix-tests PRIVATE -Wno-overloaded-shift-op-parentheses -Wno-deprecated-declarations)
+        target_compile_options(phoenix-tests PRIVATE -Wno-overloaded-shift-op-parentheses)
     endif ()
 
     target_link_options(phoenix-tests PRIVATE ${PHOENIX_CXX_FLAGS})
 
-    doctest_discover_tests(phoenix-tests EXTRA_ARGS -tse=messages,script,world WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/tests)
+    doctest_discover_tests(phoenix-tests EXTRA_ARGS -tse=CutsceneLibrary,script,world WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/tests)
 endif ()
 
 # when building examples, include the subdirectory

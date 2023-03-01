@@ -11,24 +11,23 @@ There are a few things that should be followed to keep the codebase consistent.
 
 ### git
 
-Your commits should be small. Avoid bundling multiple changes relating (for example) multiple different issues or bug
+Your commits should be small. Avoid bundling multiple changes relating (for example) multiple different issues or bugs
 into one commit. Rather, create multiple smaller commits, each self-contained only changing one part of the logic[^1].
 
-Git commits should follow roughly the following format: `<class_name>: <commit_message>`. If you're working on a tool,
-you can use `tools: <tool_name>: <commit_message>`. If your commit affects something about the build system or other
-non-C++ related things, use `project: <commit_message>`. Take a look at existing commits to get a better idea as to
-what I mean.
+Git commit should roughly follow the [Angular Commit Message Format](https://github.com/angular/angular/blob/main/CONTRIBUTING.md#commit).
+The scope should be a comma-separated list of the names of the structures being changed.
 
-[^2]: For example, if there is an issue with the VM and you change something, then add a new API to the `script`, 
-those should be two separate commits.
+[^2]: For example, if there is an issue with the VM and you change something, then add a new API to the
+`DaedalusScript`, those should be two separate commits.
 
 ### C++ code
 
-_phoenix_ roughly follows the naming convention of the standard library. This includes:
+_phoenix_ roughly follows the following naming conventions:
 
-* Class names are `snake_case`
+* Class, structure and enum names are `PascalCase`
 * Function names are `snake_case` and private member functions are prefixed with an underscore
 * Member variables are `snake_case` and private member variables are prefixed with `_m_`
+* Compile time static variables and enum members are `SCREAMING_SNAKE_CASE`
 
 Use `clang-format`. While the CI pipeline will complain about noncompliance, you can avoid unnecessary commits by
 checking your code before pushing.

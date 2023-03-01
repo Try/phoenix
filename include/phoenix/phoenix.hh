@@ -1,48 +1,51 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "Api.hh"
 
-#include <filesystem>
 #include <functional>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <utility>
+#include <string_view>
 
 #if PHOENIX_LOG_LEVEL > 0
-	#define PX_LOGE(...) phoenix::logging::log(phoenix::logging::level::error, __VA_ARGS__)
+	#define PX_LOGE(...) phoenix::Logging::log(phoenix::LogLevel::ERROR, __VA_ARGS__)
 #else
 	#define PX_LOGE(...)
 #endif
 
 #if PHOENIX_LOG_LEVEL > 1
-	#define PX_LOGW(...) phoenix::logging::log(phoenix::logging::level::warn, __VA_ARGS__)
+	#define PX_LOGW(...) phoenix::Logging::log(phoenix::LogLevel::WARNING, __VA_ARGS__)
 #else
 	#define PX_LOGW(...)
 #endif
 
 #if PHOENIX_LOG_LEVEL > 2
-	#define PX_LOGI(...) phoenix::logging::log(phoenix::logging::level::info, __VA_ARGS__)
+	#define PX_LOGI(...) phoenix::Logging::log(phoenix::LogLevel::INFO, __VA_ARGS__)
 #else
 	#define PX_LOGI(...)
 #endif
 
 #if PHOENIX_LOG_LEVEL > 3
-	#define PX_LOGD(...) phoenix::logging::log(phoenix::logging::level::debug, __VA_ARGS__)
+	#define PX_LOGD(...) phoenix::logging::log(phoenix::LogLevel::DEBUG, __VA_ARGS__)
 #else
 	#define PX_LOGD(...)
 #endif
 
 namespace phoenix {
-	class buffer;
-	class archive_reader;
+	class Buffer;
+	class ArchiveReader;
 
 	/// \brief An enum for providing a game version hint to some functions
-	enum class game_version {
-		gothic_1, ///< Represents any patch of Gothic
-		gothic_2, ///< Represents any patch of Gothic II, including _Night of the Raven_.
+	enum class GameVersion {
+		GOTHIC_1 = 0, ///< Represents any patch of Gothic
+		GOTHIC_2 = 1, ///< Represents any patch of Gothic II, including _Night of the Raven_.
+
+		// Deprecated entries.
+		gothic_1 PHOENIX_DEPRECATED("renamed to GameVersion::GOTHIC_1") = GOTHIC_1,
+		gothic_2 PHOENIX_DEPRECATED("renamed to GameVersion::GOTHIC_2") = GOTHIC_2,
 	};
 
 	/// \brief Tests whether two strings are equal when ignoring case.
@@ -64,11 +67,11 @@ namespace phoenix {
 	PHOENIX_API bool icompare(std::string_view a, std::string_view b);
 
 	/// \brief A basic datetime structure used by the *ZenGin*.
-	struct date {
+	struct Date {
 		/// \brief Parses a date from a buffer.
 		/// \param buf The buffer to read from
 		/// \return The date.
-		PHOENIX_API static date parse(buffer& buf);
+		PHOENIX_API static Date parse(Buffer& buf);
 
 		std::uint32_t year;
 		std::uint16_t month;
@@ -78,14 +81,27 @@ namespace phoenix {
 		std::uint16_t second;
 	};
 
+	enum class LogLevel {
+		ERROR = 0,
+		WARNING = 1,
+		INFO = 2,
+		DEBUG = 3,
+
+		// Deprecated entries.
+		error PHOENIX_DEPRECATED("renamed to LogLevel::ERROR") = ERROR,
+		warn PHOENIX_DEPRECATED("renamed to LogLevel::WARNING") = WARNING,
+		info PHOENIX_DEPRECATED("renamed to LogLevel::INFO") = INFO,
+		debug PHOENIX_DEPRECATED("renamed to LogLevel::DEBUG") = DEBUG,
+	};
+
 	/// \brief Logging manager for phoenix.
-	class logging {
+	class Logging {
 	public:
-		enum class level { error, warn, info, debug };
+		using level PHOENIX_DEPRECATED("renamed to LogLevel") = LogLevel;
 
 		/// \brief Supply a custom logger callback to be used for log output from phoenix.
 		/// \param callback The callback to use.
-		PHOENIX_API static void use_logger(std::function<void(level, const std::string&)>&& callback);
+		PHOENIX_API static void use_logger(std::function<void(LogLevel, const std::string&)>&& callback);
 
 		/// \brief Use the default logger callback for phoenix.
 		PHOENIX_API static void use_default_logger();
@@ -94,11 +110,11 @@ namespace phoenix {
 		/// \param lvl The level of the log message.
 		/// \param message The message to send.
 		template <typename... T>
-		static void log(level lvl, const T&... msg) {
-			if (logging::callback) {
+		static void log(LogLevel lvl, const T&... msg) {
+			if (Logging::callback) {
 				std::stringstream msg_buffer {};
-				logging::_build_log_message(msg_buffer, msg...);
-				(*logging::callback)(lvl, msg_buffer.str());
+				Logging::_build_log_message(msg_buffer, msg...);
+				(*Logging::callback)(lvl, msg_buffer.str());
 			}
 		}
 
@@ -112,13 +128,13 @@ namespace phoenix {
 			}
 		}
 
-		static std::optional<std::function<void(level, const std::string&)>> callback;
+		static std::optional<std::function<void(LogLevel, const std::string&)>> callback;
 	};
 
 	/// \brief Base class for all exceptions.
-	class error : public std::exception {
+	class Error : public std::exception {
 	public:
-		PHOENIX_API explicit error(std::string&& message);
+		PHOENIX_API explicit Error(std::string&& message);
 
 		[[nodiscard]] PHOENIX_API inline const char* what() const noexcept override {
 			return message.c_str();
@@ -129,14 +145,14 @@ namespace phoenix {
 	};
 
 	/// \brief An error representing a parsing failure of any kind.
-	class parser_error : public error {
+	class ParserError : public Error {
 	public:
-		PHOENIX_INTERNAL explicit parser_error(std::string&& resource_type);
-		PHOENIX_API explicit parser_error(std::string&& resource_type, std::string&& context);
-		PHOENIX_INTERNAL explicit parser_error(std::string&& resource_type, const std::exception& cause);
-		PHOENIX_INTERNAL explicit parser_error(std::string&& resource_type,
-		                                       const std::exception& cause,
-		                                       std::string&& context);
+		PHOENIX_INTERNAL explicit ParserError(std::string&& resource_type);
+		PHOENIX_API explicit ParserError(std::string&& resource_type, std::string&& context);
+		PHOENIX_INTERNAL explicit ParserError(std::string&& resource_type, const std::exception& cause);
+		PHOENIX_INTERNAL explicit ParserError(std::string&& resource_type,
+		                                      const std::exception& cause,
+		                                      std::string&& context);
 
 	public:
 		const std::string resource_type;
@@ -145,17 +161,23 @@ namespace phoenix {
 	};
 
 	template <typename T>
-	T parse([[maybe_unused]] buffer& buf) {
-		throw parser_error {"unknown", "parsing routine not implemented"};
+	T parse([[maybe_unused]] Buffer& buf) {
+		throw ParserError {"unknown", "parsing routine not implemented"};
 	}
 
 	template <typename T>
-	inline T parse(buffer&& buf) {
+	inline T parse(Buffer&& buf) {
 		return parse<T>(buf);
 	}
 
 	template <typename T>
-	T parse([[maybe_unused]] archive_reader& buf) {
-		throw parser_error {"unknown", "parsing routine not implemented"};
+	T parse([[maybe_unused]] ArchiveReader& buf) {
+		throw ParserError {"unknown", "parsing routine not implemented"};
 	}
+
+	using date PHOENIX_DEPRECATED("renamed to Date") = Date;
+	using game_version PHOENIX_DEPRECATED("renamed to GameVersion") = GameVersion;
+	using logging PHOENIX_DEPRECATED("renamed to Logging") = Logging;
+	using error PHOENIX_DEPRECATED("renamed to Error") = Error;
+	using parser_error PHOENIX_DEPRECATED("renamed to ParserError") = ParserError;
 } // namespace phoenix

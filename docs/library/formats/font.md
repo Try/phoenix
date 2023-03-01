@@ -15,15 +15,15 @@ for more details
 
 ### Loading a Font
 
-Like most data structures in *phoenix*, fonts can be loaded using the `#!cpp phoenix::font::parse()` function.
-It takes a `phoenix::buffer` as a parameter and loads the font from it.
+Like most data structures in *phoenix*, fonts can be loaded using the `#!cpp phoenix::Font::parse()` function.
+It takes a `phoenix::Buffer` as a parameter and loads the font from it.
 
 ```cpp title="Example"
 #include <phoenix/font.hh>
 
 int main(int, const char** argv) {
-    auto font_buffer = phoenix::buffer::mmap("A.fnt");
-    [[maybe_unused]] auto font = phoenix::font::parse(font_buffer);
+    auto font_buffer = phoenix::Buffer::mmap("A.fnt");
+    [[maybe_unused]] auto font = phoenix::Font::parse(font_buffer);
     return 0;
 }
 ```
@@ -44,13 +44,13 @@ Since each glyph is saved at the same index as the number representation of its 
 #include <phoenix/texture.hh>
 
 int main(int, const char** argv) {
-    auto font_buffer = phoenix::buffer::mmap("A.fnt");
-    auto font = phoenix::font::parse(font_buffer)
+    auto font_buffer = phoenix::Buffer::mmap("A.fnt");
+    auto font = phoenix::Font::parse(font_buffer)
 
     // The texture is loaded from some other location, probably the `Textures.vdf` file.
-    auto font_texture = phoenix::texture::parse(phoenix::buffer::mmap(font.name));
+    auto font_texture = phoenix::Texture::parse(phoenix::Buffer::mmap(font.name));
 
-    phoenix::glyph glyph0 = font.glyphs[0];
+    phoenix::FontGlyph glyph0 = font.glyphs[0];
 
     // Each UV coordinate contains a value from 0 to 1 which is mapped to the actual with and height of the image
     int actual_top_x = glyph0.uv[0].x * font_texture.width();

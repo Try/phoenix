@@ -1,10 +1,11 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/vobs/misc.hh>
+#include "phoenix/vobs/misc.hh"
+#include "phoenix/archive.hh"
 
 namespace phoenix::vobs {
-	void animate::parse(animate& obj, archive_reader& ctx, game_version version) {
-		vob::parse(obj, ctx, version);
+	void Animate::parse(Animate& obj, ArchiveReader& ctx, GameVersion version) {
+		VirtualObject::parse(obj, ctx, version);
 		obj.start_on = ctx.read_bool(); // startOn
 
 		if (ctx.is_save_game()) {
@@ -13,8 +14,8 @@ namespace phoenix::vobs {
 		}
 	}
 
-	void item::parse(item& obj, archive_reader& ctx, game_version version) {
-		vob::parse(obj, ctx, version);
+	void Item::parse(Item& obj, ArchiveReader& ctx, GameVersion version) {
+		VirtualObject::parse(obj, ctx, version);
 		obj.instance = ctx.read_string(); // itemInstance
 
 		if (ctx.is_save_game()) {
@@ -24,27 +25,27 @@ namespace phoenix::vobs {
 		}
 	}
 
-	void lens_flare::parse(lens_flare& obj, archive_reader& ctx, game_version version) {
-		vob::parse(obj, ctx, version);
+	void LensFlare::parse(LensFlare& obj, ArchiveReader& ctx, GameVersion version) {
+		VirtualObject::parse(obj, ctx, version);
 		obj.fx = ctx.read_string(); // lensflareFX
 	}
 
-	void pfx_controller::parse(pfx_controller& obj, archive_reader& ctx, game_version version) {
-		vob::parse(obj, ctx, version);
+	void ParticleEffectController::parse(ParticleEffectController& obj, ArchiveReader& ctx, GameVersion version) {
+		VirtualObject::parse(obj, ctx, version);
 		obj.pfx_name = ctx.read_string();        // pfxName
 		obj.kill_when_done = ctx.read_bool();    // killVobWhenDone
 		obj.initially_running = ctx.read_bool(); // pfxStartOn
 	}
 
-	void message_filter::parse(message_filter& obj, archive_reader& ctx, game_version version) {
-		vob::parse(obj, ctx, version);
-		obj.target = ctx.read_string();                                         // triggerTarget
-		obj.on_trigger = static_cast<message_filter_action>(ctx.read_enum());   // onTrigger
-		obj.on_untrigger = static_cast<message_filter_action>(ctx.read_enum()); // onUntrigger
+	void MessageFilter::parse(MessageFilter& obj, ArchiveReader& ctx, GameVersion version) {
+		VirtualObject::parse(obj, ctx, version);
+		obj.target = ctx.read_string();                                       // triggerTarget
+		obj.on_trigger = static_cast<MessageFilterAction>(ctx.read_enum());   // onTrigger
+		obj.on_untrigger = static_cast<MessageFilterAction>(ctx.read_enum()); // onUntrigger
 	}
 
-	void code_master::parse(code_master& obj, archive_reader& ctx, game_version version) {
-		vob::parse(obj, ctx, version);
+	void CodeMaster::parse(CodeMaster& obj, ArchiveReader& ctx, GameVersion version) {
+		VirtualObject::parse(obj, ctx, version);
 		obj.target = ctx.read_string();               // triggerTarget
 		obj.ordered = ctx.read_bool();                // orderRelevant
 		obj.first_false_is_failure = ctx.read_bool(); // firstFalseIsFailure
@@ -56,7 +57,7 @@ namespace phoenix::vobs {
 			obj.slaves.emplace_back(ctx.read_string()); // slaveVobName[i]
 		}
 
-		if (obj.saved && version == game_version::gothic_2) {
+		if (obj.saved && version == GameVersion::GOTHIC_2) {
 			// In Gothic II save-games, code masters contain extra variables
 			obj.s_num_triggered_slaves = ctx.read_byte(); // numSlavesTriggered
 
@@ -67,44 +68,44 @@ namespace phoenix::vobs {
 		}
 	}
 
-	void mover_controller::parse(mover_controller& obj, archive_reader& ctx, game_version version) {
-		vob::parse(obj, ctx, version);
+	void MoverController::parse(MoverController& obj, ArchiveReader& ctx, GameVersion version) {
+		VirtualObject::parse(obj, ctx, version);
 		obj.target = ctx.read_string(); // triggerTarget
 
-		if (version == game_version::gothic_1) {
-			obj.message = static_cast<mover_message_type>(ctx.read_enum()); // moverMessage
+		if (version == GameVersion::GOTHIC_1) {
+			obj.message = static_cast<MoverMessageType>(ctx.read_enum()); // moverMessage
 		} else {
-			obj.message = static_cast<mover_message_type>(ctx.read_byte()); // moverMessage
+			obj.message = static_cast<MoverMessageType>(ctx.read_byte()); // moverMessage
 		}
 
 		obj.key = ctx.read_int(); // gotoFixedKey
 	}
 
-	void touch_damage::parse(touch_damage& obj, archive_reader& ctx, game_version version) {
-		vob::parse(obj, ctx, version);
-		obj.damage = ctx.read_float();                                // damage
-		obj.barrier = ctx.read_bool();                                // Barrier
-		obj.blunt = ctx.read_bool();                                  // Blunt
-		obj.edge = ctx.read_bool();                                   // Edge
-		obj.fire = ctx.read_bool();                                   // Fire
-		obj.fly = ctx.read_bool();                                    // Fly
-		obj.magic = ctx.read_bool();                                  // Magic
-		obj.point = ctx.read_bool();                                  // Point
-		obj.fall = ctx.read_bool();                                   // Fall
-		obj.repeat_delay_sec = ctx.read_float();                      // damageRepeatDelaySec
-		obj.volume_scale = ctx.read_float();                          // damageVolDownScale
-		obj.collision = static_cast<collision_type>(ctx.read_enum()); // damageCollType
+	void TouchDamage::parse(TouchDamage& obj, ArchiveReader& ctx, GameVersion version) {
+		VirtualObject::parse(obj, ctx, version);
+		obj.damage = ctx.read_float();                                    // damage
+		obj.barrier = ctx.read_bool();                                    // Barrier
+		obj.blunt = ctx.read_bool();                                      // Blunt
+		obj.edge = ctx.read_bool();                                       // Edge
+		obj.fire = ctx.read_bool();                                       // Fire
+		obj.fly = ctx.read_bool();                                        // Fly
+		obj.magic = ctx.read_bool();                                      // Magic
+		obj.point = ctx.read_bool();                                      // Point
+		obj.fall = ctx.read_bool();                                       // Fall
+		obj.repeat_delay_sec = ctx.read_float();                          // damageRepeatDelaySec
+		obj.volume_scale = ctx.read_float();                              // damageVolDownScale
+		obj.collision = static_cast<TouchCollisionType>(ctx.read_enum()); // damageCollType
 	}
 
-	void earthquake::parse(earthquake& obj, archive_reader& ctx, game_version version) {
-		vob::parse(obj, ctx, version);
+	void Earthquake::parse(Earthquake& obj, ArchiveReader& ctx, GameVersion version) {
+		VirtualObject::parse(obj, ctx, version);
 		obj.radius = ctx.read_float();   // radius
 		obj.duration = ctx.read_float(); // timeSec
 		obj.amplitude = ctx.read_vec3(); // amplitudeCM
 	}
 
-	void vobs::npc::parse(vobs::npc& obj, archive_reader& ctx, game_version version) {
-		vob::parse(obj, ctx, version);
+	void vobs::Npc::parse(vobs::Npc& obj, ArchiveReader& ctx, GameVersion version) {
+		VirtualObject::parse(obj, ctx, version);
 
 		obj.npc_instance = ctx.read_string(); // npcInstance
 		obj.model_scale = ctx.read_vec3();    // modelScale
@@ -126,10 +127,10 @@ namespace phoenix::vobs {
 		auto talent_count = ctx.read_int(); // numTalents
 		obj.talents.resize(talent_count);
 
-		archive_object hdr;
+		ArchiveObject hdr;
 		for (auto i = 0; i < talent_count; ++i) {
 			if (!ctx.read_object_begin(hdr)) // [% oCNpcTalent 0 0]
-				throw parser_error {"vobs::npc"};
+				throw ParserError {"vobs::Npc"};
 
 			// empty object
 			if (hdr.class_name == "%") {
@@ -158,7 +159,7 @@ namespace phoenix::vobs {
 			obj.attributes[i] = ctx.read_int(); // atr0
 		}
 
-		if (version == game_version::gothic_2) {
+		if (version == GameVersion::GOTHIC_2) {
 			// TODO: what are these (hc<n>)?
 			for (auto i = 0; i < 4; ++i) {
 				obj.hcs[i] = ctx.read_int(); // hc1
@@ -171,7 +172,7 @@ namespace phoenix::vobs {
 
 		obj.start_ai_state = ctx.read_string(); // startAIState
 
-		auto vars = ctx.read_raw_bytes((version == game_version::gothic_1 ? 50 : 100) * 4); // scriptVars
+		auto vars = ctx.read_raw_bytes((version == GameVersion::GOTHIC_1 ? 50 : 100) * 4); // scriptVars
 		for (auto i = 0u; i < vars.limit() / 4; ++i) {
 			obj.aivar[i] = vars.get_int();
 		}
@@ -189,7 +190,7 @@ namespace phoenix::vobs {
 		if (news_count != 0) {
 			PX_LOGE("!!! IMPORTANT !!! This save-game contains news entries and cannot be loaded currently. Please "
 			        "open an issue at https://github.com/lmichaelis/phoenix providing your save-game as a ZIP file.");
-			throw parser_error {"vobs::npc"};
+			throw ParserError {"vobs::Npc"};
 		}
 
 		ctx.skip_object(false); // [carryVob % 0 0]
@@ -197,7 +198,7 @@ namespace phoenix::vobs {
 
 		obj.move_lock = ctx.read_bool(); // moveLock
 
-		if (version == game_version::gothic_1) {
+		if (version == GameVersion::GOTHIC_1) {
 			for (auto i = 0; i < 9; ++i) {
 				obj.packed[i] = ctx.read_string(); // packed
 			}
@@ -218,10 +219,10 @@ namespace phoenix::vobs {
 
 		for (auto i = 0; i < item_count; ++i) {
 			if (!ctx.read_object_begin(hdr))
-				throw parser_error {"vobs::npc"};
+				throw ParserError {"vobs::Npc"};
 
-			obj.items[i] = std::make_unique<item>();
-			item::parse(*obj.items[i], ctx, version);
+			obj.items[i] = std::make_unique<Item>();
+			Item::parse(*obj.items[i], ctx, version);
 			obj.items[i]->id = hdr.index;
 
 			if (!ctx.read_object_end()) {
@@ -239,7 +240,7 @@ namespace phoenix::vobs {
 			if (obj.slots[i].used) {
 				// [vob § 0 0]
 				if (!ctx.read_object_begin(hdr) || !ctx.read_object_end())
-					throw parser_error {"vobs::npc"};
+					throw ParserError {"vobs::Npc"};
 
 				// TODO: Warn if not found.
 				for (auto j = 0u; j < obj.items.size(); ++j) {
@@ -280,7 +281,7 @@ namespace phoenix::vobs {
 			obj.protection[i] = protection.get_int();
 		}
 
-		if (version == game_version::gothic_2) {
+		if (version == GameVersion::GOTHIC_2) {
 			obj.bs_interruptable_override = ctx.read_int(); // bsInterruptableOverride
 			obj.npc_type = ctx.read_int();                  // npcType
 			obj.spell_mana = ctx.read_int();                // spellMana

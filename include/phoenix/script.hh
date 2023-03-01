@@ -1,8 +1,8 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "Api.hh"
-#include <phoenix/buffer.hh>
+#include "buffer.hh"
 
 #include <functional>
 #include <memory>
@@ -16,15 +16,25 @@
 
 namespace phoenix {
 	/// \brief Daedalus data types.
-	enum class datatype : std::uint32_t {
-		void_ = 0U,     ///< A datatype similar to C++'s `void`.
-		float_ = 1U,    ///< A 32-bit floating point type similar to C++'s `float`.
-		integer = 2U,   ///< A 32-bit signed integer type like std::int32_t
-		string = 3U,    ///< A [Windows-1252](https://en.wikipedia.org/wiki/Windows-1252) encoded character array.
-		class_ = 4U,    ///< A structure definition.
-		function = 5U,  ///< A function definition or a function pointer represented as a 32-bit signed integer.
-		prototype = 6U, ///< A prototype definition.
-		instance = 7U,  ///< An instance definition or instance reference represented as a 32-bit unsigned integer.
+	enum class DaedalusDataType : std::uint32_t {
+		VOID = 0U,      ///< A datatype similar to C++'s `void`.
+		FLOAT = 1U,     ///< A 32-bit floating point type similar to C++'s `float`.
+		INT = 2U,       ///< A 32-bit signed integer type like std::int32_t
+		STRING = 3U,    ///< A [Windows-1252](https://en.wikipedia.org/wiki/Windows-1252) encoded character array.
+		CLASS = 4U,     ///< A structure definition.
+		FUNCTION = 5U,  ///< A function definition or a function pointer represented as a 32-bit signed integer.
+		PROTOTYPE = 6U, ///< A prototype definition.
+		INSTANCE = 7U,  ///< An instance definition or instance reference represented as a 32-bit unsigned integer.
+
+		// Deprecated entries.
+		void_ PHOENIX_DEPRECATED("renamed to DaedalusDataType::VOID") = VOID,
+		float_ PHOENIX_DEPRECATED("renamed to DaedalusDataType::FLOAT") = FLOAT,
+		integer PHOENIX_DEPRECATED("renamed to DaedalusDataType::INT") = INT,
+		string PHOENIX_DEPRECATED("renamed to DaedalusDataType::STRING") = STRING,
+		class_ PHOENIX_DEPRECATED("renamed to DaedalusDataType::CLASS") = CLASS,
+		function PHOENIX_DEPRECATED("renamed to DaedalusDataType::FUNCTION") = FUNCTION,
+		prototype PHOENIX_DEPRECATED("renamed to DaedalusDataType::PROTOTYPE") = PROTOTYPE,
+		instance PHOENIX_DEPRECATED("renamed to DaedalusDataType::INSTANCE") = INSTANCE,
 	};
 
 	constexpr const char* const DAEDALUS_DATA_TYPE_NAMES[] = {
@@ -39,13 +49,20 @@ namespace phoenix {
 	};
 
 	/// \brief Flags of symbols.
-	namespace symbol_flag {
-		static constexpr auto const_ = 1U << 0U;   ///< The symbol is not mutable.
-		static constexpr auto return_ = 1U << 1U;  ///< The symbol is a function and has a return value.
-		static constexpr auto member = 1U << 2U;   ///< The symbol is a class member.
-		static constexpr auto external = 1U << 3U; ///< The symbol refers to an external function.
-		static constexpr auto merged = 1U << 4U;   ///< Unused.
-	}                                              // namespace symbol_flag
+	namespace DaedalusSymbolFlag {
+		static constexpr auto CONST = 1U << 0U;    ///< The symbol is not mutable.
+		static constexpr auto RETURN = 1U << 1U;   ///< The symbol is a function and has a return value.
+		static constexpr auto MEMBER = 1U << 2U;   ///< The symbol is a class member.
+		static constexpr auto EXTERNAL = 1U << 3U; ///< The symbol refers to an external function.
+		static constexpr auto MERGED = 1U << 4U;   ///< Unused.
+
+		// Deprecated entries.
+		PHOENIX_DEPRECATED("renamed to DaedalusSymbolFlag::CONST") static constexpr auto const_ = CONST;
+		PHOENIX_DEPRECATED("renamed to DaedalusSymbolFlag::RETURN") static constexpr auto return_ = RETURN;
+		PHOENIX_DEPRECATED("renamed to DaedalusSymbolFlag::MEMBER") static constexpr auto member = MEMBER;
+		PHOENIX_DEPRECATED("renamed to DaedalusSymbolFlag::EXTERNAL") static constexpr auto external = EXTERNAL;
+		PHOENIX_DEPRECATED("renamed to DaedalusSymbolFlag::MERGED") static constexpr auto merged = MERGED;
+	} // namespace DaedalusSymbolFlag
 
 	/// \brief All opcodes supported by the daedalus interpreter.
 	///
@@ -58,155 +75,198 @@ namespace phoenix {
 	///   <li>`x` refers to the first value on the stack and is required to be variable reference.</li>
 	///	  <li>`y` refers to the second value on the stack and is required to be variable reference.</li>
 	/// </ul>
-	enum class opcode : std::uint8_t {
+	enum class DaedalusOpcode : std::uint8_t {
 		/// \brief Add `a` and `b` and put the result back onto the stack.
-		add = 0,
+		ADD = 0,
 
 		/// \brief Subtract `b` from `a` and put the result back onto the stack.
-		sub = 1,
+		SUB = 1,
 
 		/// \brief Multiply `a` and `b` and put the result back onto the stack.
-		mul = 2,
+		MUL = 2,
 
 		/// \brief Divide `a` by `b` and put the result back onto the stack.
-		div = 3,
+		DIV = 3,
 
 		/// \brief Divide `a` by `b` and put the remainder back onto the stack.
-		mod = 4,
+		MOD = 4,
 
 		/// \brief Compute the bitwise or of `a` and `b` and put the result back onto the stack.
-		or_ = 5,
+		OR = 5,
 
 		/// \brief Compute the bitwise and of `a` and `b` and put the result back onto the stack.
-		andb = 6, ///< a & b
+		ANDB = 6, ///< a & b
 
 		/// \brief Test if `a` is less than `b` and put `1` or `0` onto the stack if
 		///        the test is true or false respectively.
-		lt = 7,
+		LT = 7,
 
 		/// \brief Test if `a` is greater than `b` and put `1` or `0` onto the stack
 		///        if the test is true or false respectively.
-		gt = 8,
+		GT = 8,
 
 		/// \brief Write `b` to `x` as an integer.
-		movi = 9,
+		MOVI = 9,
 
 		/// \brief Test if `a == 1` or `b == 1` and put `1` or `0` onto the stack if
 		/// 		the test is true or false respectively.
-		orr = 11,
+		ORR = 11,
 
 		/// \brief Test if `a == 1` and `b == 1` and put `1` or `0` onto the stack if
 		///        the test is true or false respectively.
-		and_ = 12,
+		AND = 12,
 
 		/// \brief Left shift  `a` by `b` bits and put the result back onto the stack.
-		lsl = 13,
+		LSL = 13,
 
 		/// \brief Right shift  `a` by `b` bits and put the result back onto the stack.
-		lsr = 14,
+		LSR = 14,
 
 		/// \brief Test if `a` is less than or equal to `b` and put `1` or `0` onto the
 		///        stack if the test is true or false respectively.
-		lte = 15,
+		LTE = 15,
 
 		/// \brief Test if `a` is equal to `b` and put `1` or `0` onto the
 		///        stack if the test is true or false respectively.
-		eq = 16,
+		EQ = 16,
 
 		/// \brief Test if `a` is not equal to `b` and put `1` or `0` onto the
 		///        stack if the test is true or false respectively.
-		neq = 17,
+		NEQ = 17,
 
 		/// \brief Test if `a` is greater than or equal to `b` and put `1` or `0` onto the
 		///        stack if the test is true or false respectively.
-		gte = 18,
+		GTE = 18,
 
 		/// \brief Add `x` and `b` and assign the result back to `x`.
 		/// \note `x` must be a reference to an integer.
-		addmovi = 19,
+		ADDMOVI = 19,
 
 		/// \brief Subtract `b` from `x` and assign the result back to `x`.
 		/// \note `x` must be a reference to an integer.
-		submovi = 20,
+		SUBMOVI = 20,
 
 		/// \brief Multiply `x` from `b` and assign the result back to `x`.
 		/// \note `x` must be a reference to an integer.
-		mulmovi = 21,
+		MULMOVI = 21,
 
 		/// \brief Divide `x` by `b` and assign the result back to `x`.
 		/// \note `x` must be a reference to an integer.
-		divmovi = 22,
+		DIVMOVI = 22,
 
 		/// \brief Compute `+a` and put the result back onto the stack.
-		plus = 30,
+		PLUS = 30,
 
 		/// \brief Compute `-a` and put the result back onto the stack.
-		negate = 31,
+		NEGATE = 31,
 
 		/// \brief Compute `!a` and put the result back onto the stack.
-		not_ = 32,
+		NOT = 32,
 
 		/// \brief Compute the bitwise complement `a` and put the result back onto the stack.
-		cmpl = 33,
+		CMPL = 33,
 
 		/// \brief Do nothing.
-		nop = 45,
+		NOP = 45,
 
 		/// \brief Return from the currently running function
-		rsr = 60,
+		RSR = 60,
 
 		/// \brief Call the function at the address provided in the instruction.
-		bl = 61,
+		BL = 61,
 
 		/// \brief Call the external function at the symbol index provided in the instruction.
-		be = 62,
+		BE = 62,
 
 		/// \brief Push the immediate value provided in the instruction onto the stack as an integer.
-		pushi = 64,
+		PUSHI = 64,
 
 		/// \brief Push the symbol with the index provided in the instruction onto the stack as a reference.
-		pushv = 65,
+		PUSHV = 65,
 
 		/// \brief Push the instance with the symbol index provided in the instruction onto the stack as a reference.
-		pushvi = 67,
+		PUSHVI = 67,
 
 		/// \brief Write `m` to `x` as a string.
-		movs = 70,
+		MOVS = 70,
 
 		/// \brief Write `m` to `x` as a string reference; not implemented.
-		movss = 71,
+		MOVSS = 71,
 
 		/// \brief Write `b` to `x` as a function reference.
-		movvf = 72,
+		MOVVF = 72,
 
 		/// \brief Write `b` to `x` as a floating point number.
-		movf = 73,
+		MOVF = 73,
 
 		/// \brief Write `y` to `x` as an instance reference.
-		movvi = 74,
+		MOVVI = 74,
 
 		/// \brief Immediately jump to the instruction at the address provided in the instruction.
-		b = 75,
+		B = 75,
 
 		/// \brief Jump to the instruction at the address provided in the instruction if `a == 0`.
-		bz = 76,
+		BZ = 76,
 
 		/// \brief Set the global instance reference to the instance with the symbol index provided in the instrucion.
-		gmovi = 80,
+		GMOVI = 80,
 
 		/// \brief Push the element at the given index of the symbol with the index provided in the
 		///        instruction onto the stack as a reference.
-		pushvv = 245,
+		PUSHVV = 245,
+
+		add PHOENIX_DEPRECATED("renamed to DaedalusDataType::ADD") = ADD,
+		sub PHOENIX_DEPRECATED("renamed to DaedalusDataType::SUB") = SUB,
+		mul PHOENIX_DEPRECATED("renamed to DaedalusDataType::MUL") = MUL,
+		div PHOENIX_DEPRECATED("renamed to DaedalusDataType::DIV") = DIV,
+		mod PHOENIX_DEPRECATED("renamed to DaedalusDataType::MOD") = MOD,
+		or_ PHOENIX_DEPRECATED("renamed to DaedalusDataType::OR") = OR,
+		andb PHOENIX_DEPRECATED("renamed to DaedalusDataType::ANDB") = ANDB,
+		lt PHOENIX_DEPRECATED("renamed to DaedalusDataType::LT") = LT,
+		gt PHOENIX_DEPRECATED("renamed to DaedalusDataType::GT") = GT,
+		movi PHOENIX_DEPRECATED("renamed to DaedalusDataType::MOVI") = MOVI,
+		orr PHOENIX_DEPRECATED("renamed to DaedalusDataType::ORR") = ORR,
+		and_ PHOENIX_DEPRECATED("renamed to DaedalusDataType::ADD") = AND,
+		lsl PHOENIX_DEPRECATED("renamed to DaedalusDataType::LSL") = LSL,
+		lsr PHOENIX_DEPRECATED("renamed to DaedalusDataType::LSR") = LSR,
+		lte PHOENIX_DEPRECATED("renamed to DaedalusDataType::LTE") = LTE,
+		eq PHOENIX_DEPRECATED("renamed to DaedalusDataType::EQ") = EQ,
+		neq PHOENIX_DEPRECATED("renamed to DaedalusDataType::NEQ") = NEQ,
+		gte PHOENIX_DEPRECATED("renamed to DaedalusDataType::GTE") = GTE,
+		addmovi PHOENIX_DEPRECATED("renamed to DaedalusDataType::ADDMOVI") = ADDMOVI,
+		submovi PHOENIX_DEPRECATED("renamed to DaedalusDataType::SUBMOVI") = SUBMOVI,
+		mulmovi PHOENIX_DEPRECATED("renamed to DaedalusDataType::MULMOVI") = MULMOVI,
+		divmovi PHOENIX_DEPRECATED("renamed to DaedalusDataType::DIVMOVI") = DIVMOVI,
+		plus PHOENIX_DEPRECATED("renamed to DaedalusDataType::PLUS") = PLUS,
+		negate PHOENIX_DEPRECATED("renamed to DaedalusDataType::NEGATE") = NEGATE,
+		not_ PHOENIX_DEPRECATED("renamed to DaedalusDataType::NOT") = NOT,
+		cmpl PHOENIX_DEPRECATED("renamed to DaedalusDataType::CMPL") = CMPL,
+		nop PHOENIX_DEPRECATED("renamed to DaedalusDataType::NOP") = NOP,
+		rsr PHOENIX_DEPRECATED("renamed to DaedalusDataType::RSR") = RSR,
+		bl PHOENIX_DEPRECATED("renamed to DaedalusDataType::BL") = BL,
+		be PHOENIX_DEPRECATED("renamed to DaedalusDataType::BE") = BE,
+		pushi PHOENIX_DEPRECATED("renamed to DaedalusDataType::PUSHI") = PUSHI,
+		pushv PHOENIX_DEPRECATED("renamed to DaedalusDataType::PUSHV") = PUSHV,
+		pushvi PHOENIX_DEPRECATED("renamed to DaedalusDataType::PUSHVI") = PUSHVI,
+		movs PHOENIX_DEPRECATED("renamed to DaedalusDataType::MOVS") = MOVS,
+		movss PHOENIX_DEPRECATED("renamed to DaedalusDataType::MOVSS") = MOVSS,
+		movvf PHOENIX_DEPRECATED("renamed to DaedalusDataType::MOVVF") = MOVVF,
+		movf PHOENIX_DEPRECATED("renamed to DaedalusDataType::MOVF") = MOVF,
+		movvi PHOENIX_DEPRECATED("renamed to DaedalusDataType::MOVVI") = MOVVI,
+		b PHOENIX_DEPRECATED("renamed to DaedalusDataType::B") = B,
+		bz PHOENIX_DEPRECATED("renamed to DaedalusDataType::BZ") = BZ,
+		gmovi PHOENIX_DEPRECATED("renamed to DaedalusDataType::GMOVI") = GMOVI,
+		pushvv PHOENIX_DEPRECATED("renamed to DaedalusDataType::PUSHVV") = PUSHVV,
 	};
 
-	class symbol;
+	class DaedalusSymbol;
 
 	/// \brief Represents an object associated with an instance in the script.
 	///
 	/// Every class defined in C++ that can be used as an instance has to inherit from this class.
-	class instance {
+	class DaedalusInstance {
 	public:
-		PHOENIX_API virtual ~instance() = default;
+		PHOENIX_API virtual ~DaedalusInstance() = default;
 
 		/// \return The index of the symbol this instance is bound to.
 		[[nodiscard]] PHOENIX_API inline uint32_t symbol_index() const {
@@ -217,182 +277,185 @@ namespace phoenix {
 		void* user_ptr = nullptr;
 
 	private:
-		friend class symbol;
-		friend class script;
-		friend class vm;
+		friend class DaedalusSymbol;
+		friend class DaedalusScript;
+		friend class DaedalusVm;
 
 		uint32_t _m_symbol_index {unset};
 		const std::type_info* _m_type {nullptr};
 	};
 
 	/// \brief The base class for all exceptions thrown by interacting with a script.
-	struct script_error : public error {
-		using error::error;
+	struct DaedalusScriptError : public Error {
+		using Error::Error;
 	};
 
 	/// \brief An exception thrown if the symbol with a given name could not be found.
-	struct symbol_not_found : public script_error {
+	struct DaedalusSymbolNotFound : public DaedalusScriptError {
 	public:
-		PHOENIX_API explicit symbol_not_found(std::string&& name);
+		PHOENIX_API explicit DaedalusSymbolNotFound(std::string&& name);
 
 	public:
 		std::string name;
 	};
 
 	/// \brief An exception thrown if registering a class member was unsuccessful.
-	struct member_registration_error : public script_error {
+	struct DaedalusMemberRegistrationError : public DaedalusScriptError {
 	public:
-		PHOENIX_API explicit member_registration_error(const symbol* sym, std::string&& message);
+		PHOENIX_API explicit DaedalusMemberRegistrationError(DaedalusSymbol const* sym, std::string&& message);
 
 	public:
 		/// \brief The symbol being registered.
-		const symbol* sym;
+		DaedalusSymbol const* sym;
 	};
 
 	/// \brief An exception thrown if the type of the member being registered does not match the type provided.
-	struct invalid_registration_datatype final : public member_registration_error {
+	struct DaedalusInvalidRegistrationDataType final : public DaedalusMemberRegistrationError {
 	public:
-		PHOENIX_API explicit invalid_registration_datatype(const symbol* sym, std::string&& given);
+		PHOENIX_API explicit DaedalusInvalidRegistrationDataType(const DaedalusSymbol* sym, std::string&& given);
 
 	public:
 		std::string given;
 	};
 
 	/// \brief An exception thrown when the value of a symbol accessed in a way which is not permissible.
-	struct illegal_access : public script_error {
-		using script_error::script_error;
+	struct DaedalusIllegalAccess : public DaedalusScriptError {
+		using DaedalusScriptError::DaedalusScriptError;
 	};
 
 	/// \brief An exception thrown when the type of a symbol does not match the type expected.
-	struct illegal_type_access final : public illegal_access {
+	struct DaedalusIllegalTypeAccess final : public DaedalusIllegalAccess {
 	public:
-		PHOENIX_INTERNAL illegal_type_access(const symbol* sym, datatype expected);
+		PHOENIX_INTERNAL DaedalusIllegalTypeAccess(DaedalusSymbol const* sym, DaedalusDataType expected);
 
 	public:
 		/// \brief The symbol being accessed.
-		const symbol* sym;
+		DaedalusSymbol const* sym;
 
 		/// \brief The datatype excepted.
-		datatype expected;
+		DaedalusDataType expected;
 	};
 
 	/// \brief An exception thrown when an out-of-bounds index is accessed.
-	struct illegal_index_access final : public illegal_access {
+	struct DaedalusIllegalIndexAccess final : public DaedalusIllegalAccess {
 	public:
-		PHOENIX_INTERNAL illegal_index_access(const symbol* sym, std::uint8_t index);
+		PHOENIX_INTERNAL DaedalusIllegalIndexAccess(DaedalusSymbol const* sym, std::uint8_t index);
 
 	public:
 		/// \brief The symbol being accessed.
-		const symbol* sym;
+		const DaedalusSymbol* sym;
 
 		/// \brief The index being accessed
 		std::uint8_t index;
 	};
 
 	/// \brief An exception thrown when a constant symbol is accessed as mutable
-	struct illegal_const_access final : public illegal_access {
+	struct DaedalusIllegalConstAccess final : public DaedalusIllegalAccess {
 	public:
-		PHOENIX_INTERNAL explicit illegal_const_access(const symbol* sym);
+		PHOENIX_INTERNAL explicit DaedalusIllegalConstAccess(DaedalusSymbol const* sym);
 
 	public:
 		/// \brief The symbol being accessed.
-		const symbol* sym;
+		DaedalusSymbol const* sym;
 	};
 
 	/// \brief An exception thrown when the parent class of a member does not match the class of an instance.
-	struct illegal_instance_access final : public illegal_access {
+	struct DaedalusIllegalInstanceAccess final : public DaedalusIllegalAccess {
 	public:
-		PHOENIX_INTERNAL illegal_instance_access(const symbol* sym, std::uint32_t expected_parent);
+		PHOENIX_INTERNAL DaedalusIllegalInstanceAccess(DaedalusSymbol const* sym, std::uint32_t expected_parent);
 
 	public:
 		/// \brief The symbol being accessed.
-		const symbol* sym;
+		DaedalusSymbol const* sym;
 
 		/// \brief The parent which was expected for the member.
 		std::uint32_t expected_parent;
 	};
 
 	/// \brief An exception thrown when the parent class of a member does not match the class of an instance.
-	struct unbound_member_access final : public illegal_access {
+	struct DaedalusUnboundMemberAccess final : public DaedalusIllegalAccess {
 	public:
-		PHOENIX_API explicit unbound_member_access(const symbol* sym);
+		PHOENIX_API explicit DaedalusUnboundMemberAccess(DaedalusSymbol const* sym);
 
 	public:
 		/// \brief The symbol being accessed.
-		const symbol* sym;
+		DaedalusSymbol const* sym;
 	};
 
 	/// \brief An exception thrown if a member symbol is being access without a context set.
-	struct no_context final : public illegal_access {
+	struct DaedalusNoContextError final : public DaedalusIllegalAccess {
 	public:
-		PHOENIX_INTERNAL explicit no_context(const symbol* sym);
+		PHOENIX_INTERNAL explicit DaedalusNoContextError(DaedalusSymbol const* sym);
 
 	public:
 		/// \brief The symbol being accessed.
-		const symbol* sym;
+		DaedalusSymbol const* sym;
 	};
 
-	/// \brief An excpetion thrown if a member symbol is being accessed with a context instance it is not bound to.
-	struct illegal_context_type final : public illegal_access {
+	/// \brief An exception thrown if a member symbol is being accessed with a context instance it is not bound to.
+	struct DaedalusIllegalContextType final : public DaedalusIllegalAccess {
 	public:
-		PHOENIX_API illegal_context_type(const symbol* sym, const std::type_info& context_type);
+		PHOENIX_API DaedalusIllegalContextType(DaedalusSymbol const* sym, const std::type_info& context_type);
 
 	public:
 		/// \brief The symbol being accessed.
-		const symbol* sym;
+		DaedalusSymbol const* sym;
 
 		/// \brief The type of context currently set.
 		const std::type_info& context_type;
 	};
 
 	/// \brief Represents a compiled daedalus symbol.
-	class symbol final {
+	class DaedalusSymbol final {
 	public:
 		/// \brief Parses a symbol from the given reader.
 		/// \param[in,out] in The reader to read the symbol from.
 		/// \return The symbol parsed.
-		[[nodiscard]] PHOENIX_API static symbol parse(buffer& in);
+		[[nodiscard]] PHOENIX_API static DaedalusSymbol parse(Buffer& in);
 
 		/// \brief Validates that the symbol is a string and retrieves it's value in the given context.
 		/// \param index The index of the value to get.
 		/// \param context An instance to use as context for getting member variables.
 		/// \return The string associated with the symbol.
-		/// \throws illegal_type_access if the #type of this symbol is not dt_string.
-		/// \throws illegal_index_access if \p index >= #count.
-		/// \throws no_context if this symbol #is_member and \p context is `nullptr`.
-		/// \throws unbound_member_access if this symbol has not been registered yet
-		/// \throws illegal_context_type if this symbol #is_registered_to a different type than the type of \p context.
+		/// \throws DaedalusIllegalTypeAccess if the #type of this symbol is not dt_string.
+		/// \throws DaedalusIllegalIndexAccess if \p index >= #count.
+		/// \throws DaedalusNoContextError if this symbol #is_member and \p context is `nullptr`.
+		/// \throws DaedalusUnboundMemberAccess if this symbol has not been registered yet
+		/// \throws DaedalusIllegalContextType if this symbol #is_registered_to a different type than the type of \p
+		/// context.
 		[[nodiscard]] PHOENIX_API const std::string&
-		get_string(std::size_t index = 0, const std::shared_ptr<instance>& context = nullptr) const;
+		get_string(std::size_t index = 0, const std::shared_ptr<DaedalusInstance>& context = nullptr) const;
 
 		/// \brief Validates that the symbol is a float and retrieves it's value in the given context.
 		/// \param index The index of the value to get.
 		/// \param context An instance to use as context for getting member variables.
 		/// \return The float value associated with the symbol.
-		/// \throws illegal_type_access if the #type of this symbol is not dt_float.
-		/// \throws illegal_index_access if \p index >= #count.
-		/// \throws no_context if this symbol #is_member and \p context is `nullptr`.
-		/// \throws unbound_member_access if this symbol has not been registered yet
-		/// \throws illegal_context_type if this symbol #is_registered_to a different type than the type of \p context.
+		/// \throws DaedalusIllegalTypeAccess if the #type of this symbol is not dt_float.
+		/// \throws DaedalusIllegalIndexAccess if \p index >= #count.
+		/// \throws DaedalusNoContextError if this symbol #is_member and \p context is `nullptr`.
+		/// \throws DaedalusUnboundMemberAccess if this symbol has not been registered yet
+		/// \throws DaedalusIllegalContextType if this symbol #is_registered_to a different type than the type of \p
+		/// context.
 		[[nodiscard]] PHOENIX_API float get_float(std::size_t index = 0,
-		                                          const std::shared_ptr<instance>& context = nullptr) const;
+		                                          const std::shared_ptr<DaedalusInstance>& context = nullptr) const;
 
 		/// \brief Validates that the symbol is an int and retrieves it's value in the given context.
 		/// \param index The index of the value to get.
 		/// \param context An instance to use as context for getting member variables.
 		/// \return The int value associated with the symbol.
-		/// \throws illegal_type_access if the #type of this symbol is not dt_int or dt_function.
-		/// \throws illegal_index_access if \p index >= #count.
-		/// \throws no_context if this symbol #is_member and \p context is `nullptr`.
-		/// \throws unbound_member_access if this symbol has not been registered yet
-		/// \throws illegal_context_type if this symbol #is_registered_to a different type than the type of \p context.
-		[[nodiscard]] PHOENIX_API std::int32_t get_int(std::size_t index = 0,
-		                                               const std::shared_ptr<instance>& context = nullptr) const;
+		/// \throws DaedalusIllegalTypeAccess if the #type of this symbol is not dt_int or dt_function.
+		/// \throws DaedalusIllegalIndexAccess if \p index >= #count.
+		/// \throws DaedalusNoContextError if this symbol #is_member and \p context is `nullptr`.
+		/// \throws DaedalusUnboundMemberAccess if this symbol has not been registered yet
+		/// \throws DaedalusIllegalContextType if this symbol #is_registered_to a different type than the type of \p
+		/// context.
+		[[nodiscard]] PHOENIX_API std::int32_t
+		get_int(std::size_t index = 0, const std::shared_ptr<DaedalusInstance>& context = nullptr) const;
 
 		/// \brief Validates that the symbol is an instance and retrieves it's value
 		/// \return The instance associated with the symbol.
-		/// \throws illegal_type_access if the #type of this symbol is not dt_instance
-		[[nodiscard]] PHOENIX_API const std::shared_ptr<instance>& get_instance();
+		/// \throws DaedalusIllegalTypeAccess if the #type of this symbol is not dt_instance
+		[[nodiscard]] PHOENIX_API const std::shared_ptr<DaedalusInstance>& get_instance();
 
 		// -=-= Value setters =-=- //
 
@@ -400,76 +463,80 @@ namespace phoenix {
 		/// \param value The new value to set.
 		/// \param index The index of the value to set
 		/// \param context An instance to use as context for setting member variables.
-		/// \throws illegal_type_access if the #type of this symbol is not dt_string.
-		/// \throws illegal_index_access if \p index >= #count.
-		/// \throws no_context if this symbol #is_member and \p context is `nullptr`.
-		/// \throws unbound_member_access if this symbol has not been registered yet
-		/// \throws illegal_context_type if this symbol #is_registered_to a different type than the type of \p context.
-		PHOENIX_API void
-		set_string(std::string_view value, std::size_t index = 0, const std::shared_ptr<instance>& context = nullptr);
+		/// \throws DaedalusIllegalTypeAccess if the #type of this symbol is not dt_string.
+		/// \throws DaedalusIllegalIndexAccess if \p index >= #count.
+		/// \throws DaedalusNoContextError if this symbol #is_member and \p context is `nullptr`.
+		/// \throws DaedalusUnboundMemberAccess if this symbol has not been registered yet
+		/// \throws DaedalusIllegalContextType if this symbol #is_registered_to a different type than the type of \p
+		/// context.
+		PHOENIX_API void set_string(std::string_view value,
+		                            std::size_t index = 0,
+		                            const std::shared_ptr<DaedalusInstance>& context = nullptr);
 
 		/// \brief Validates that the symbol is a float and not constant and sets it's value in the given context.
 		/// \param value The new value to set.
 		/// \param index The index of the value to set
 		/// \param context An instance to use as context for setting member variables.
-		/// \throws illegal_type_access if the #type of this symbol is not dt_float
-		/// \throws illegal_index_access if \p index >= #count.
-		/// \throws no_context if this symbol #is_member and \p context is `nullptr`.
-		/// \throws unbound_member_access if this symbol has not been registered yet
-		/// \throws illegal_context_type if this symbol #is_registered_to a different type than the type of \p context.
+		/// \throws DaedalusIllegalTypeAccess if the #type of this symbol is not dt_float
+		/// \throws DaedalusIllegalIndexAccess if \p index >= #count.
+		/// \throws DaedalusNoContextError if this symbol #is_member and \p context is `nullptr`.
+		/// \throws DaedalusUnboundMemberAccess if this symbol has not been registered yet
+		/// \throws DaedalusIllegalContextType if this symbol #is_registered_to a different type than the type of \p
+		/// context.
 		PHOENIX_API void
-		set_float(float value, std::size_t index = 0, const std::shared_ptr<instance>& context = nullptr);
+		set_float(float value, std::size_t index = 0, const std::shared_ptr<DaedalusInstance>& context = nullptr);
 
 		/// \brief Validates that the symbol is an int and not constant and sets it's value in the given context.
 		/// \param value The new value to set.
 		/// \param index The index of the value to set
 		/// \param context An instance to use as context for setting member variables.
-		/// \throws illegal_type_access if the #type of this symbol is not dt_int or dt_function.
-		/// \throws illegal_index_access if \p index >= #count.
-		/// \throws no_context if this symbol #is_member and \p context is `nullptr`.
-		/// \throws unbound_member_access if this symbol has not been registered yet
-		/// \throws illegal_context_type if this symbol #is_registered_to a different type than the type of \p context.
+		/// \throws DaedalusIllegalTypeAccess if the #type of this symbol is not dt_int or dt_function.
+		/// \throws DaedalusIllegalIndexAccess if \p index >= #count.
+		/// \throws DaedalusNoContextError if this symbol #is_member and \p context is `nullptr`.
+		/// \throws DaedalusUnboundMemberAccess if this symbol has not been registered yet
+		/// \throws DaedalusIllegalContextType if this symbol #is_registered_to a different type than the type of \p
+		/// context.
 		PHOENIX_API void
-		set_int(std::int32_t value, std::size_t index = 0, const std::shared_ptr<instance>& context = nullptr);
+		set_int(std::int32_t value, std::size_t index = 0, const std::shared_ptr<DaedalusInstance>& context = nullptr);
 
 		/// \brief Validates that the symbol is an instance and sets it's value
 		/// \param inst The instance value to set
-		/// \throws illegal_type_access if the #type of this symbol is not dt_instance.
-		PHOENIX_API void set_instance(const std::shared_ptr<instance>& inst);
+		/// \throws DaedalusIllegalTypeAccess if the #type of this symbol is not dt_instance.
+		PHOENIX_API void set_instance(const std::shared_ptr<DaedalusInstance>& inst);
 
 		/// \brief Tests whether this symbol holds an instance of the given type.
 		/// \tparam T The type of instance to check for.
 		/// \return <tt>true</tt> if the symbol contains an instance of the given type, <tt>false</tt> if not.
 		template <typename T>
-		PHOENIX_API typename std::enable_if<std::is_base_of_v<instance, T>,
+		PHOENIX_API typename std::enable_if<std::is_base_of_v<DaedalusInstance, T>,
 		                                    bool>::type inline is_instance_of() { // clang-format on
-			return this->type() == datatype::instance && this->get_instance() != nullptr &&
+			return this->type() == DaedalusDataType::INSTANCE && this->get_instance() != nullptr &&
 			    this->get_instance()->_m_type == &typeid(T);
 		}
 
 		/// \brief Tests whether the symbol is a constant.
 		/// \return `true` if the symbol is a constant, `false` if not.
 		[[nodiscard]] PHOENIX_API inline bool is_const() const noexcept {
-			return (_m_flags & symbol_flag::const_) != 0;
+			return (_m_flags & DaedalusSymbolFlag::CONST) != 0;
 		}
 
 		/// \brief Tests whether the symbol is a member variable.
 		/// \return `true` if the symbol is a member, `false` if not.
 		[[nodiscard]] PHOENIX_API inline bool is_member() const noexcept {
-			return (_m_flags & symbol_flag::member) != 0;
+			return (_m_flags & DaedalusSymbolFlag::MEMBER) != 0;
 		}
 
 		/// \brief Tests whether the symbol is an extern symbol.
 		/// \return `true` if the symbol is an extern symbol, `false` if not.
 		[[nodiscard]] PHOENIX_API inline bool is_external() const noexcept {
-			return (_m_flags & symbol_flag::external) != 0;
+			return (_m_flags & DaedalusSymbolFlag::EXTERNAL) != 0;
 		}
 
 		/// \brief Tests whether the symbol is merged.
 		/// \return `true` if the symbol is merged, `false` if not.
 		/// \note It is currently not known what 'merged' means.
 		[[nodiscard]] PHOENIX_API inline bool is_merged() const noexcept {
-			return (_m_flags & symbol_flag::merged) != 0;
+			return (_m_flags & DaedalusSymbolFlag::MERGED) != 0;
 		}
 
 		/// \brief brief Tests whether the symbol is a compiler-generated symbol
@@ -481,7 +548,7 @@ namespace phoenix {
 		/// \brief brief Tests whether the symbol has a return value.
 		/// \return return `true` if the symbol has a return value, `false` if not.
 		[[nodiscard]] PHOENIX_API inline bool has_return() const noexcept {
-			return (_m_flags & symbol_flag::return_) != 0;
+			return (_m_flags & DaedalusSymbolFlag::RETURN) != 0;
 		}
 
 		/// \return The name of the symbol.
@@ -505,7 +572,7 @@ namespace phoenix {
 		}
 
 		/// \return The type of the symbol.
-		[[nodiscard]] PHOENIX_API inline datatype type() const noexcept {
+		[[nodiscard]] PHOENIX_API inline DaedalusDataType type() const noexcept {
 			return _m_type;
 		}
 
@@ -515,7 +582,7 @@ namespace phoenix {
 		}
 
 		/// \return The return type of the symbol.
-		[[nodiscard]] PHOENIX_API inline datatype rtype() const noexcept {
+		[[nodiscard]] PHOENIX_API inline DaedalusDataType rtype() const noexcept {
 			return _m_return_type;
 		}
 
@@ -554,44 +621,44 @@ namespace phoenix {
 		};
 
 	protected:
-		PHOENIX_INTERNAL symbol() = default;
+		PHOENIX_INTERNAL DaedalusSymbol() = default;
 
 		template <typename T>
-		inline const T* get_member_ptr(std::uint8_t index, const std::shared_ptr<instance>& context) const {
+		inline const T* get_member_ptr(std::uint8_t index, const std::shared_ptr<DaedalusInstance>& context) const {
 			if (!_m_registered_to)
-				throw unbound_member_access(this);
+				throw DaedalusUnboundMemberAccess(this);
 			if (*_m_registered_to != *context->_m_type)
-				throw illegal_context_type {this, *context->_m_type};
+				throw DaedalusIllegalContextType {this, *context->_m_type};
 
 			std::uint32_t target_offset = offset_as_member() + index * sizeof(T);
 			return reinterpret_cast<const T*>(reinterpret_cast<const char*>(context.get()) + target_offset);
 		}
 
 		template <typename T>
-		inline T* get_member_ptr(std::uint8_t index, const std::shared_ptr<instance>& context) {
+		inline T* get_member_ptr(std::uint8_t index, const std::shared_ptr<DaedalusInstance>& context) {
 			if (!_m_registered_to)
-				throw unbound_member_access(this);
+				throw DaedalusUnboundMemberAccess(this);
 			if (*_m_registered_to != *context->_m_type)
-				throw illegal_context_type {this, *context->_m_type};
+				throw DaedalusIllegalContextType {this, *context->_m_type};
 
 			std::uint32_t target_offset = offset_as_member() + index * sizeof(T);
 			return reinterpret_cast<T*>(reinterpret_cast<char*>(context.get()) + target_offset);
 		}
 
 	private:
-		friend class script;
+		friend class DaedalusScript;
 		std::string _m_name;
 		std::variant<std::unique_ptr<std::int32_t[]>,
 		             std::unique_ptr<float[]>,
 		             std::unique_ptr<std::string[]>,
-		             std::shared_ptr<instance>>
+		             std::shared_ptr<DaedalusInstance>>
 		    _m_value;
 
 		std::uint32_t _m_address {unset};
 		std::uint32_t _m_parent {unset};
 		std::uint32_t _m_class_offset {unset};
 		std::uint32_t _m_count {0};
-		datatype _m_type {0};
+		DaedalusDataType _m_type {0};
 		std::uint32_t _m_flags {0};
 		bool _m_generated {false};
 
@@ -603,14 +670,14 @@ namespace phoenix {
 
 		std::uint32_t _m_member_offset {unset};
 		std::uint32_t _m_class_size {unset};
-		datatype _m_return_type {datatype::void_};
+		DaedalusDataType _m_return_type {DaedalusDataType::VOID};
 		std::uint32_t _m_index {unset};
 		const std::type_info* _m_registered_to {nullptr};
 	};
 
 	/// \brief Represents a daedalus VM instruction.
-	struct instruction {
-		opcode op {opcode::nop};
+	struct DaedalusInstruction {
+		DaedalusOpcode op {DaedalusOpcode::NOP};
 		std::uint32_t address {0};
 		std::uint32_t symbol {0};
 		std::int32_t immediate {0};
@@ -620,32 +687,33 @@ namespace phoenix {
 		/// \brief Reads an instruction from a reader.
 		/// \param[in,out] in The reader to read from
 		/// \return The instruction read.
-		PHOENIX_INTERNAL static instruction decode(buffer& in);
+		PHOENIX_INTERNAL static DaedalusInstruction decode(Buffer& in);
 	};
 
 	/// \brief Represents a compiled daedalus script
 
-	class script {
+	class DaedalusScript {
 	public:
-		PHOENIX_API script(const script& copy) = default;
-		PHOENIX_API script(script&& move) = default;
+		PHOENIX_API DaedalusScript(const DaedalusScript& copy) = default;
+		PHOENIX_API DaedalusScript(DaedalusScript&& move) = default;
 
 		/// \brief Parses in a compiled daedalus script.
 		/// \param path The path of the script file.
 		/// \return The script parsed
-		[[nodiscard]] PHOENIX_API static script parse(const std::string& path);
+		[[nodiscard]] PHOENIX_API static DaedalusScript parse(const std::string& path);
 
 		/// \brief Parses in a compiled daedalus script.
 		/// \param buf A buffer containing the script data.
 		/// \return The script parsed
-		[[nodiscard]] PHOENIX_API static script parse(phoenix::buffer& buf);
+		[[nodiscard]] PHOENIX_API static DaedalusScript parse(phoenix::Buffer& buf);
 
 		/// \brief Registers a member offset
 		/// \param name The name of the member in the script
 		/// \param field The field to register
-		/// \throws symbol_not_found if there is no symbol with the given name.
-		/// \throws member_registration_error if the member could not be registered
-		/// \throws invalid_registration_datatype If the datatype of \p _member is different than that of the symbol.
+		/// \throws DaedalusSymbolNotFound if there is no symbol with the given name.
+		/// \throws DaedalusMemberRegistrationError if the member could not be registered
+		/// \throws DaedalusInvalidRegistrationDataType If the datatype of \p _member is different than that of the
+		/// symbol.
 		template <typename _class, typename _member, int N>
 		typename std::enable_if<std::is_same_v<_member, std::string> || std::is_same_v<_member, float> ||
 		                            std::is_same_v<_member, std::int32_t> ||
@@ -664,9 +732,10 @@ namespace phoenix {
 		/// \brief Registers a member offset
 		/// \param name The name of the member in the script
 		/// \param field The field to register
-		/// \throws symbol_not_found if there is no symbol with the given name.
-		/// \throws member_registration_error if the member could not be registered
-		/// \throws invalid_registration_datatype If the datatype of \p _member is different than that of the symbol.
+		/// \throws DaedalusSymbolNotFound if there is no symbol with the given name.
+		/// \throws DaedalusMemberRegistrationError if the member could not be registered
+		/// \throws DaedalusInvalidRegistrationDataType If the datatype of \p _member is different than that of the
+		/// symbol.
 		template <typename _class, typename _member>
 		typename std::enable_if<std::is_same_v<_member, std::string> || std::is_same_v<_member, float> ||
 		                            std::is_same_v<_member, std::int32_t> ||
@@ -683,61 +752,63 @@ namespace phoenix {
 		}
 
 		/// \return All symbols in the script
-		[[nodiscard]] PHOENIX_API inline const std::vector<symbol>& symbols() const noexcept {
+		[[nodiscard]] PHOENIX_API inline const std::vector<DaedalusSymbol>& symbols() const noexcept {
 			return _m_symbols;
 		}
 
 		/// \brief Retrieves the symbol with the given \p index
 		/// \param index The index of the symbol to get
 		/// \return The symbol or `nullptr` if the index was out-of-range.
-		[[nodiscard]] PHOENIX_API const symbol* find_symbol_by_index(std::uint32_t index) const;
+		[[nodiscard]] PHOENIX_API const DaedalusSymbol* find_symbol_by_index(std::uint32_t index) const;
 
 		/// \brief Looks for parameters of the given function symbol. Only works for external functions.
 		/// \param parent The function symbol to get the parameter symbols for.
 		/// \return A list of function parameter symbols.
-		[[nodiscard]] PHOENIX_API std::vector<const symbol*> find_parameters_for_function(const symbol* parent) const;
+		[[nodiscard]] PHOENIX_API std::vector<const DaedalusSymbol*>
+		find_parameters_for_function(const DaedalusSymbol* parent) const;
 
 		/// \brief Retrieves the symbol with the given \p address set
 		/// \param index The address of the symbol to get
 		/// \return The symbol or `nullptr` if no symbol with that address was found.
-		[[nodiscard]] PHOENIX_API const symbol* find_symbol_by_address(std::uint32_t address) const;
+		[[nodiscard]] PHOENIX_API const DaedalusSymbol* find_symbol_by_address(std::uint32_t address) const;
 
 		/// \brief Retrieves the symbol with the given \p name.
 		/// \param name The name of the symbol to get.
 		/// \return The symbol or `nullptr` if no symbol with that name was found.
-		[[nodiscard]] PHOENIX_API const symbol* find_symbol_by_name(std::string_view name) const;
+		[[nodiscard]] PHOENIX_API const DaedalusSymbol* find_symbol_by_name(std::string_view name) const;
 
 		/// \brief Retrieves the symbol with the given \p index
 		/// \param index The index of the symbol to get
 		/// \return The symbol or `nullptr` if the index was out-of-range.
-		[[nodiscard]] PHOENIX_API symbol* find_symbol_by_index(std::uint32_t index);
+		[[nodiscard]] PHOENIX_API DaedalusSymbol* find_symbol_by_index(std::uint32_t index);
 
 		/// \brief Retrieves the symbol with the given \p address set
 		/// \param index The address of the symbol to get
 		/// \return The symbol or `nullptr` if no symbol with that address was found.
-		[[nodiscard]] PHOENIX_API symbol* find_symbol_by_address(std::uint32_t address);
+		[[nodiscard]] PHOENIX_API DaedalusSymbol* find_symbol_by_address(std::uint32_t address);
 
 		/// \brief Looks for parameters of the given function symbol. Only works for external functions.
 		/// \param parent The function symbol to get the parameter symbols for.
 		/// \return A list of function parameter symbols.
-		[[nodiscard]] PHOENIX_API std::vector<symbol*> find_parameters_for_function(const symbol* parent);
+		[[nodiscard]] PHOENIX_API std::vector<DaedalusSymbol*>
+		find_parameters_for_function(const DaedalusSymbol* parent);
 
 		/// \brief Retrieves the symbol with the given \p name.
 		/// \param name The name of the symbol to get.
 		/// \return The symbol or `nullptr` if no symbol with that name was found.
-		[[nodiscard]] PHOENIX_API symbol* find_symbol_by_name(std::string_view name);
+		[[nodiscard]] PHOENIX_API DaedalusSymbol* find_symbol_by_name(std::string_view name);
 
 		/// \brief Call the given callback function for every instance symbol which is a descendant of the class with
 		///        the given name.
 		/// \param name The name of the parent class.
 		/// \param callback The function to call with each instance symbol.
 		PHOENIX_API void enumerate_instances_by_class_name(std::string_view name,
-		                                                   const std::function<void(symbol&)>& callback);
+		                                                   const std::function<void(DaedalusSymbol&)>& callback);
 
 		/// \brief Decodes the instruction at \p address and returns it.
 		/// \param address The address of the instruction to decode
 		/// \return The instruction.
-		[[nodiscard]] PHOENIX_API instruction instruction_at(std::uint32_t address) const;
+		[[nodiscard]] PHOENIX_API DaedalusInstruction instruction_at(std::uint32_t address) const;
 
 		/// \return The total size of the script.
 		[[nodiscard]] PHOENIX_API std::uint32_t size() const noexcept {
@@ -748,7 +819,7 @@ namespace phoenix {
 		/// \param inst The instance to get the symbol for.
 		/// \return The symbol associated with that instance or <tt>nullptr</tt> if the symbol is not associated
 		///         with any instance.
-		PHOENIX_API inline const symbol* find_symbol_by_instance(const instance& inst) const {
+		PHOENIX_API inline const DaedalusSymbol* find_symbol_by_instance(const DaedalusInstance& inst) const {
 			return find_symbol_by_index(inst._m_symbol_index);
 		}
 
@@ -756,7 +827,7 @@ namespace phoenix {
 		/// \param inst The instance to get the symbol for.
 		/// \return The symbol associated with that instance or <tt>nullptr</tt> if the symbol is not associated
 		///         with any instance.
-		PHOENIX_API inline symbol* find_symbol_by_instance(const instance& inst) {
+		PHOENIX_API inline DaedalusSymbol* find_symbol_by_instance(const DaedalusInstance& inst) {
 			return find_symbol_by_index(inst._m_symbol_index);
 		}
 
@@ -765,9 +836,8 @@ namespace phoenix {
 		/// \return The symbol associated with that instance or <tt>nullptr</tt> if the symbol is not associated
 		///         with any instance.
 		template <typename T>
-		PHOENIX_API
-		    typename std::enable_if<std::is_base_of_v<instance, T>, const symbol*>::type inline find_symbol_by_instance(
-		        const std::shared_ptr<T>& inst) const { // clang-format on
+		PHOENIX_API typename std::enable_if<std::is_base_of_v<DaedalusInstance, T>, const DaedalusSymbol*>::
+		    type inline find_symbol_by_instance(const std::shared_ptr<T>& inst) const { // clang-format on
 			return find_symbol_by_index(inst->_m_symbol_index);
 		}
 
@@ -776,66 +846,89 @@ namespace phoenix {
 		/// \return The symbol associated with that instance or <tt>nullptr</tt> if the symbol is not associated
 		///         with any instance.
 		template <typename T>
-		PHOENIX_API
-		    typename std::enable_if<std::is_base_of_v<instance, T>, symbol*>::type inline find_symbol_by_instance(
-		        const std::shared_ptr<T>& inst) {
+		PHOENIX_API typename std::enable_if<std::is_base_of_v<DaedalusInstance, T>, DaedalusSymbol*>::
+		    type inline find_symbol_by_instance(const std::shared_ptr<T>& inst) {
 			return find_symbol_by_index(inst->_m_symbol_index);
 		}
 
 	protected:
-		PHOENIX_INTERNAL script() = default;
+		PHOENIX_INTERNAL DaedalusScript() = default;
 
 		template <typename _class, typename _member, int N>
-		symbol* _check_member(std::string_view name, const std::type_info* type) {
+		DaedalusSymbol* _check_member(std::string_view name, const std::type_info* type) {
 			auto* sym = find_symbol_by_name(name);
 
 			if (sym == nullptr)
-				throw symbol_not_found {std::string {name}};
+				throw DaedalusSymbolNotFound {std::string {name}};
 			if (!sym->is_member())
-				throw member_registration_error {sym, "not a member"};
+				throw DaedalusMemberRegistrationError {sym, "not a member"};
 			if (sym->count() > N)
-				throw member_registration_error {sym,
-				                                 "incorrect number of elements: given " + std::to_string(N) +
-				                                     " expected " + std::to_string(sym->count())};
+				throw DaedalusMemberRegistrationError {sym,
+				                                       "incorrect number of elements: given " + std::to_string(N) +
+				                                           " expected " + std::to_string(sym->count())};
 
 			// check class registration
 			auto* parent = find_symbol_by_index(sym->parent());
 			if (parent == nullptr)
-				throw member_registration_error {sym, "no parent found"};
+				throw DaedalusMemberRegistrationError {sym, "no parent found"};
 
 			if (parent->_m_registered_to == nullptr) {
 				parent->_m_registered_to = type;
 			} else if (parent->_m_registered_to != type) {
-				throw member_registration_error {sym,
-				                                 "parent class is already registered with a different type (" +
-				                                     std::string {parent->_m_registered_to->name()} + ")"};
+				throw DaedalusMemberRegistrationError {sym,
+				                                       "parent class is already registered with a different type (" +
+				                                           std::string {parent->_m_registered_to->name()} + ")"};
 			}
 
 			// check type matches
 			if constexpr (std::is_same_v<std::string, _member>) {
-				if (sym->type() != datatype::string)
-					throw invalid_registration_datatype {sym, "string"};
+				if (sym->type() != DaedalusDataType::STRING)
+					throw DaedalusInvalidRegistrationDataType {sym, "string"};
 			} else if constexpr (std::is_same_v<float, _member>) {
-				if (sym->type() != datatype::float_)
-					throw invalid_registration_datatype {sym, "float"};
+				if (sym->type() != DaedalusDataType::FLOAT)
+					throw DaedalusInvalidRegistrationDataType {sym, "float"};
 			} else if constexpr (std::is_same_v<int32_t, _member> || std::is_enum_v<_member>) {
-				if (sym->type() != datatype::integer && sym->type() != datatype::function)
-					throw invalid_registration_datatype {sym, "int"};
+				if (sym->type() != DaedalusDataType::INT && sym->type() != DaedalusDataType::FUNCTION)
+					throw DaedalusInvalidRegistrationDataType {sym, "int"};
 			} else {
-				throw invalid_registration_datatype {sym, "<unknown>"};
+				throw DaedalusInvalidRegistrationDataType {sym, "<unknown>"};
 			}
 
 			return sym;
 		}
 
-		PHOENIX_API symbol* add_temporary_strings_symbol();
+		PHOENIX_API DaedalusSymbol* add_temporary_strings_symbol();
 
 	private:
-		std::vector<symbol> _m_symbols;
+		std::vector<DaedalusSymbol> _m_symbols;
 		std::unordered_map<std::string, uint32_t> _m_symbols_by_name;
 		std::unordered_map<std::uint32_t, uint32_t> _m_symbols_by_address;
 
-		mutable buffer _m_text = buffer::empty();
+		mutable Buffer _m_text = Buffer::empty();
 		std::uint8_t _m_version {0};
 	};
+
+	using datatype PHOENIX_DEPRECATED("renamed to DaedalusDataType") = DaedalusDataType;
+	namespace symbol_flag = DaedalusSymbolFlag;
+	using opcode PHOENIX_DEPRECATED("renamed to DaedalusOpcode") = DaedalusOpcode;
+	using symbol PHOENIX_DEPRECATED("renamed to DaedalusSymbol") = DaedalusSymbol;
+	using instance PHOENIX_DEPRECATED("renamed to DaedalusInstance") = DaedalusInstance;
+	using script_error PHOENIX_DEPRECATED("renamed to DaedalusScriptError") = DaedalusScriptError;
+	using symbol_not_found PHOENIX_DEPRECATED("renamed to DaedalusSymbolNotFound") = DaedalusSymbolNotFound;
+	using member_registration_error
+	    PHOENIX_DEPRECATED("renamed to DaedalusMemberRegistrationError") = DaedalusMemberRegistrationError;
+	using invalid_registration_datatype
+	    PHOENIX_DEPRECATED("renamed to DaedalusInvalidRegistrationDataType") = DaedalusInvalidRegistrationDataType;
+	using illegal_access PHOENIX_DEPRECATED("renamed to DaedalusIllegalAccess") = DaedalusIllegalAccess;
+	using illegal_type_access PHOENIX_DEPRECATED("renamed to DaedalusIllegalTypeAccess") = DaedalusIllegalTypeAccess;
+	using illegal_index_access PHOENIX_DEPRECATED("renamed to DaedalusIllegalIndexAccess") = DaedalusIllegalIndexAccess;
+	using illegal_const_access PHOENIX_DEPRECATED("renamed to DaedalusIllegalConstAccess") = DaedalusIllegalConstAccess;
+	using illegal_instance_access
+	    PHOENIX_DEPRECATED("renamed to DaedalusIllegalInstanceAccess") = DaedalusIllegalInstanceAccess;
+	using unbound_member_access
+	    PHOENIX_DEPRECATED("renamed to DaedalusUnboundMemberAccess") = DaedalusUnboundMemberAccess;
+	using no_context PHOENIX_DEPRECATED("renamed to DaedalusNoContextError") = DaedalusNoContextError;
+	using illegal_context_type PHOENIX_DEPRECATED("renamed to DaedalusIllegalContextType") = DaedalusIllegalContextType;
+	using instruction PHOENIX_DEPRECATED("renamed to DaedalusInstruction") = DaedalusInstruction;
+	using script PHOENIX_DEPRECATED("renamed to DaedalusScript") = DaedalusScript;
 } // namespace phoenix

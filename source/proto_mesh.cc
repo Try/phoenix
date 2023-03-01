@@ -1,29 +1,30 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/proto_mesh.hh>
+#include "phoenix/proto_mesh.hh"
+#include "phoenix/archive.hh"
 
 namespace phoenix {
 	[[maybe_unused]] static constexpr auto version_g1 = 0x305;
 	static constexpr auto version_g2 = 0x905;
 
-	enum class proto_chunk { unknown, mesh = 0xB100, end = 0xB1FF };
+	enum class MrmChunkType { UNKNOWN, MESH = 0xB100, END = 0xB1FF };
 
-	proto_mesh proto_mesh::parse(buffer& in) {
-		proto_mesh msh {};
-		proto_chunk type = proto_chunk::unknown;
+	MultiResolutionMesh MultiResolutionMesh::parse(Buffer& in) {
+		MultiResolutionMesh msh {};
+		MrmChunkType type = MrmChunkType::UNKNOWN;
 		bool end_mesh = false;
 
 		do {
-			type = static_cast<proto_chunk>(in.get_ushort());
+			type = static_cast<MrmChunkType>(in.get_ushort());
 
 			auto length = in.get_uint();
 			auto chunk = in.extract(length);
 
 			switch (type) {
-			case proto_chunk::mesh:
+			case MrmChunkType::MESH:
 				msh = parse_from_section(chunk);
 				break;
-			case proto_chunk::end:
+			case MrmChunkType::END:
 				end_mesh = true;
 				break;
 			default:
@@ -31,7 +32,7 @@ namespace phoenix {
 			}
 
 			if (chunk.remaining() != 0) {
-				PX_LOGW("proto_mesh: ",
+				PX_LOGW("MultiResolutionMesh: ",
 				        chunk.remaining(),
 				        " bytes remaining in section ",
 				        std::hex,
@@ -42,8 +43,8 @@ namespace phoenix {
 		return msh;
 	}
 
-	proto_mesh proto_mesh::parse_from_section(buffer& chunk) {
-		proto_mesh msh {};
+	MultiResolutionMesh MultiResolutionMesh::parse_from_section(Buffer& chunk) {
+		MultiResolutionMesh msh {};
 
 		auto version = chunk.get_ushort();
 		auto content_size = chunk.get_uint();
@@ -55,7 +56,7 @@ namespace phoenix {
 		auto normals_index = chunk.get_uint();
 		auto normals_size = chunk.get_uint();
 
-		std::vector<sub_mesh_section> submesh_sections;
+		std::vector<SubMeshSection> submesh_sections;
 		submesh_sections.resize(submesh_count);
 
 		for (int32_t i = 0; i < submesh_count; ++i) {
@@ -74,16 +75,16 @@ namespace phoenix {
 		}
 
 		// read all materials
-		auto mats = archive_reader::open(chunk);
+		auto mats = ArchiveReader::open(chunk);
 		for (int32_t i = 0; i < submesh_count; ++i) {
-			msh.materials.emplace_back(material::parse(*mats));
+			msh.materials.emplace_back(Material::parse(*mats));
 		}
 
 		if (version == version_g2) {
 			msh.alpha_test = chunk.get() != 0;
 		}
 
-		msh.bbox = bounding_box::parse(chunk);
+		msh.bbox = AxisAlignedBoundingBox::parse(chunk);
 
 		// read positions and normals
 		msh.positions.resize(vertices_size);
@@ -104,19 +105,19 @@ namespace phoenix {
 		msh.sub_meshes.reserve(submesh_count);
 
 		for (int32_t i = 0; i < submesh_count; ++i) {
-			auto& mesh = msh.sub_meshes.emplace_back(sub_mesh::parse(content, submesh_sections[i]));
+			auto& mesh = msh.sub_meshes.emplace_back(SubMesh::parse(content, submesh_sections[i]));
 			mesh.mat = msh.materials[i];
 		}
 
-		msh.obbox = obb::parse(chunk);
+		msh.obbox = OrientedBoundingBox::parse(chunk);
 
 		// TODO: this might be a vec4 though the values don't make any sense.
 		chunk.skip(0x10);
 		return msh;
 	}
 
-	sub_mesh sub_mesh::parse(buffer& in, const sub_mesh_section& map) {
-		sub_mesh subm {};
+	SubMesh SubMesh::parse(Buffer& in, const SubMeshSection& map) {
+		SubMesh subm {};
 
 		// triangles
 		in.position(map.triangles.offset);

@@ -1,12 +1,14 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <doctest/doctest.h>
+#include <phoenix/buffer.hh>
 #include <phoenix/messages.hh>
 
-TEST_SUITE("messages") {
-	TEST_CASE("messages(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/ou.proprietary.bin");
-		auto msgs = phoenix::messages::parse(buf);
+#include <doctest/doctest.h>
+
+TEST_SUITE("CutsceneLibrary") {
+	TEST_CASE("CutsceneLibrary(parse:g1)") {
+		auto buf = phoenix::Buffer::mmap("./samples/ou.proprietary.bin");
+		auto msgs = phoenix::CutsceneLibrary::parse(buf);
 
 		CHECK_EQ(msgs.blocks.size(), 7360);
 
@@ -33,7 +35,7 @@ TEST_SUITE("messages") {
 		CHECK_EQ(msg200->message.name, "DIA_BAALTARAN_INTOCASTLE_EXACTLY_15_00.WAV");
 	}
 
-	TEST_CASE("messages(parse:g2)" * doctest::skip()) {
+	TEST_CASE("CutsceneLibrary(parse:g2)" * doctest::skip()) {
 		// TODO: Stub
 	}
 }

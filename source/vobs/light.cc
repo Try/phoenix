@@ -1,19 +1,20 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/vobs/light.hh>
+#include "phoenix/vobs/light.hh"
+#include "phoenix/archive.hh"
 
 #include <sstream>
 
 namespace phoenix::vobs {
-	void light_preset::parse(light_preset& obj, archive_reader& in, game_version version) {
-		obj.preset = in.read_string();                            // lightPresetInUse
-		obj.light_type = static_cast<light_mode>(in.read_enum()); // lightType
-		obj.range = in.read_float();                              // range
-		obj.color = in.read_color();                              // color
-		obj.cone_angle = in.read_float();                         // spotConeAngle
-		obj.is_static = in.read_bool();                           // lightStatic
-		obj.quality = static_cast<light_quality>(in.read_enum()); // lightQuality
-		obj.lensflare_fx = in.read_string();                      // lensflareFX
+	void LightPreset::parse(LightPreset& obj, ArchiveReader& in, GameVersion version) {
+		obj.preset = in.read_string();                           // lightPresetInUse
+		obj.light_type = static_cast<LightType>(in.read_enum()); // lightType
+		obj.range = in.read_float();                             // range
+		obj.color = in.read_color();                             // color
+		obj.cone_angle = in.read_float();                        // spotConeAngle
+		obj.is_static = in.read_bool();                          // lightStatic
+		obj.quality = static_cast<LightQuality>(in.read_enum()); // lightQuality
+		obj.lensflare_fx = in.read_string();                     // lensflareFX
 
 		if (!obj.is_static) {
 			obj.on = in.read_bool();                      // turnedOn
@@ -66,20 +67,20 @@ namespace phoenix::vobs {
 				obj.color_animation_list.emplace_back(r, g, b, 255);
 			}
 
-			if (version == game_version::gothic_2) {
+			if (version == GameVersion::GOTHIC_2) {
 				obj.can_move = in.read_bool(); // canMove
 			}
 		}
 	}
 
-	light_preset light_preset::parse(archive_reader& ctx, game_version version) {
-		light_preset preset {};
-		light_preset::parse(preset, ctx, version);
+	LightPreset LightPreset::parse(ArchiveReader& ctx, GameVersion version) {
+		LightPreset preset {};
+		LightPreset::parse(preset, ctx, version);
 		return preset;
 	}
 
-	void light::parse(phoenix::vobs::light& obj, archive_reader& ctx, phoenix::game_version version) {
-		vob::parse(obj, ctx, version);
-		light_preset::parse(obj, ctx, version);
+	void Light::parse(phoenix::vobs::Light& obj, ArchiveReader& ctx, GameVersion version) {
+		VirtualObject::parse(obj, ctx, version);
+		LightPreset::parse(obj, ctx, version);
 	}
 } // namespace phoenix::vobs

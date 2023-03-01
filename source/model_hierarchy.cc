@@ -1,25 +1,26 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/model_hierarchy.hh>
+#include "phoenix/model_hierarchy.hh"
+#include "phoenix/buffer.hh"
 
 namespace phoenix {
-	enum class hierarchy_chunk { unknown, hierarchy = 0xD100, stats = 0xD110, end = 0xD120 };
+	enum class ModelHierarchyChunkType { UNKNOWN, HIERARCHY = 0xD100, SOURCE = 0xD110, END = 0xD120 };
 
-	model_hierarchy model_hierarchy::parse(buffer& in) {
-		model_hierarchy hierarchy {};
+	ModelHierarchy ModelHierarchy::parse(Buffer& in) {
+		ModelHierarchy hierarchy {};
 
-		hierarchy_chunk type = hierarchy_chunk::unknown;
+		ModelHierarchyChunkType type = ModelHierarchyChunkType::UNKNOWN;
 		bool end_hierarchy = false;
 
 		do {
-			type = static_cast<hierarchy_chunk>(in.get_ushort());
+			type = static_cast<ModelHierarchyChunkType>(in.get_ushort());
 
 			auto length = in.get_uint();
 			auto chunk = in.extract(length);
 
 			switch (type) {
-			case hierarchy_chunk::hierarchy: {
-				(void) /* version = */ chunk.get_uint();
+			case ModelHierarchyChunkType::HIERARCHY: {
+				(void) /* version = */ chunk.get_uint(); // Should be 3 for G2?
 				auto node_count = chunk.get_ushort();
 
 				for (int32_t i = 0; i < node_count; ++i) {
@@ -29,18 +30,17 @@ namespace phoenix {
 					node.transform = chunk.get_mat4x4();
 				}
 
-				hierarchy.bbox = bounding_box::parse(chunk);
-				hierarchy.collision_bbox = bounding_box::parse(chunk);
+				hierarchy.bbox = AxisAlignedBoundingBox::parse(chunk);
+				hierarchy.collision_bbox = AxisAlignedBoundingBox::parse(chunk);
 				hierarchy.root_translation = chunk.get_vec3();
 				hierarchy.checksum = chunk.get_uint();
 				break;
 			}
-			case hierarchy_chunk::stats:
-				// maybe a date?
-				chunk.skip(16);
-				(void) /* path? = */ chunk.get_line(false);
+			case ModelHierarchyChunkType::SOURCE:
+				(void) /* date = */ Date::parse(chunk);
+				(void) /* path = */ chunk.get_line(false);
 				break;
-			case hierarchy_chunk::end:
+			case ModelHierarchyChunkType::END:
 				end_hierarchy = true;
 				break;
 			default:
@@ -48,7 +48,7 @@ namespace phoenix {
 			}
 
 			if (chunk.remaining() != 0) {
-				PX_LOGW("model_hierarchy: ",
+				PX_LOGW("ModelHierarchy: ",
 				        chunk.remaining(),
 				        " bytes remaining in section ",
 				        std::hex,

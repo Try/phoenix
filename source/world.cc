@@ -1,8 +1,8 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/archive.hh>
-#include <phoenix/phoenix.hh>
-#include <phoenix/world.hh>
+#include "phoenix/world.hh"
+#include "phoenix/archive.hh"
+#include "phoenix/phoenix.hh"
 
 namespace phoenix {
 	[[maybe_unused]] static constexpr uint32_t BSP_VERSION_G1 = 0x2090000;
@@ -16,14 +16,14 @@ namespace phoenix {
 	///
 	/// \param buf A buffer containing the world's data.
 	/// \return The game version associated with that world.
-	game_version determine_world_version(buffer&& buf) {
-		auto archive = archive_reader::open(buf);
+	GameVersion determine_world_version(Buffer&& buf) {
+		auto archive = ArchiveReader::open(buf);
 
 		if (archive->is_save_game()) {
-			throw phoenix::parser_error {"world", "cannot automatically detect world version for save-games!s"};
+			throw phoenix::ParserError {"World", "cannot automatically detect world version for save-games!s"};
 		}
 
-		archive_object chnk {};
+		ArchiveObject chnk {};
 		archive->read_object_begin(chnk);
 
 		while (!archive->read_object_end()) {
@@ -33,35 +33,35 @@ namespace phoenix {
 				auto bsp_version = buf.get_uint();
 
 				if (bsp_version == BSP_VERSION_G2) {
-					return game_version::gothic_2;
+					return GameVersion::GOTHIC_2;
 				} else {
-					return game_version::gothic_1;
+					return GameVersion::GOTHIC_1;
 				}
 			}
 
 			archive->skip_object(true);
 		}
 
-		PX_LOGE("world: failed to determine world version. Assuming Gothic 1.");
-		return game_version::gothic_1;
+		PX_LOGE("World: failed to determine world version. Assuming Gothic 1.");
+		return GameVersion::GOTHIC_1;
 	}
 
-	world world::parse(buffer& in, game_version version) {
+	World World::parse(Buffer& in, GameVersion version) {
 		try {
-			world wld;
+			World wld;
 
-			auto archive = archive_reader::open(in);
+			auto archive = ArchiveReader::open(in);
 
-			archive_object chnk {};
+			ArchiveObject chnk {};
 			archive->read_object_begin(chnk);
 
 			if (chnk.class_name != "oCWorld:zCWorld") {
-				throw parser_error {"world", "'oCWorld:zCWorld' chunk expected, got '" + chnk.class_name + "'"};
+				throw ParserError {"World", "'oCWorld:zCWorld' chunk expected, got '" + chnk.class_name + "'"};
 			}
 
 			while (!archive->read_object_end()) {
 				archive->read_object_begin(chnk);
-				PX_LOGI("world: parsing object [",
+				PX_LOGI("World: parsing object [",
 				        chnk.object_name,
 				        " ",
 				        chnk.class_name,
@@ -83,8 +83,8 @@ namespace phoenix {
 						in.skip(in.get_uint());
 					} while (chunk_type != 0xB060);
 
-					wld.world_bsp_tree = bsp_tree::parse(in, bsp_version);
-					wld.world_mesh = mesh::parse(mesh_data, wld.world_bsp_tree.leaf_polygons);
+					wld.world_bsp_tree = BspTree::parse(in, bsp_version);
+					wld.world_mesh = Mesh::parse(mesh_data, wld.world_bsp_tree.leaf_polygons);
 				} else if (chnk.object_name == "VobTree") {
 					auto count = archive->read_int();
 					wld.world_vobs.reserve(count);
@@ -96,12 +96,12 @@ namespace phoenix {
 						wld.world_vobs.push_back(std::move(child));
 					}
 				} else if (chnk.object_name == "WayNet") {
-					wld.world_way_net = way_net::parse(*archive);
+					wld.world_way_net = WayNet::parse(*archive);
 				} else if (chnk.object_name == "CutscenePlayer") {
 					// TODO: only present in save-games
 
 					if (!archive->read_object_begin(chnk)) {
-						PX_LOGW("world: object [",
+						PX_LOGW("World: object [",
 						        chnk.object_name,
 						        " ",
 						        chnk.class_name,
@@ -123,7 +123,7 @@ namespace phoenix {
 					// TODO: only present in save-games
 
 					if (!archive->read_object_begin(chnk)) {
-						PX_LOGW("world: object [",
+						PX_LOGW("World: object [",
 						        chnk.object_name,
 						        " ",
 						        chnk.class_name,
@@ -144,7 +144,7 @@ namespace phoenix {
 					(void) archive->read_float(); // rainSndVol
 					(void) archive->read_float(); // dayCtr
 
-					if (version == game_version::gothic_2) {
+					if (version == GameVersion::GOTHIC_2) {
 						(void) archive->read_float(); // fadeScale
 						(void) archive->read_bool();  // renderLightning
 						(void) archive->read_bool();  // isRaining
@@ -174,12 +174,12 @@ namespace phoenix {
 
 					(void) archive->read_bool(); // spawningEnabled
 
-					if (version == game_version::gothic_2) {
+					if (version == GameVersion::GOTHIC_2) {
 						(void) archive->read_int(); // spawnFlags
 					}
 
 					if (!archive->read_object_end()) {
-						PX_LOGW("world: npc list not fully parsed");
+						PX_LOGW("World: Npc list not fully parsed");
 						archive->skip_object(true);
 					}
 
@@ -188,7 +188,7 @@ namespace phoenix {
 				}
 
 				if (!archive->read_object_end()) {
-					PX_LOGW("world: object [",
+					PX_LOGW("World: object [",
 					        chnk.object_name,
 					        " ",
 					        chnk.class_name,
@@ -202,13 +202,13 @@ namespace phoenix {
 			}
 
 			return wld;
-		} catch (const buffer_error& exc) {
-			throw parser_error {"world", exc, "eof reached"};
+		} catch (const BufferError& exc) {
+			throw ParserError {"World", exc, "eof reached"};
 		}
 	}
 
-	world world::parse(buffer& buf) {
+	World World::parse(Buffer& buf) {
 		auto version = determine_world_version(buf.duplicate());
-		return world::parse(buf, version);
+		return World::parse(buf, version);
 	}
 } // namespace phoenix

@@ -1,8 +1,8 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "Api.hh"
-#include <phoenix/buffer.hh>
+#include "buffer.hh"
 
 #include <cstdint>
 #include <ctime>
@@ -11,6 +11,8 @@
 #include <string_view>
 
 namespace phoenix {
+	class Buffer;
+
 	static constexpr std::string_view VDF_SIGNATURE_G1 = "PSVDSC_V2.00\r\n\r\n";
 	static constexpr std::string_view VDF_SIGNATURE_G2 = "PSVDSC_V2.00\n\r\n\r";
 	static constexpr std::uint32_t VDF_MASK_DIRECTORY = 0x80'00'00'00;
@@ -42,7 +44,7 @@ namespace phoenix {
 	/// If the signature is not recognized, this means that the VDF file was created using a 3rd-party tool
 	/// like Union and is not necessarily compatible with the VDFS spec. Accepted signatures are
 	/// phoenix::VDF_SIGNATURE_G1 and phoenix::VDF_SIGNATURE_G2.
-	class vdfs_signature_error : public error {
+	class vdfs_signature_error : public Error {
 	public:
 		PHOENIX_INTERNAL explicit vdfs_signature_error(const std::string& signature);
 	};
@@ -60,7 +62,7 @@ namespace phoenix {
 		/// \brief Reads a vdf_header from the given buffer.
 		/// \param in The reader to read from.
 		/// \return The header read.
-		PHOENIX_INTERNAL static vdf_header read(buffer& in);
+		PHOENIX_INTERNAL static vdf_header read(Buffer& in);
 
 		static constexpr const auto packed_size = VDF_COMMENT_LENGTH + VDF_SIGNATURE_LENGTH + 6 * sizeof(std::uint32_t);
 
@@ -115,7 +117,7 @@ namespace phoenix {
 		/// \param in The buffer to read from.
 		/// \param catalog_offset The offset of the entry catalog.
 		/// \return The entry read.
-		PHOENIX_INTERNAL static vdf_entry read(buffer& in, std::uint32_t catalog_offset);
+		PHOENIX_INTERNAL static vdf_entry read(Buffer& in, std::uint32_t catalog_offset);
 
 		/// \brief Searches the entry for the first child with the given name.
 		/// \param name The name of the child to search for.
@@ -139,7 +141,7 @@ namespace phoenix {
 		PHOENIX_API void merge(const vdf_entry& itm, bool override_existing = true);
 
 		/// \return A new reader for the contents of the entry.
-		[[nodiscard]] PHOENIX_API inline buffer open() const noexcept {
+		[[nodiscard]] PHOENIX_API inline Buffer open() const noexcept {
 			return _m_data.duplicate();
 		}
 
@@ -180,7 +182,7 @@ namespace phoenix {
 		std::uint32_t attributes {0};
 
 	private:
-		buffer _m_data = buffer::empty();
+		Buffer _m_data = Buffer::empty();
 	};
 
 	/// \brief Represents a VDF file (`.VDF` files).
@@ -202,7 +204,7 @@ namespace phoenix {
 		/// \param path The buffer to read from.
 		/// \return The vdf_file.
 		PHOENIX_DEPRECATED("scheduled for removal; use Vfs instead")
-		PHOENIX_API static vdf_file open(phoenix::buffer& buf);
+		PHOENIX_API static vdf_file open(phoenix::Buffer& buf);
 
 		/// \brief Searches the VDF file for the first entry with the given name.
 		/// \param name The name of the entry to search for.

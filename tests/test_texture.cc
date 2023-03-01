@@ -1,14 +1,16 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <doctest/doctest.h>
+#include <phoenix/buffer.hh>
 #include <phoenix/texture.hh>
+
+#include <doctest/doctest.h>
 
 using namespace phoenix;
 
-TEST_SUITE("texture") {
-	TEST_CASE("texture(parse:?)") {
-		auto in = buffer::mmap("./samples/erz.tex");
-		auto texture = texture::parse(in);
+TEST_SUITE("Texture") {
+	TEST_CASE("Texture(parse:?)") {
+		auto in = Buffer::mmap("./samples/erz.tex");
+		auto texture = Texture::parse(in);
 
 		CHECK_EQ(texture.height(), 128);
 		CHECK_EQ(texture.width(), 128);
@@ -28,11 +30,11 @@ TEST_SUITE("texture") {
 		CHECK_EQ(texture.format(), phoenix::tex_dxt1);
 	}
 
-	TEST_CASE("texture(parse:g1)" * doctest::skip()) {
+	TEST_CASE("Texture(parse:g1)" * doctest::skip()) {
 		// TODO: Stub
 	}
 
-	TEST_CASE("texture(parse:g2)" * doctest::skip()) {
+	TEST_CASE("Texture(parse:g2)" * doctest::skip()) {
 		// TODO: Stub
 	}
 }

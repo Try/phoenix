@@ -1,12 +1,15 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <doctest/doctest.h>
+#include "phoenix/vobs/vob.hh"
+#include <phoenix/buffer.hh>
 #include <phoenix/world.hh>
 
-TEST_SUITE("world") {
-	TEST_CASE("world(parse:g1)") {
-		auto in = phoenix::buffer::mmap("./samples/world.proprietary.zen");
-		auto wld = phoenix::world::parse(in);
+#include <doctest/doctest.h>
+
+TEST_SUITE("World") {
+	TEST_CASE("World(parse:g1)") {
+		auto in = phoenix::Buffer::mmap("./samples/world.proprietary.zen");
+		auto wld = phoenix::World::parse(in);
 
 		auto& mesh = wld.world_mesh;
 		CHECK_EQ(mesh.vertices.size(), 55439);
@@ -53,11 +56,11 @@ TEST_SUITE("world") {
 		auto& mat500 = mats[500];
 
 		CHECK_EQ(mat0.name, "OWODWATSTOP");
-		CHECK_EQ(mat0.group, phoenix::material_group::water);
+		CHECK_EQ(mat0.group, phoenix::MaterialGroup::WATER);
 		CHECK_EQ(mat0.texture, "OWODSEA_A0.TGA");
 
 		CHECK_EQ(mat500.name, "OMWABROWNGREEN01");
-		CHECK_EQ(mat500.group, phoenix::material_group::stone);
+		CHECK_EQ(mat500.group, phoenix::MaterialGroup::STONE);
 		CHECK_EQ(mat500.texture, "OMWABROWNGREEN01.TGA");
 
 		auto polys = wld.world_mesh.polygons;
@@ -103,14 +106,14 @@ TEST_SUITE("world") {
 		CHECK_EQ(polys.vertex_indices[106721 * 3 + 1], 55428);
 		CHECK_EQ(polys.vertex_indices[106721 * 3 + 2], 54576);
 
-		CHECK_EQ(polys.flags[0], phoenix::polygon_flags {0, 0, 0, 0, 0, 0, 0, -1, 1, 1});
-		CHECK_EQ(polys.flags[26680], phoenix::polygon_flags {0, 0, 0, 0, 0, 0, 0, -1, 1, 1});
-		CHECK_EQ(polys.flags[53360], phoenix::polygon_flags {0, 1, 1, 0, 0, 0, 0, -1, 0, 0});
-		CHECK_EQ(polys.flags[106721], phoenix::polygon_flags {0, 0, 0, 0, 0, 0, 0, -1, 1, 1});
+		CHECK_EQ(polys.flags[0], phoenix::PolygonFlags {0, 0, 0, 0, 0, 0, 0, -1, 1, 1});
+		CHECK_EQ(polys.flags[26680], phoenix::PolygonFlags {0, 0, 0, 0, 0, 0, 0, -1, 1, 1});
+		CHECK_EQ(polys.flags[53360], phoenix::PolygonFlags {0, 1, 1, 0, 0, 0, 0, -1, 0, 0});
+		CHECK_EQ(polys.flags[106721], phoenix::PolygonFlags {0, 0, 0, 0, 0, 0, 0, -1, 1, 1});
 
 		// Check the BSP tree
 		auto& tree = wld.world_bsp_tree;
-		CHECK_EQ(tree.mode, phoenix::bsp_tree_mode::outdoor);
+		CHECK_EQ(tree.mode, phoenix::BspTreeType::OUTDOOR);
 
 		auto& tree_polys = tree.polygon_indices;
 		CHECK_EQ(tree_polys.size(), 480135);
@@ -207,14 +210,14 @@ TEST_SUITE("world") {
 			CHECK(vob0->preset_name.empty());
 			CHECK_EQ(vob0->position, glm::vec3 {0, 0, 0});
 			CHECK_FALSE(vob0->show_visual);
-			CHECK_EQ(vob0->sprite_camera_facing_mode, phoenix::sprite_alignment::none);
-			CHECK_EQ(vob0->anim_mode, phoenix::animation_mode::none);
+			CHECK_EQ(vob0->sprite_camera_facing_mode, phoenix::SpriteAlignment::NONE);
+			CHECK_EQ(vob0->anim_mode, phoenix::AnimationType::NONE);
 			CHECK_EQ(vob0->anim_strength, 0.0f);
 			CHECK_EQ(vob0->far_clip_scale, 0.0f);
 			CHECK(vob0->cd_static);
 			CHECK_FALSE(vob0->cd_dynamic);
 			CHECK_FALSE(vob0->vob_static);
-			CHECK_EQ(vob0->dynamic_shadows, phoenix::shadow_mode::none);
+			CHECK_EQ(vob0->dynamic_shadows, phoenix::ShadowType::NONE);
 			CHECK_EQ(vob0->bias, 0);
 			CHECK_FALSE(vob0->ambient);
 			CHECK_FALSE(vob0->physics_enabled);
@@ -247,14 +250,14 @@ TEST_SUITE("world") {
 				CHECK(child1->preset_name.empty());
 				CHECK_EQ(child1->position, glm::vec3 {-18544.4863, -136.171906, 4141.19727});
 				CHECK_FALSE(child1->show_visual);
-				CHECK_EQ(child1->sprite_camera_facing_mode, phoenix::sprite_alignment::none);
-				CHECK_EQ(child1->anim_mode, phoenix::animation_mode::none);
+				CHECK_EQ(child1->sprite_camera_facing_mode, phoenix::SpriteAlignment::NONE);
+				CHECK_EQ(child1->anim_mode, phoenix::AnimationType::NONE);
 				CHECK_EQ(child1->anim_strength, 0.0f);
 				CHECK_EQ(child1->far_clip_scale, 0.0f);
 				CHECK_FALSE(child1->cd_static);
 				CHECK_FALSE(child1->cd_dynamic);
 				CHECK_FALSE(child1->vob_static);
-				CHECK_EQ(child1->dynamic_shadows, phoenix::shadow_mode::none);
+				CHECK_EQ(child1->dynamic_shadows, phoenix::ShadowType::NONE);
 				CHECK_EQ(child1->bias, 0);
 				CHECK_FALSE(child1->ambient);
 				CHECK_FALSE(child1->physics_enabled);
@@ -284,14 +287,14 @@ TEST_SUITE("world") {
 			CHECK(vob13->preset_name.empty());
 			CHECK_EQ(vob13->position, glm::vec3 {0, 0, 0});
 			CHECK_FALSE(vob13->show_visual);
-			CHECK_EQ(vob13->sprite_camera_facing_mode, phoenix::sprite_alignment::none);
-			CHECK_EQ(vob13->anim_mode, phoenix::animation_mode::none);
+			CHECK_EQ(vob13->sprite_camera_facing_mode, phoenix::SpriteAlignment::NONE);
+			CHECK_EQ(vob13->anim_mode, phoenix::AnimationType::NONE);
 			CHECK_EQ(vob13->anim_strength, 0.0f);
 			CHECK_EQ(vob13->far_clip_scale, 0.0f);
 			CHECK_FALSE(vob13->cd_static);
 			CHECK_FALSE(vob13->cd_dynamic);
 			CHECK_FALSE(vob13->vob_static);
-			CHECK_EQ(vob13->dynamic_shadows, phoenix::shadow_mode::none);
+			CHECK_EQ(vob13->dynamic_shadows, phoenix::ShadowType::NONE);
 			CHECK_EQ(vob13->bias, 0);
 			CHECK_FALSE(vob13->ambient);
 			CHECK_FALSE(vob13->physics_enabled);
@@ -308,8 +311,6 @@ TEST_SUITE("world") {
 
 		auto& wp0 = waynet.waypoints[0];
 		auto& wp100 = waynet.waypoints[100];
-		auto* wp500 = waynet.waypoint("OW_FOGDUNGEON_32");
-		auto* wp_missing = waynet.waypoint("nonexistent");
 
 		CHECK_EQ(wp0.name, "LOCATION_28_07");
 		CHECK_EQ(wp0.water_depth, 0);
@@ -324,16 +325,6 @@ TEST_SUITE("world") {
 		CHECK_EQ(wp100.position, glm::vec3 {3362.21948, 8275.1709, -21067.9473});
 		CHECK_EQ(wp100.direction, glm::vec3 {-0.342115372, 0, 0.939657927});
 		CHECK_FALSE(wp100.free_point);
-
-		CHECK_NE(wp500, nullptr);
-		CHECK_EQ(wp500->name, "OW_FOGDUNGEON_32");
-		CHECK_EQ(wp500->water_depth, 0);
-		CHECK_FALSE(wp500->under_water);
-		CHECK_EQ(wp500->position, glm::vec3 {26636.0645, -1802.15601, 10523.1445});
-		CHECK_EQ(wp500->direction, glm::vec3 {-0.999390841, 0, 0.0348994918});
-		CHECK_FALSE(wp500->free_point);
-
-		CHECK_EQ(wp_missing, nullptr);
 
 		auto& edge0 = waynet.edges[0];
 		auto& edge5 = waynet.edges[5];
@@ -354,7 +345,7 @@ TEST_SUITE("world") {
 		CHECK_EQ(edge500.b, 515);
 	}
 
-	TEST_CASE("world(parse:g2)" * doctest::skip()) {
+	TEST_CASE("World(parse:g2)" * doctest::skip()) {
 		// TODO: Stub
 	}
 }

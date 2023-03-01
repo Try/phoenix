@@ -1,35 +1,58 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "../Api.hh"
-#include <phoenix/vobs/vob.hh>
+#include "vob.hh"
 
 namespace phoenix {
-	enum class message_filter_action : uint32_t {
-		none = 0,
-		trigger = 1,
-		untrigger = 2,
-		enable = 3,
-		disable = 4,
-		toggle = 5,
+	enum class MessageFilterAction : uint32_t {
+		NONE = 0,
+		TRIGGER = 1,
+		UNTRIGGER = 2,
+		ENABLE = 3,
+		DISABLE = 4,
+		TOGGLE = 5,
+
+		// Deprecated entries.
+		none PHOENIX_DEPRECATED("renamed to MessageFilterAction::NONE") = NONE,
+		trigger PHOENIX_DEPRECATED("renamed to MessageFilterAction::TRIGGER") = TRIGGER,
+		untrigger PHOENIX_DEPRECATED("renamed to MessageFilterAction::UNTRIGGER") = UNTRIGGER,
+		enable PHOENIX_DEPRECATED("renamed to MessageFilterAction::ENABLE") = ENABLE,
+		disable PHOENIX_DEPRECATED("renamed to MessageFilterAction::DISABLE") = DISABLE,
+		toggle PHOENIX_DEPRECATED("renamed to MessageFilterAction::TOGGLE") = TOGGLE,
 	};
 
-	enum class mover_message_type : uint32_t {
-		fixed_direct = 0,
-		fixed_order = 1,
-		next = 2,
-		previous = 3,
+	enum class MoverMessageType : uint32_t {
+		FIXED_DIRECT = 0,
+		FIXED_ORDER = 1,
+		NEXT = 2,
+		PREVIOUS = 3,
+
+		// Deprecated entries.
+		fixed_direct PHOENIX_DEPRECATED("renamed to MoverMessageType::FIXED_DIRECT") = FIXED_DIRECT,
+		fixed_order PHOENIX_DEPRECATED("renamed to MoverMessageType::FIXED_ORDER") = FIXED_ORDER,
+		next PHOENIX_DEPRECATED("renamed to MoverMessageType::NEXT") = NEXT,
+		previous PHOENIX_DEPRECATED("renamed to MoverMessageType::PREVIOUS") = PREVIOUS,
 	};
 
-	enum class collision_type : std::uint32_t {
-		none = 0,
-		box = 1,
-		point = 2,
+	enum class TouchCollisionType : std::uint32_t {
+		NONE = 0,
+		BOX = 1,
+		POINT = 2,
+
+		// Deprecated entries.
+		none PHOENIX_DEPRECATED("renamed to TouchCollisionType::NONE") = NONE,
+		box PHOENIX_DEPRECATED("renamed to TouchCollisionType::BOX") = BOX,
+		point PHOENIX_DEPRECATED("renamed to TouchCollisionType::POINT") = POINT,
 	};
+
+	using message_filter_action PHOENIX_DEPRECATED("renamed to MessageFilterAction") = MessageFilterAction;
+	using mover_message_type PHOENIX_DEPRECATED("renamed to MoverMessageType") = MoverMessageType;
+	using collision_type PHOENIX_DEPRECATED("renamed to TouchCollisionType") = TouchCollisionType;
 
 	namespace vobs {
 		/// \brief An animated VOb.
-		struct animate : public vob {
+		struct Animate : public VirtualObject {
 			bool start_on {false};
 
 			// Save-game only variables
@@ -39,13 +62,13 @@ namespace phoenix {
 			/// \param[out] obj The object to read.
 			/// \param[in,out] ctx The archive reader to read from.
 			/// \note After this function returns the position of \p ctx will be at the end of the parsed object.
-			/// \throws parser_error if parsing fails.
+			/// \throws ParserError if parsing fails.
 			/// \see vob::parse
-			PHOENIX_API static void parse(animate& obj, archive_reader& ctx, game_version version);
+			PHOENIX_API static void parse(Animate& obj, ArchiveReader& ctx, GameVersion version);
 		};
 
 		/// \brief A VOb representing an in-game item.
-		struct item : public vob {
+		struct Item : public VirtualObject {
 			std::string instance;
 
 			// Save-game only variables
@@ -56,26 +79,26 @@ namespace phoenix {
 			/// \param[out] obj The object to read.
 			/// \param[in,out] ctx The archive reader to read from.
 			/// \note After this function returns the position of \p ctx will be at the end of the parsed object.
-			/// \throws parser_error if parsing fails.
+			/// \throws ParserError if parsing fails.
 			/// \see vob::parse
-			PHOENIX_API static void parse(item& obj, archive_reader& ctx, game_version version);
+			PHOENIX_API static void parse(Item& obj, ArchiveReader& ctx, GameVersion version);
 		};
 
 		/// \brief A VOb representing a [lens flare](https://en.wikipedia.org/wiki/Lens_flare).
-		struct lens_flare : public vob {
+		struct LensFlare : public VirtualObject {
 			std::string fx;
 
 			/// \brief Parses a lens flare VOb the given *ZenGin* archive.
 			/// \param[out] obj The object to read.
 			/// \param[in,out] ctx The archive reader to read from.
 			/// \note After this function returns the position of \p ctx will be at the end of the parsed object.
-			/// \throws parser_error if parsing fails.
+			/// \throws ParserError if parsing fails.
 			/// \see vob::parse
-			PHOENIX_API static void parse(lens_flare& obj, archive_reader& ctx, game_version version);
+			PHOENIX_API static void parse(LensFlare& obj, ArchiveReader& ctx, GameVersion version);
 		};
 
 		/// \brief A VOb representing a particle system controller.
-		struct pfx_controller : public vob {
+		struct ParticleEffectController : public VirtualObject {
 			std::string pfx_name;
 			bool kill_when_done;
 			bool initially_running;
@@ -84,26 +107,26 @@ namespace phoenix {
 			/// \param[out] obj The object to read.
 			/// \param[in,out] ctx The archive reader to read from.
 			/// \note After this function returns the position of \p ctx will be at the end of the parsed object.
-			/// \throws parser_error if parsing fails.
+			/// \throws ParserError if parsing fails.
 			/// \see vob::parse
-			PHOENIX_API static void parse(pfx_controller& obj, archive_reader& ctx, game_version version);
+			PHOENIX_API static void parse(ParticleEffectController& obj, ArchiveReader& ctx, GameVersion version);
 		};
 
-		struct message_filter : public vob {
+		struct MessageFilter : public VirtualObject {
 			std::string target;
-			message_filter_action on_trigger;
-			message_filter_action on_untrigger;
+			MessageFilterAction on_trigger;
+			MessageFilterAction on_untrigger;
 
 			/// \brief Parses a message filter VOb the given *ZenGin* archive.
 			/// \param[out] obj The object to read.
 			/// \param[in,out] ctx The archive reader to read from.
 			/// \note After this function returns the position of \p ctx will be at the end of the parsed object.
-			/// \throws parser_error if parsing fails.
+			/// \throws ParserError if parsing fails.
 			/// \see vob::parse
-			PHOENIX_API static void parse(message_filter& obj, archive_reader& ctx, game_version version);
+			PHOENIX_API static void parse(MessageFilter& obj, ArchiveReader& ctx, GameVersion version);
 		};
 
-		struct code_master : public vob {
+		struct CodeMaster : public VirtualObject {
 			std::string target;
 			bool ordered;
 			bool first_false_is_failure;
@@ -118,27 +141,27 @@ namespace phoenix {
 			/// \param[out] obj The object to read.
 			/// \param[in,out] ctx The archive reader to read from.
 			/// \note After this function returns the position of \p ctx will be at the end of the parsed object.
-			/// \throws parser_error if parsing fails.
+			/// \throws ParserError if parsing fails.
 			/// \see vob::parse
-			PHOENIX_API static void parse(code_master& obj, archive_reader& ctx, game_version version);
+			PHOENIX_API static void parse(CodeMaster& obj, ArchiveReader& ctx, GameVersion version);
 		};
 
-		struct mover_controller : public vob {
+		struct MoverController : public VirtualObject {
 			std::string target;
-			mover_message_type message;
+			MoverMessageType message;
 			std::int32_t key;
 
 			/// \brief Parses a mover controller VOb the given *ZenGin* archive.
 			/// \param[out] obj The object to read.
 			/// \param[in,out] ctx The archive reader to read from.
 			/// \note After this function returns the position of \p ctx will be at the end of the parsed object.
-			/// \throws parser_error if parsing fails.
+			/// \throws ParserError if parsing fails.
 			/// \see vob::parse
-			PHOENIX_API static void parse(mover_controller& obj, archive_reader& ctx, game_version version);
+			PHOENIX_API static void parse(MoverController& obj, ArchiveReader& ctx, GameVersion version);
 		};
 
 		/// \brief A VOb which represents a damage source.
-		struct touch_damage : public vob {
+		struct TouchDamage : public VirtualObject {
 			float damage;
 
 			bool barrier;
@@ -152,19 +175,19 @@ namespace phoenix {
 
 			float repeat_delay_sec;
 			float volume_scale;
-			collision_type collision;
+			TouchCollisionType collision;
 
 			/// \brief Parses a touch damage VOb the given *ZenGin* archive.
 			/// \param[out] obj The object to read.
 			/// \param[in,out] ctx The archive reader to read from.
 			/// \note After this function returns the position of \p ctx will be at the end of the parsed object.
-			/// \throws parser_error if parsing fails.
+			/// \throws ParserError if parsing fails.
 			/// \see vob::parse
-			PHOENIX_API static void parse(touch_damage& obj, archive_reader& ctx, game_version version);
+			PHOENIX_API static void parse(TouchDamage& obj, ArchiveReader& ctx, GameVersion version);
 		};
 
 		/// \brief A VOb which represents an earthquake-like effect.
-		struct earthquake : public vob {
+		struct Earthquake : public VirtualObject {
 			float radius;
 			float duration;
 			glm::vec3 amplitude;
@@ -173,12 +196,12 @@ namespace phoenix {
 			/// \param[out] obj The object to read.
 			/// \param[in,out] ctx The archive reader to read from.
 			/// \note After this function returns the position of \p ctx will be at the end of the parsed object.
-			/// \throws parser_error if parsing fails.
+			/// \throws ParserError if parsing fails.
 			/// \see vob::parse
-			PHOENIX_API static void parse(earthquake& obj, archive_reader& ctx, game_version version);
+			PHOENIX_API static void parse(Earthquake& obj, ArchiveReader& ctx, GameVersion version);
 		};
 
-		struct npc : public vob {
+		struct Npc : public VirtualObject {
 			struct talent {
 				int talent;
 				int value;
@@ -228,7 +251,7 @@ namespace phoenix {
 			bool move_lock;
 
 			std::string packed[9];
-			std::vector<std::unique_ptr<item>> items;
+			std::vector<std::unique_ptr<Item>> items;
 			std::vector<slot> slots;
 
 			bool current_state_valid;
@@ -265,9 +288,20 @@ namespace phoenix {
 			/// \param[out] obj The object to read.
 			/// \param[in,out] ctx The archive reader to read from.
 			/// \note After this function returns the position of \p ctx will be at the end of the parsed object.
-			/// \throws parser_error if parsing fails.
+			/// \throws ParserError if parsing fails.
 			/// \see vob::parse
-			PHOENIX_API static void parse(npc& obj, archive_reader& ctx, game_version version);
+			PHOENIX_API static void parse(Npc& obj, ArchiveReader& ctx, GameVersion version);
 		};
+
+		using animate PHOENIX_DEPRECATED("renamed to Animate") = Animate;
+		using item PHOENIX_DEPRECATED("renamed to Item") = Item;
+		using lens_flare PHOENIX_DEPRECATED("renamed to LensFlare") = LensFlare;
+		using pfx_controller PHOENIX_DEPRECATED("renamed to ParticleEffectController") = ParticleEffectController;
+		using code_master PHOENIX_DEPRECATED("renamed to CodeMaster") = CodeMaster;
+		using message_filter PHOENIX_DEPRECATED("renamed to MessageFilter") = MessageFilter;
+		using mover_controller PHOENIX_DEPRECATED("renamed to MoverController") = MoverController;
+		using touch_damage PHOENIX_DEPRECATED("renamed to TouchDamage") = TouchDamage;
+		using earthquake PHOENIX_DEPRECATED("renamed to Earthquake") = Earthquake;
+		using npc PHOENIX_DEPRECATED("renamed to Npc") = Npc;
 	} // namespace vobs
 } // namespace phoenix

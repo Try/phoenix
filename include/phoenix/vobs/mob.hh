@@ -1,29 +1,38 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #pragma once
-#include <phoenix/vobs/misc.hh>
-#include <phoenix/vobs/vob.hh>
+#include "../Api.hh"
+#include "misc.hh"
+#include "vob.hh"
 
 namespace phoenix {
 	/// \brief The different sounds a material can make.
-	enum class sound_material : std::uint32_t {
-		wood = 0,
-		stone = 1,
-		metal = 2,
-		leather = 3,
-		clay = 4,
-		glass = 5,
+	enum class SoundMaterialType : std::uint32_t {
+		WOOD = 0,
+		STONE = 1,
+		METAL = 2,
+		LEATHER = 3,
+		CLAY = 4,
+		GLASS = 5,
+
+		// Deprecated entries.
+		wood PHOENIX_DEPRECATED("renamed to SoundMaterialType::WOOD") = WOOD,
+		stone PHOENIX_DEPRECATED("renamed to SoundMaterialType::STONE") = STONE,
+		metal PHOENIX_DEPRECATED("renamed to SoundMaterialType::METAL") = METAL,
+		leather PHOENIX_DEPRECATED("renamed to SoundMaterialType::LEATHER") = LEATHER,
+		clay PHOENIX_DEPRECATED("renamed to SoundMaterialType::CLAY") = CLAY,
+		glass PHOENIX_DEPRECATED("renamed to SoundMaterialType::GLASS") = GLASS,
 	};
 
 	namespace vobs {
-		struct mob : public vob {
+		struct MovableObject : public VirtualObject {
 			std::string name;
 			std::int32_t hp;
 			std::int32_t damage;
 			bool movable;
 			bool takable;
 			bool focus_override;
-			sound_material material;
+			SoundMaterialType material;
 			std::string visual_destroyed;
 			std::string owner;
 			std::string owner_guild;
@@ -33,12 +42,12 @@ namespace phoenix {
 			/// \param[out] obj The object to read.
 			/// \param[in,out] ctx The archive reader to read from.
 			/// \note After this function returns the position of \p ctx will be at the end of the parsed object.
-			/// \throws parser_error if parsing fails.
+			/// \throws ParserError if parsing fails.
 			/// \see vob::parse
-			PHOENIX_API static void parse(mob& obj, archive_reader& ctx, game_version version);
+			PHOENIX_API static void parse(MovableObject& obj, ArchiveReader& ctx, GameVersion version);
 		};
 
-		struct mob_inter : public mob {
+		struct InteractiveObject : public MovableObject {
 			std::int32_t state;
 			std::string target;
 			std::string item;
@@ -50,13 +59,13 @@ namespace phoenix {
 			/// \param[out] obj The object to read.
 			/// \param[in,out] ctx The archive reader to read from.
 			/// \note After this function returns the position of \p ctx will be at the end of the parsed object.
-			/// \throws parser_error if parsing fails.
+			/// \throws ParserError if parsing fails.
 			/// \see vob::parse
-			PHOENIX_API static void parse(mob_inter& obj, archive_reader& ctx, game_version version);
+			PHOENIX_API static void parse(InteractiveObject& obj, ArchiveReader& ctx, GameVersion version);
 		};
 
 		/// \brief A VOb representing a campfire.
-		struct mob_fire : public mob_inter {
+		struct Fire : public InteractiveObject {
 			std::string slot;
 			std::string vob_tree;
 
@@ -64,35 +73,35 @@ namespace phoenix {
 			/// \param[out] obj The object to read.
 			/// \param[in,out] ctx The archive reader to read from.
 			/// \note After this function returns the position of \p ctx will be at the end of the parsed object.
-			/// \throws parser_error if parsing fails.
+			/// \throws ParserError if parsing fails.
 			/// \see vob::parse
 			/// \see mob::parse
-			PHOENIX_API static void parse(mob_fire& obj, archive_reader& ctx, game_version version);
+			PHOENIX_API static void parse(Fire& obj, ArchiveReader& ctx, GameVersion version);
 		};
 
 		/// \brief A VOb representing a container.
-		struct mob_container : public mob_inter {
+		struct Container : public InteractiveObject {
 			bool locked;
 			std::string key;
 			std::string pick_string;
 			std::string contents;
 
 			// Save-game only variables
-			std::vector<std::unique_ptr<vobs::item>> s_items;
+			std::vector<std::unique_ptr<Item>> s_items;
 
 			/// \brief Parses a container VOb the given *ZenGin* archive.
 			/// \param[out] obj The object to read.
 			/// \param[in,out] ctx The archive reader to read from.
 			/// \note After this function returns the position of \p ctx will be at the end of the parsed object.
-			/// \throws parser_error if parsing fails.
+			/// \throws ParserError if parsing fails.
 			/// \see vob::parse
 			/// \see mob::parse
 			/// \see mob_container::parse
-			PHOENIX_API static void parse(mob_container& obj, archive_reader& ctx, game_version version);
+			PHOENIX_API static void parse(Container& obj, ArchiveReader& ctx, GameVersion version);
 		};
 
 		/// \brief A VOb representing a door.
-		struct mob_door : public mob_inter {
+		struct Door : public InteractiveObject {
 			bool locked;
 			std::string key;
 			std::string pick_string;
@@ -101,11 +110,19 @@ namespace phoenix {
 			/// \param[out] obj The object to read.
 			/// \param[in,out] ctx The archive reader to read from.
 			/// \note After this function returns the position of \p ctx will be at the end of the parsed object.
-			/// \throws parser_error if parsing fails.
+			/// \throws ParserError if parsing fails.
 			/// \see vob::parse
 			/// \see mob::parse
 			/// \see mob_container::parse
-			PHOENIX_API static void parse(mob_door& obj, archive_reader& ctx, game_version version);
+			PHOENIX_API static void parse(Door& obj, ArchiveReader& ctx, GameVersion version);
 		};
+
+		using mob PHOENIX_DEPRECATED("renamed to MovableObject") = MovableObject;
+		using mob_inter PHOENIX_DEPRECATED("renamed to InteractiveObject") = InteractiveObject;
+		using mob_fire PHOENIX_DEPRECATED("renamed to Fire") = Fire;
+		using mob_container PHOENIX_DEPRECATED("renamed to Container") = Container;
+		using mob_door PHOENIX_DEPRECATED("renamed to Door") = Door;
 	} // namespace vobs
+
+	using sound_material PHOENIX_DEPRECATED("renamed to SoundMaterialType") = SoundMaterialType;
 } // namespace phoenix

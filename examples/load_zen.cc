@@ -4,9 +4,9 @@
 
 #include <iostream>
 
-void print_entries(std::unique_ptr<phoenix::archive_reader>& reader) {
+void print_entries(std::unique_ptr<phoenix::ArchiveReader>& reader) {
 	int level = 0;
-	phoenix::archive_object obj {};
+	phoenix::ArchiveObject obj {};
 
 	do {
 		if (reader->read_object_begin(obj)) {
@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
 	}
 
 	auto buf = phoenix::buffer::mmap(argv[1]);
-	auto archive = phoenix::archive_reader::open(buf);
+	auto archive = phoenix::ArchiveReader::open(buf);
 	auto& header = archive->get_header();
 
 	std::cout << "Archiver: " << header.archiver << "\n"

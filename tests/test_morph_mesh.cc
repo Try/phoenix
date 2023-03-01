@@ -1,12 +1,14 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <doctest/doctest.h>
+#include <phoenix/buffer.hh>
 #include <phoenix/morph_mesh.hh>
 
-TEST_SUITE("morph_mesh") {
-	TEST_CASE("morph_mesh(parse:?)") {
-		auto in = phoenix::buffer::mmap("./samples/morph0.mmb");
-		auto mesh = phoenix::morph_mesh::parse(in);
+#include <doctest/doctest.h>
+
+TEST_SUITE("MorphMesh") {
+	TEST_CASE("MorphMesh(parse:?)") {
+		auto in = phoenix::Buffer::mmap("./samples/morph0.mmb");
+		auto mesh = phoenix::MorphMesh::parse(in);
 
 		CHECK_EQ(mesh.name, "ITRWSMALLBOW");
 		CHECK_EQ(mesh.morph_positions.size(), 28);
@@ -47,11 +49,11 @@ TEST_SUITE("morph_mesh") {
 		CHECK_EQ(mesh.sources[1].file_name, "ITRWSMALLBOWSHOOT.ASC");
 	}
 
-	TEST_CASE("model_mesh(parse:g1)" * doctest::skip()) {
+	TEST_CASE("ModelMesh(parse:g1)" * doctest::skip()) {
 		// TODO: Stub
 	}
 
-	TEST_CASE("model_mesh(parse:g2)" * doctest::skip()) {
+	TEST_CASE("ModelMesh(parse:g2)" * doctest::skip()) {
 		// TODO: Stub
 	}
 }

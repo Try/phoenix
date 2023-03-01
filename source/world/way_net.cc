@@ -1,9 +1,10 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/world/way_net.hh>
+#include "phoenix/world/way_net.hh"
+#include "phoenix/archive.hh"
 
 namespace phoenix {
-	static void read_waypoint_data(way_point& wp, archive_reader& in) {
+	static void read_waypoint_data(WayPoint& wp, ArchiveReader& in) {
 		wp.name = in.read_string();      // wpName
 		wp.water_depth = in.read_int();  // waterDepth
 		wp.under_water = in.read_bool(); // underWater
@@ -12,13 +13,13 @@ namespace phoenix {
 		wp.free_point = true;
 	}
 
-	way_net way_net::parse(archive_reader& in) {
+	WayNet WayNet::parse(ArchiveReader& in) {
 		try {
-			way_net net;
-			archive_object obj;
+			WayNet net;
+			ArchiveObject obj;
 
 			if (!in.read_object_begin(obj)) {
-				throw parser_error {"way_net", "root object missing"};
+				throw ParserError {"WayNet", "root object missing"};
 			}
 
 			(void) /* auto version = */ in.read_int(); // waynetVersion
@@ -29,17 +30,16 @@ namespace phoenix {
 
 			for (int32_t i = 0; i < count; ++i) {
 				if (!in.read_object_begin(obj) || obj.class_name != "zCWaypoint") {
-					throw parser_error {"way_net", "missing waypoint object #" + std::to_string(i)};
+					throw ParserError {"WayNet", "missing waypoint object #" + std::to_string(i)};
 				}
 
 				auto& wp = net.waypoints.emplace_back();
 				read_waypoint_data(wp, in);
 				wp.free_point = true;
-				net._m_name_to_waypoint[wp.name] = net.waypoints.size() - 1;
 				obj_id_to_wp[obj.index] = net.waypoints.size() - 1;
 
 				if (!in.read_object_end()) {
-					PX_LOGW("way_net: free point ", obj.index, " not fully parsed");
+					PX_LOGW("WayNet: free point ", obj.index, " not fully parsed");
 					in.skip_object(true);
 				}
 			}
@@ -51,7 +51,7 @@ namespace phoenix {
 
 				for (int32_t j = 0; j < 2; ++j) {
 					if (!in.read_object_begin(obj)) {
-						throw parser_error {"way_net", "missing edge object #" + std::to_string(i)};
+						throw ParserError {"WayNet", "missing edge object #" + std::to_string(i)};
 					}
 
 					std::uint32_t wp;
@@ -62,13 +62,12 @@ namespace phoenix {
 						auto& new_wp = net.waypoints.emplace_back();
 						read_waypoint_data(new_wp, in);
 						new_wp.free_point = false;
-						net._m_name_to_waypoint[new_wp.name] = net.waypoints.size() - 1;
 						obj_id_to_wp[obj.index] = net.waypoints.size() - 1;
 						wp = net.waypoints.size() - 1;
 					} else {
-						throw parser_error {"way_net",
-						                    "failed to parse edge #" + std::to_string(i) + ": unknown class name '" +
-						                        obj.class_name + "'"};
+						throw ParserError {"WayNet",
+						                   "failed to parse edge #" + std::to_string(i) + ": unknown class name '" +
+						                       obj.class_name + "'"};
 					}
 
 					if (j == 0) {
@@ -78,25 +77,19 @@ namespace phoenix {
 					}
 
 					if (!in.read_object_end()) {
-						PX_LOGW("way_net: edge ", i * 2 + j, " at index ", obj.index, " not fully parsed");
+						PX_LOGW("WayNet: edge ", i * 2 + j, " at index ", obj.index, " not fully parsed");
 						in.skip_object(true);
 					}
 				}
 			}
 
 			if (!in.read_object_end()) {
-				PX_LOGW("way_net: not fully parsed");
+				PX_LOGW("WayNet: not fully parsed");
 				in.skip_object(true);
 			}
 			return net;
-		} catch (const buffer_error& exc) {
-			throw parser_error {"way_net", exc, "eof reached"};
+		} catch (const BufferError& exc) {
+			throw ParserError {"WayNet", exc, "eof reached"};
 		}
-	}
-
-	const way_point* way_net::waypoint(const std::string& name) const {
-		if (auto it = _m_name_to_waypoint.find(name); it != _m_name_to_waypoint.end())
-			return &waypoints[it->second];
-		return nullptr;
 	}
 } // namespace phoenix

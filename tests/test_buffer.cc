@@ -1,4 +1,4 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #include <doctest/doctest.h>
 #include <phoenix/buffer.hh>
@@ -18,9 +18,9 @@ static std::vector<std::byte> bytes_str(const char* str) {
 	return v;
 }
 
-TEST_SUITE("buffer") {
-	TEST_CASE("buffer(of)") {
-		auto buf = phoenix::buffer::of(bytes('a', 'b', 'c'));
+TEST_SUITE("Buffer") {
+	TEST_CASE("Buffer(of)") {
+		auto buf = phoenix::Buffer::of(bytes('a', 'b', 'c'));
 		CHECK_EQ(buf.limit(), 3);
 		CHECK_EQ(buf.position(), 0);
 		CHECK_EQ(buf.remaining(), 3);
@@ -29,8 +29,8 @@ TEST_SUITE("buffer") {
 		CHECK_EQ(buf.readonly(), true);
 	}
 
-	TEST_CASE("buffer(limit)") {
-		auto buf = phoenix::buffer::of(bytes('a', 'b', 'c'));
+	TEST_CASE("Buffer(limit)") {
+		auto buf = phoenix::Buffer::of(bytes('a', 'b', 'c'));
 
 		SUBCASE("new_limit > capacity") {
 			CHECK_THROWS(buf.limit(4));
@@ -68,8 +68,8 @@ TEST_SUITE("buffer") {
 		}
 	}
 
-	TEST_CASE("buffer(position)") {
-		auto buf = phoenix::buffer::of(bytes('a', 'b', 'c'));
+	TEST_CASE("Buffer(position)") {
+		auto buf = phoenix::Buffer::of(bytes('a', 'b', 'c'));
 		CHECK_EQ(buf.position(), 0);
 		CHECK_EQ(buf.remaining(), 3);
 
@@ -90,8 +90,8 @@ TEST_SUITE("buffer") {
 		CHECK_EQ(buf.remaining(), 3);
 	}
 
-	TEST_CASE("buffer(clear)") {
-		auto buf = phoenix::buffer::of(bytes('a', 'b', 'c'));
+	TEST_CASE("Buffer(clear)") {
+		auto buf = phoenix::Buffer::of(bytes('a', 'b', 'c'));
 		buf.position(3);
 		buf.limit(2);
 
@@ -107,8 +107,8 @@ TEST_SUITE("buffer") {
 		CHECK_EQ(buf.position(), 0);
 	}
 
-	TEST_CASE("buffer(duplicate)") {
-		auto buf = phoenix::buffer::of(bytes('a', 'b', 'c'));
+	TEST_CASE("Buffer(duplicate)") {
+		auto buf = phoenix::Buffer::of(bytes('a', 'b', 'c'));
 		buf.position(1);
 		buf.limit(2);
 
@@ -119,8 +119,8 @@ TEST_SUITE("buffer") {
 		CHECK_EQ(buf.limit(), dup.limit());
 	}
 
-	TEST_CASE("buffer(flip)") {
-		auto buf = phoenix::buffer::of(bytes('a', 'b', 'c'));
+	TEST_CASE("Buffer(flip)") {
+		auto buf = phoenix::Buffer::of(bytes('a', 'b', 'c'));
 		buf.position(1);
 		buf.flip();
 
@@ -130,8 +130,8 @@ TEST_SUITE("buffer") {
 		CHECK_EQ(buf.position(), 0);
 	}
 
-	TEST_CASE("buffer(slice)") {
-		auto buf = phoenix::buffer::of(bytes('a', 'b', 'c', 'd'));
+	TEST_CASE("Buffer(slice)") {
+		auto buf = phoenix::Buffer::of(bytes('a', 'b', 'c', 'd'));
 
 		SUBCASE("fully") {
 			buf.position(2);
@@ -156,8 +156,8 @@ TEST_SUITE("buffer") {
 		}
 	}
 
-	TEST_CASE("buffer(mark)") {
-		auto buf = phoenix::buffer::of(bytes('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'));
+	TEST_CASE("Buffer(mark)") {
+		auto buf = phoenix::Buffer::of(bytes('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'));
 
 		SUBCASE("basic") {
 			buf.position(1);
@@ -227,8 +227,8 @@ TEST_SUITE("buffer") {
 		}
 	}
 
-	TEST_CASE("buffer(extract)") {
-		auto buf = phoenix::buffer::of(bytes('a', 'b', 'c', 'd'));
+	TEST_CASE("Buffer(extract)") {
+		auto buf = phoenix::Buffer::of(bytes('a', 'b', 'c', 'd'));
 
 		auto slice = buf.extract(2);
 		CHECK_EQ(slice.limit(), 2);
@@ -240,8 +240,8 @@ TEST_SUITE("buffer") {
 		CHECK_EQ(buf.get_char(), 'c');
 	}
 
-	TEST_CASE("buffer(array)") {
-		auto buf = phoenix::buffer::of(bytes('a', 'b', 'c', 'd'));
+	TEST_CASE("Buffer(array)") {
+		auto buf = phoenix::Buffer::of(bytes('a', 'b', 'c', 'd'));
 		buf.limit(3);
 
 		auto array = buf.array();
@@ -249,8 +249,8 @@ TEST_SUITE("buffer") {
 		CHECK(std::equal(array, array + buf.limit(), bytes_str("abc").begin()));
 	}
 
-	TEST_CASE("buffer(get)") {
-		auto buf = phoenix::buffer::of(bytes('\x1A', 0xA1, 'c', 'd'));
+	TEST_CASE("Buffer(get)") {
+		auto buf = phoenix::Buffer::of(bytes('\x1A', 0xA1, 'c', 'd'));
 		CHECK_EQ(buf.position(), 0);
 
 		CHECK_EQ(buf.get(), 0x1A);
@@ -270,8 +270,8 @@ TEST_SUITE("buffer") {
 		CHECK_THROWS(buf.get(array.data(), array.size()));
 	}
 
-	TEST_CASE("buffer(get_char)") {
-		auto buf = phoenix::buffer::of(bytes('a', 'b'));
+	TEST_CASE("Buffer(get_char)") {
+		auto buf = phoenix::Buffer::of(bytes('a', 'b'));
 		CHECK_EQ(buf.position(), 0);
 
 		CHECK_EQ(buf.get_char(), 'a');
@@ -283,8 +283,8 @@ TEST_SUITE("buffer") {
 		CHECK_THROWS((void) buf.get_char());
 	}
 
-	TEST_CASE("buffer(get_short)") {
-		auto buf = phoenix::buffer::of(bytes(0xFF, 0xFF, 0x01, 0x00, 0xFF));
+	TEST_CASE("Buffer(get_short)") {
+		auto buf = phoenix::Buffer::of(bytes(0xFF, 0xFF, 0x01, 0x00, 0xFF));
 		CHECK_EQ(buf.position(), 0);
 
 		CHECK_EQ(buf.get_short(), -1);
@@ -296,8 +296,8 @@ TEST_SUITE("buffer") {
 		CHECK_THROWS((void) buf.get_short());
 	}
 
-	TEST_CASE("buffer(get_ushort)") {
-		auto buf = phoenix::buffer::of(bytes(0xFF, 0xFF, 0x01, 0x00, 0xFF));
+	TEST_CASE("Buffer(get_ushort)") {
+		auto buf = phoenix::Buffer::of(bytes(0xFF, 0xFF, 0x01, 0x00, 0xFF));
 		CHECK_EQ(buf.position(), 0);
 
 		CHECK_EQ(buf.get_ushort(), 0xFF'FF);
@@ -309,8 +309,8 @@ TEST_SUITE("buffer") {
 		CHECK_THROWS((void) buf.get_short());
 	}
 
-	TEST_CASE("buffer(get_int)") {
-		auto buf = phoenix::buffer::of(bytes(0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF));
+	TEST_CASE("Buffer(get_int)") {
+		auto buf = phoenix::Buffer::of(bytes(0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF));
 		CHECK_EQ(buf.position(), 0);
 
 		CHECK_EQ(buf.get_int(), -1);
@@ -322,8 +322,8 @@ TEST_SUITE("buffer") {
 		CHECK_THROWS((void) buf.get_int());
 	}
 
-	TEST_CASE("buffer(get_uint)") {
-		auto buf = phoenix::buffer::of(bytes(0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF));
+	TEST_CASE("Buffer(get_uint)") {
+		auto buf = phoenix::Buffer::of(bytes(0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF));
 		CHECK_EQ(buf.position(), 0);
 
 		CHECK_EQ(buf.get_uint(), 0xFFFF'FFFF);
@@ -335,8 +335,8 @@ TEST_SUITE("buffer") {
 		CHECK_THROWS((void) buf.get_uint());
 	}
 
-	TEST_CASE("buffer(get_long)") {
-		auto buf = phoenix::buffer::of(bytes(0xFF,
+	TEST_CASE("Buffer(get_long)") {
+		auto buf = phoenix::Buffer::of(bytes(0xFF,
 		                                     0xFF,
 		                                     0xFF,
 		                                     0xFF,
@@ -370,8 +370,8 @@ TEST_SUITE("buffer") {
 		CHECK_THROWS((void) buf.get_long());
 	}
 
-	TEST_CASE("buffer(get_ulong)") {
-		auto buf = phoenix::buffer::of(bytes(0xFF,
+	TEST_CASE("Buffer(get_ulong)") {
+		auto buf = phoenix::Buffer::of(bytes(0xFF,
 		                                     0xFF,
 		                                     0xFF,
 		                                     0xFF,
@@ -405,9 +405,9 @@ TEST_SUITE("buffer") {
 		CHECK_THROWS((void) buf.get_ulong());
 	}
 
-	TEST_CASE("buffer(get_float)") {
+	TEST_CASE("Buffer(get_float)") {
 
-		auto buf = phoenix::buffer::of(bytes(0x52, 0x58, 0xD2, 0x43, 0x0A, 0xD7, 0x8A, 0xC2, 0xFF, 0xFF, 0xFF));
+		auto buf = phoenix::Buffer::of(bytes(0x52, 0x58, 0xD2, 0x43, 0x0A, 0xD7, 0x8A, 0xC2, 0xFF, 0xFF, 0xFF));
 		CHECK_EQ(buf.position(), 0);
 
 		CHECK_EQ(buf.get_float(), 420.69f);
@@ -419,8 +419,8 @@ TEST_SUITE("buffer") {
 		CHECK_THROWS((void) buf.get_float());
 	}
 
-	TEST_CASE("buffer(get_double)") {
-		auto buf = phoenix::buffer::of(bytes(0xD7,
+	TEST_CASE("Buffer(get_double)") {
+		auto buf = phoenix::Buffer::of(bytes(0xD7,
 		                                     0xA3,
 		                                     0x70,
 		                                     0x3D,
@@ -454,9 +454,9 @@ TEST_SUITE("buffer") {
 		CHECK_THROWS((void) buf.get_double());
 	}
 
-	TEST_CASE("buffer(get_string)") {
+	TEST_CASE("Buffer(get_string)") {
 		auto buf =
-		    phoenix::buffer::of(bytes('H', 'i', 'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!'));
+		    phoenix::Buffer::of(bytes('H', 'i', 'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!'));
 
 		CHECK_EQ(buf.get_string(2), "Hi");
 		CHECK_EQ(buf.position(), 2);
@@ -467,8 +467,8 @@ TEST_SUITE("buffer") {
 		CHECK_THROWS((void) buf.get_string(1));
 	}
 
-	TEST_CASE("buffer(get_line)") {
-		auto buf = phoenix::buffer::of(bytes('H',
+	TEST_CASE("Buffer(get_line)") {
+		auto buf = phoenix::Buffer::of(bytes('H',
 		                                     'i',
 		                                     '\n',
 		                                     ' ',
@@ -505,20 +505,20 @@ TEST_SUITE("buffer") {
 		CHECK(buf.get_line().empty());
 	}
 
-	TEST_CASE("buffer(get_vec2)" * doctest::skip()) {
+	TEST_CASE("Buffer(get_vec2)" * doctest::skip()) {
 		// TODO: Stub
 	}
 
-	TEST_CASE("buffer(get_vec3)" * doctest::skip()) {
+	TEST_CASE("Buffer(get_vec3)" * doctest::skip()) {
 		// TODO: Stub
 	}
 
-	TEST_CASE("buffer(get_vec4)" * doctest::skip()) {
+	TEST_CASE("Buffer(get_vec4)" * doctest::skip()) {
 		// TODO: Stub
 	}
 
-	TEST_CASE("buffer(put*)") {
-		auto buf = phoenix::buffer::allocate(57);
+	TEST_CASE("Buffer(put*)") {
+		auto buf = phoenix::Buffer::allocate(57);
 
 		buf.put(0xFF);
 		buf.put_short(-16);
@@ -549,23 +549,23 @@ TEST_SUITE("buffer") {
 		CHECK_EQ(buf.remaining(), 0);
 	}
 
-	TEST_CASE("buffer(empty)") {
-		auto empty = phoenix::buffer::empty();
+	TEST_CASE("Buffer(empty)") {
+		auto empty = phoenix::Buffer::empty();
 		CHECK_EQ(empty.limit(), 0);
 		CHECK_EQ(empty.capacity(), 0);
 		CHECK_EQ(empty.remaining(), 0);
 		CHECK_EQ(empty.position(), 0);
 
-		auto buf = phoenix::buffer::allocate(10);
+		auto buf = phoenix::Buffer::allocate(10);
 		CHECK_FALSE(empty == buf);
 	}
 
 	TEST_CASE("buffer(mmap)") {
 		SUBCASE("empty file") {
-			auto buf = phoenix::buffer::mmap("samples/empty.txt");
+			auto buf = phoenix::Buffer::mmap("samples/empty.txt");
 			CHECK_EQ(buf.limit(), 0);
 			CHECK_EQ(buf.capacity(), 0);
-			CHECK_THROWS_AS((void) buf.get_char(), phoenix::buffer_underflow);
+			CHECK_THROWS_AS((void) buf.get_char(), phoenix::BufferUnderflowError);
 		}
 	}
 }

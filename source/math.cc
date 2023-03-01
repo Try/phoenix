@@ -1,20 +1,20 @@
-// Copyright © 2023 Luis Michaelis <me@lmichaelis.de>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/buffer.hh>
-#include <phoenix/math.hh>
+#include "phoenix/math.hh"
+#include "phoenix/buffer.hh"
 
 #include <limits>
 
 namespace phoenix {
-	bounding_box bounding_box::parse(buffer& in) {
-		bounding_box bbox {};
+	AxisAlignedBoundingBox AxisAlignedBoundingBox::parse(Buffer& in) {
+		AxisAlignedBoundingBox bbox {};
 		bbox.min = in.get_vec3();
 		bbox.max = in.get_vec3();
 		return bbox;
 	}
 
-	obb obb::parse(buffer& in) {
-		obb bbox {};
+	OrientedBoundingBox OrientedBoundingBox::parse(Buffer& in) {
+		OrientedBoundingBox bbox {};
 		bbox.center = in.get_vec3();
 		bbox.axes[0] = in.get_vec3();
 		bbox.axes[1] = in.get_vec3();
@@ -29,7 +29,7 @@ namespace phoenix {
 		return bbox;
 	}
 
-	bounding_box obb::as_bbox() const {
+	AxisAlignedBoundingBox OrientedBoundingBox::as_bbox() const {
 		const float sign[8][3] = {{-1, -1, -1},
 		                          {-1, -1, +1},
 		                          {-1, +1, -1},
@@ -39,7 +39,7 @@ namespace phoenix {
 		                          {+1, +1, -1},
 		                          {+1, +1, +1}};
 
-		bounding_box box {};
+		AxisAlignedBoundingBox box {};
 		box.min = {std::numeric_limits<float>::max(),
 		           std::numeric_limits<float>::max(),
 		           std::numeric_limits<float>::max()};

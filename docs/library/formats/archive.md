@@ -12,24 +12,24 @@ the [ZenGin Reference](../../engine/formats/archive.md).
 
 Like JSON, archives store values using a key-value structure where every key-value pair belongs to an object. Objects
 can also be nested. Unlike JSON, archives do not have first-class support for arrays, instead choosing a special type
-and encoding scheme. The class which is responsible for loading *ZenGin Archives* is called `phoenix::archive_reader`
+and encoding scheme. The class which is responsible for loading *ZenGin Archives* is called `phoenix::ArchiveReader`
 and can be found in `phoenix/include/archive.hh`.
 
 ### Loading an archive
 
-Unlike most data structures in phoenix, archives can be loaded using the `phoenix::archive_reader::open()` function.
-It takes a `phoenix::buffer` and uses it internally for loading values from the archive.
+Unlike most data structures in phoenix, archives can be loaded using the `phoenix::ArchiveReader::open()` function.
+It takes a `phoenix::Buffer` and uses it internally for loading values from the archive.
 
 !!! danger
-    The buffer passed to `open` is currently contained in the `archive_reader` as a reference. Trying to read from
-    an `archive_reader` after the buffer passed in `open` has been destroyed will result in undefined behavior!
+    The buffer passed to `open` is currently contained in the `ArchiveReader` as a reference. Trying to read from
+    an `ArchiveReader` after the buffer passed in `open` has been destroyed will result in undefined behavior!
 
 ```cpp title="Example"
 #include <phoenix/archive.hh>
 
 int main(int, const char** argv) {
-    auto buf = phoenix::buffer::mmap("A.ZEN");
-    [[maybe_unused]] auto archive = phoenix::archive_reader::open(buf);
+    auto buf = phoenix::Buffer::mmap("A.ZEN");
+    [[maybe_unused]] auto archive = phoenix::ArchiveReader::open(buf);
     return 0;
 }
 ```
@@ -48,13 +48,13 @@ demonstration can be found in the example below.
 
 int main(int, const char** argv) {
     // First, open the archive
-    auto buf = phoenix::buffer::mmap("WORLD.ZEN");
-    auto zen = phoenix::archive_reader::open(buf);
+    auto buf = phoenix::Buffer::mmap("WORLD.ZEN");
+    auto zen = phoenix::ArchiveReader::open(buf);
 
     // Second, read the definition of the root object.
     //   Every archive has one object at its root which can be used to
     //   identify what kind of data it is storing.
-    phoenix::archive_object object {};
+    phoenix::ArchiveObject object {};
     
     if (!zen.read_object_begin(object)) {
         // If no object begins at the current position `read_object_begin`
@@ -164,4 +164,4 @@ int main(int, const char** argv) {
 | `color`    | `read_color`                            | An `RGBA` color quad                                                             |
 | `vec3`     | `read_vec3`                             | A 3-dimensional vector with floating point values                                |
 | `rawFloat` | `read_bbox`, `read_mat3x3`, `read_vec2` | A mathematical structure consisting of multiple floating point values            |
-| `raw`      | `read_raw_bytes`                        | A set of raw bytes, returned as a `phoenix::buffer`                              |
+| `raw`      | `read_raw_bytes`                        | A set of raw bytes, returned as a `phoenix::Buffer`                              |

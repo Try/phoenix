@@ -1,77 +1,78 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/script.hh>
+#include "phoenix/script.hh"
 
 #include <string>
 
 namespace phoenix {
-	symbol_not_found::symbol_not_found(std::string&& sym_name)
-	    : script_error("symbol not found: " + sym_name), name(sym_name) {}
+	DaedalusSymbolNotFound::DaedalusSymbolNotFound(std::string&& sym_name)
+	    : DaedalusScriptError("symbol not found: " + sym_name), name(sym_name) {}
 
-	member_registration_error::member_registration_error(const symbol* s, std::string&& msg)
-	    : script_error("cannot register member " + s->name() + ": " + msg), sym(s) {}
+	DaedalusMemberRegistrationError::DaedalusMemberRegistrationError(const DaedalusSymbol* s, std::string&& msg)
+	    : DaedalusScriptError("cannot register member " + s->name() + ": " + msg), sym(s) {}
 
-	invalid_registration_datatype::invalid_registration_datatype(const symbol* s, std::string&& provided)
-	    : member_registration_error(s,
-	                                "wrong datatype: provided '" + provided + "' expected " +
-	                                    DAEDALUS_DATA_TYPE_NAMES[(std::uint32_t) s->type()]) {}
+	DaedalusInvalidRegistrationDataType::DaedalusInvalidRegistrationDataType(const DaedalusSymbol* s,
+	                                                                         std::string&& provided)
+	    : DaedalusMemberRegistrationError(s,
+	                                      "wrong datatype: provided '" + provided + "' expected " +
+	                                          DAEDALUS_DATA_TYPE_NAMES[(std::uint32_t) s->type()]) {}
 
-	illegal_type_access::illegal_type_access(const symbol* s, datatype expected_dt)
-	    : illegal_access("illegal access of type " + std::to_string(static_cast<int32_t>(expected_dt)) + " on symbol " +
-	                     s->name() + " which is another type (" + std::to_string(static_cast<int32_t>(s->type())) +
-	                     ")"),
+	DaedalusIllegalTypeAccess::DaedalusIllegalTypeAccess(const DaedalusSymbol* s, DaedalusDataType expected_dt)
+	    : DaedalusIllegalAccess("illegal access of type " + std::to_string(static_cast<int32_t>(expected_dt)) +
+	                            " on DaedalusSymbol " + s->name() + " which is another type (" +
+	                            std::to_string(static_cast<int32_t>(s->type())) + ")"),
 	      sym(s), expected(expected_dt) {}
 
-	illegal_index_access::illegal_index_access(const symbol* s, std::uint8_t idx)
-	    : illegal_access("illegal access of out-of-bounds index " + std::to_string(idx) + " while reading " +
-	                     s->name()),
+	DaedalusIllegalIndexAccess::DaedalusIllegalIndexAccess(const DaedalusSymbol* s, std::uint8_t idx)
+	    : DaedalusIllegalAccess("illegal access of out-of-bounds index " + std::to_string(idx) + " while reading " +
+	                            s->name()),
 	      sym(s), index(idx) {}
 
-	illegal_const_access::illegal_const_access(const symbol* s)
-	    : illegal_access("illegal mutable access of const symbol " + s->name()), sym(s) {}
+	DaedalusIllegalConstAccess::DaedalusIllegalConstAccess(const DaedalusSymbol* s)
+	    : DaedalusIllegalAccess("illegal mutable access of const symbol " + s->name()), sym(s) {}
 
-	illegal_instance_access::illegal_instance_access(const symbol* s, std::uint32_t parent)
-	    : illegal_access("illegal access of member " + s->name() +
-	                     " which does not have the same parent "
-	                     "class as the context instance (" +
-	                     std::to_string(s->parent()) + " != " + std::to_string(parent) + ")"),
+	DaedalusIllegalInstanceAccess::DaedalusIllegalInstanceAccess(const DaedalusSymbol* s, std::uint32_t parent)
+	    : DaedalusIllegalAccess("illegal access of member " + s->name() +
+	                            " which does not have the same parent "
+	                            "class as the context instance (" +
+	                            std::to_string(s->parent()) + " != " + std::to_string(parent) + ")"),
 	      sym(s), expected_parent(parent) {}
 
-	unbound_member_access::unbound_member_access(const symbol* s)
-	    : illegal_access("illegal access of unbound member " + s->name()), sym(s) {}
+	DaedalusUnboundMemberAccess::DaedalusUnboundMemberAccess(const DaedalusSymbol* s)
+	    : DaedalusIllegalAccess("illegal access of unbound member " + s->name()), sym(s) {}
 
-	no_context::no_context(const symbol* s)
-	    : illegal_access("illegal access of member " + s->name() + " without a context set."), sym(s) {}
+	DaedalusNoContextError::DaedalusNoContextError(const DaedalusSymbol* s)
+	    : DaedalusIllegalAccess("illegal access of member " + s->name() + " without a context set."), sym(s) {}
 
-	illegal_context_type::illegal_context_type(const symbol* s, const std::type_info& ctx)
-	    : illegal_access("cannot access member " + s->name() + " on context instance of type " + ctx.name() +
-	                     " because this symbol is registered to instances of type " + s->registered_to().name()),
+	DaedalusIllegalContextType::DaedalusIllegalContextType(const DaedalusSymbol* s, const std::type_info& ctx)
+	    : DaedalusIllegalAccess("cannot access member " + s->name() + " on context instance of type " + ctx.name() +
+	                            " because this symbol is registered to instances of type " + s->registered_to().name()),
 	      sym(s), context_type(ctx) {}
 
-	instruction instruction::decode(buffer& in) {
-		instruction s {};
-		s.op = static_cast<opcode>(in.get());
+	DaedalusInstruction DaedalusInstruction::decode(Buffer& in) {
+		DaedalusInstruction s {};
+		s.op = static_cast<DaedalusOpcode>(in.get());
 		s.size = 1;
 
 		switch (s.op) {
-		case opcode::bl:
-		case opcode::bz:
-		case opcode::b:
+		case DaedalusOpcode::BL:
+		case DaedalusOpcode::BZ:
+		case DaedalusOpcode::B:
 			s.address = in.get_uint();
 			s.size += sizeof(std::uint32_t);
 			break;
-		case opcode::pushi:
+		case DaedalusOpcode::PUSHI:
 			s.immediate = in.get_int();
 			s.size += sizeof(std::uint32_t);
 			break;
-		case opcode::be:
-		case opcode::pushv:
-		case opcode::pushvi:
-		case opcode::gmovi:
+		case DaedalusOpcode::BE:
+		case DaedalusOpcode::PUSHV:
+		case DaedalusOpcode::PUSHVI:
+		case DaedalusOpcode::GMOVI:
 			s.symbol = in.get_uint();
 			s.size += sizeof(std::uint32_t);
 			break;
-		case opcode::pushvv:
+		case DaedalusOpcode::PUSHVV:
 			s.symbol = in.get_uint();
 			s.index = in.get();
 			s.size += sizeof(std::uint32_t) + sizeof(std::uint8_t);
@@ -83,13 +84,13 @@ namespace phoenix {
 		return s;
 	}
 
-	script script::parse(const std::string& file) {
-		auto in = buffer::mmap(file);
+	DaedalusScript DaedalusScript::parse(const std::string& file) {
+		auto in = Buffer::mmap(file);
 		return parse(in);
 	}
 
-	script script::parse(phoenix::buffer& in) {
-		script scr {};
+	DaedalusScript DaedalusScript::parse(phoenix::Buffer& in) {
+		DaedalusScript scr {};
 
 		scr._m_version = in.get();
 		auto symbol_count = in.get_uint();
@@ -101,12 +102,12 @@ namespace phoenix {
 		// The sort table is a list of indexes into the symbol table sorted lexicographically by symbol name!
 
 		for (std::uint32_t i = 0; i < symbol_count; ++i) {
-			auto* sym = &scr._m_symbols.emplace_back(symbol::parse(in));
+			auto* sym = &scr._m_symbols.emplace_back(DaedalusSymbol::parse(in));
 			scr._m_symbols_by_name[sym->name()] = i;
 			sym->_m_index = i;
 
-			if (sym->type() == datatype::prototype || sym->type() == datatype::instance ||
-			    (sym->type() == datatype::function && sym->is_const() && !sym->is_member())) {
+			if (sym->type() == DaedalusDataType::PROTOTYPE || sym->type() == DaedalusDataType::INSTANCE ||
+			    (sym->type() == DaedalusDataType::FUNCTION && sym->is_const() && !sym->is_member())) {
 				scr._m_symbols_by_address[sym->address()] = i;
 			}
 		}
@@ -116,19 +117,19 @@ namespace phoenix {
 		return scr;
 	}
 
-	instruction script::instruction_at(std::uint32_t address) const {
+	DaedalusInstruction DaedalusScript::instruction_at(std::uint32_t address) const {
 		_m_text.position(address);
-		return instruction::decode(_m_text);
+		return DaedalusInstruction::decode(_m_text);
 	}
 
-	const symbol* script::find_symbol_by_index(std::uint32_t index) const {
+	const DaedalusSymbol* DaedalusScript::find_symbol_by_index(std::uint32_t index) const {
 		if (index > _m_symbols.size()) {
 			return nullptr;
 		}
 		return &_m_symbols[index];
 	}
 
-	const symbol* script::find_symbol_by_name(std::string_view name) const {
+	const DaedalusSymbol* DaedalusScript::find_symbol_by_name(std::string_view name) const {
 		std::string up {name};
 		std::transform(up.begin(), up.end(), up.begin(), ::toupper);
 
@@ -139,7 +140,7 @@ namespace phoenix {
 		return nullptr;
 	}
 
-	const symbol* script::find_symbol_by_address(std::uint32_t address) const {
+	const DaedalusSymbol* DaedalusScript::find_symbol_by_address(std::uint32_t address) const {
 		if (auto it = _m_symbols_by_address.find(address); it != _m_symbols_by_address.end()) {
 			return find_symbol_by_index(it->second);
 		}
@@ -147,14 +148,14 @@ namespace phoenix {
 		return nullptr;
 	}
 
-	symbol* script::find_symbol_by_index(std::uint32_t index) {
+	DaedalusSymbol* DaedalusScript::find_symbol_by_index(std::uint32_t index) {
 		if (index > _m_symbols.size()) {
 			return nullptr;
 		}
 		return &_m_symbols[index];
 	}
 
-	symbol* script::find_symbol_by_name(std::string_view name) {
+	DaedalusSymbol* DaedalusScript::find_symbol_by_name(std::string_view name) {
 		std::string up {name};
 		std::transform(up.begin(), up.end(), up.begin(), ::toupper);
 
@@ -165,7 +166,7 @@ namespace phoenix {
 		return nullptr;
 	}
 
-	symbol* script::find_symbol_by_address(std::uint32_t address) {
+	DaedalusSymbol* DaedalusScript::find_symbol_by_address(std::uint32_t address) {
 		if (auto it = _m_symbols_by_address.find(address); it != _m_symbols_by_address.end()) {
 			return find_symbol_by_index(it->second);
 		}
@@ -173,17 +174,17 @@ namespace phoenix {
 		return nullptr;
 	}
 
-	void script::enumerate_instances_by_class_name(std::string_view name,
-	                                               const std::function<void(symbol&)>& callback) {
+	void DaedalusScript::enumerate_instances_by_class_name(std::string_view name,
+	                                                       const std::function<void(DaedalusSymbol&)>& callback) {
 		auto* cls = find_symbol_by_name(name);
 		if (cls == nullptr)
 			return;
 
 		std::vector<uint32_t> prototypes {};
 		for (auto& sym : _m_symbols) {
-			if (sym.type() == datatype::prototype && sym.parent() == cls->index()) {
+			if (sym.type() == DaedalusDataType::PROTOTYPE && sym.parent() == cls->index()) {
 				prototypes.push_back(sym.index());
-			} else if (sym.type() == datatype::instance &&
+			} else if (sym.type() == DaedalusDataType::INSTANCE &&
 			           (std::find(prototypes.begin(), prototypes.end(), sym.parent()) != prototypes.end() ||
 			            sym.parent() == cls->index())) {
 				callback(sym);
@@ -191,8 +192,8 @@ namespace phoenix {
 		}
 	}
 
-	std::vector<symbol*> script::find_parameters_for_function(const symbol* parent) {
-		std::vector<symbol*> syms {};
+	std::vector<DaedalusSymbol*> DaedalusScript::find_parameters_for_function(const DaedalusSymbol* parent) {
+		std::vector<DaedalusSymbol*> syms {};
 
 		for (uint32_t i = 0; i < parent->count(); ++i) {
 			syms.push_back(find_symbol_by_index(parent->index() + i + 1));
@@ -201,8 +202,9 @@ namespace phoenix {
 		return syms;
 	}
 
-	std::vector<const symbol*> script::find_parameters_for_function(const symbol* parent) const {
-		std::vector<const symbol*> syms {};
+	std::vector<const DaedalusSymbol*>
+	DaedalusScript::find_parameters_for_function(const DaedalusSymbol* parent) const {
+		std::vector<const DaedalusSymbol*> syms {};
 
 		for (uint32_t i = 0; i < parent->count(); ++i) {
 			syms.push_back(find_symbol_by_index(parent->index() + i + 1));
@@ -211,11 +213,11 @@ namespace phoenix {
 		return syms;
 	}
 
-	symbol* script::add_temporary_strings_symbol() {
-		symbol sym {};
+	DaedalusSymbol* DaedalusScript::add_temporary_strings_symbol() {
+		DaedalusSymbol sym {};
 		sym._m_name = "$PHOENIX_FAKE_STRINGS";
 		sym._m_generated = true;
-		sym._m_type = datatype::string;
+		sym._m_type = DaedalusDataType::STRING;
 		sym._m_count = 1;
 		sym._m_value = std::unique_ptr<std::string[]> {new std::string[sym._m_count]};
 		sym._m_index = static_cast<std::uint32_t>(_m_symbols.size());
@@ -223,13 +225,13 @@ namespace phoenix {
 		return &_m_symbols.emplace_back(std::move(sym));
 	}
 
-	symbol symbol::parse(buffer& in) {
-		symbol sym {};
+	DaedalusSymbol DaedalusSymbol::parse(Buffer& in) {
+		DaedalusSymbol sym {};
 
 		if (in.get_uint() != 0) {
 			sym._m_name = in.get_line(false);
 
-			// If the name starts with \xFF, this symbol was automatically generated by the compiler
+			// If the name starts with \xFF, this DaedalusSymbol was automatically generated by the compiler
 			if (sym._m_name[0] == '\xFF') {
 				sym._m_name[0] = '$';
 				sym._m_generated = true;
@@ -239,16 +241,16 @@ namespace phoenix {
 		auto vary = in.get_uint();
 		auto properties = in.get_uint();
 
-		sym._m_count = (properties >> 0U) & 0xFFFU;                             // 12 bits
-		sym._m_type = static_cast<datatype>((properties >> 12U) & 0xFU);        // 4 bits
-		sym._m_flags = static_cast<std::uint32_t>((properties >> 16U) & 0x3FU); // 6 bits
+		sym._m_count = (properties >> 0U) & 0xFFFU;                              // 12 bits
+		sym._m_type = static_cast<DaedalusDataType>((properties >> 12U) & 0xFU); // 4 bits
+		sym._m_flags = static_cast<std::uint32_t>((properties >> 16U) & 0x3FU);  // 6 bits
 
 		if (sym.is_member()) {
 			sym._m_member_offset = vary;
-		} else if (sym.type() == datatype::class_) {
+		} else if (sym.type() == DaedalusDataType::CLASS) {
 			sym._m_class_size = vary;
-		} else if (sym.type() == datatype::function) {
-			sym._m_return_type = static_cast<datatype>(vary);
+		} else if (sym.type() == DaedalusDataType::FUNCTION) {
+			sym._m_return_type = static_cast<DaedalusDataType>(vary);
 		}
 
 		sym._m_file_index = in.get_uint() & 0x7FFFFU;  // 19 bits
@@ -259,19 +261,19 @@ namespace phoenix {
 
 		if (!sym.is_member()) {
 			switch (sym._m_type) {
-			case datatype::float_: {
+			case DaedalusDataType::FLOAT: {
 				std::unique_ptr<float[]> value {new float[sym._m_count]};
 				in.get((std::uint8_t*) value.get(), sym._m_count * sizeof(float));
 				sym._m_value = std::move(value);
 				break;
 			}
-			case datatype::integer: {
+			case DaedalusDataType::INT: {
 				std::unique_ptr<std::int32_t[]> value {new std::int32_t[sym._m_count]};
 				in.get((std::uint8_t*) value.get(), sym._m_count * sizeof(std::uint32_t));
 				sym._m_value = std::move(value);
 				break;
 			}
-			case datatype::string: {
+			case DaedalusDataType::STRING: {
 				std::unique_ptr<std::string[]> value {new std::string[sym._m_count]};
 				for (std::uint32_t i = 0; i < sym._m_count; ++i) {
 					value[i] = in.get_line_escaped(false);
@@ -279,20 +281,20 @@ namespace phoenix {
 				sym._m_value = std::move(value);
 				break;
 			}
-			case datatype::class_:
+			case DaedalusDataType::CLASS:
 				sym._m_class_offset = in.get_int();
 				break;
-			case datatype::instance:
-				sym._m_value = std::shared_ptr<instance> {nullptr};
+			case DaedalusDataType::INSTANCE:
+				sym._m_value = std::shared_ptr<DaedalusInstance> {nullptr};
 				sym._m_address = in.get_int();
 				break;
-			case datatype::function:
+			case DaedalusDataType::FUNCTION:
 				if (!sym.is_const()) {
 					sym._m_value = std::unique_ptr<std::int32_t[]>(new int32_t[1]);
 				}
 				sym._m_address = in.get_int();
 				break;
-			case datatype::prototype:
+			case DaedalusDataType::PROTOTYPE:
 				sym._m_address = in.get_int();
 				break;
 			default:
@@ -304,17 +306,18 @@ namespace phoenix {
 		return sym;
 	}
 
-	const std::string& symbol::get_string(std::size_t index, const std::shared_ptr<instance>& context) const {
-		if (type() != datatype::string) {
-			throw illegal_type_access(this, datatype::string);
+	const std::string& DaedalusSymbol::get_string(std::size_t index,
+	                                              const std::shared_ptr<DaedalusInstance>& context) const {
+		if (type() != DaedalusDataType::STRING) {
+			throw DaedalusIllegalTypeAccess(this, DaedalusDataType::STRING);
 		}
 		if (count() <= index) {
-			throw illegal_index_access(this, index);
+			throw DaedalusIllegalIndexAccess(this, index);
 		}
 
 		if (is_member()) {
 			if (context == nullptr) {
-				throw no_context(this);
+				throw DaedalusNoContextError(this);
 			}
 			return *get_member_ptr<std::string>(index, context);
 		} else {
@@ -322,17 +325,17 @@ namespace phoenix {
 		}
 	}
 
-	float symbol::get_float(std::size_t index, const std::shared_ptr<instance>& context) const {
-		if (type() != datatype::float_) {
-			throw illegal_type_access(this, datatype::float_);
+	float DaedalusSymbol::get_float(std::size_t index, const std::shared_ptr<DaedalusInstance>& context) const {
+		if (type() != DaedalusDataType::FLOAT) {
+			throw DaedalusIllegalTypeAccess(this, DaedalusDataType::FLOAT);
 		}
 		if (count() <= index) {
-			throw illegal_index_access(this, index);
+			throw DaedalusIllegalIndexAccess(this, index);
 		}
 
 		if (is_member()) {
 			if (context == nullptr) {
-				throw no_context(this);
+				throw DaedalusNoContextError(this);
 			}
 			return *get_member_ptr<float>(index, context);
 		} else {
@@ -340,17 +343,17 @@ namespace phoenix {
 		}
 	}
 
-	std::int32_t symbol::get_int(std::size_t index, const std::shared_ptr<instance>& context) const {
-		if (type() != datatype::integer && type() != datatype::function) {
-			throw illegal_type_access(this, datatype::integer);
+	std::int32_t DaedalusSymbol::get_int(std::size_t index, const std::shared_ptr<DaedalusInstance>& context) const {
+		if (type() != DaedalusDataType::INT && type() != DaedalusDataType::FUNCTION) {
+			throw DaedalusIllegalTypeAccess(this, DaedalusDataType::INT);
 		}
 		if (count() <= index) {
-			throw illegal_index_access(this, index);
+			throw DaedalusIllegalIndexAccess(this, index);
 		}
 
 		if (is_member()) {
 			if (context == nullptr) {
-				throw no_context(this);
+				throw DaedalusNoContextError(this);
 			}
 			return *get_member_ptr<std::int32_t>(index, context);
 		} else {
@@ -358,17 +361,19 @@ namespace phoenix {
 		}
 	}
 
-	void symbol::set_string(std::string_view value, std::size_t index, const std::shared_ptr<instance>& context) {
-		if (type() != datatype::string) {
-			throw illegal_type_access(this, datatype::string);
+	void DaedalusSymbol::set_string(std::string_view value,
+	                                std::size_t index,
+	                                const std::shared_ptr<DaedalusInstance>& context) {
+		if (type() != DaedalusDataType::STRING) {
+			throw DaedalusIllegalTypeAccess(this, DaedalusDataType::STRING);
 		}
 		if (count() <= index) {
-			throw illegal_index_access(this, index);
+			throw DaedalusIllegalIndexAccess(this, index);
 		}
 
 		if (is_member()) {
 			if (context == nullptr) {
-				throw no_context(this);
+				throw DaedalusNoContextError(this);
 			}
 			*get_member_ptr<std::string>(index, context) = value;
 		} else {
@@ -376,17 +381,17 @@ namespace phoenix {
 		}
 	}
 
-	void symbol::set_float(float value, std::size_t index, const std::shared_ptr<instance>& context) {
-		if (type() != datatype::float_) {
-			throw illegal_type_access(this, datatype::float_);
+	void DaedalusSymbol::set_float(float value, std::size_t index, const std::shared_ptr<DaedalusInstance>& context) {
+		if (type() != DaedalusDataType::FLOAT) {
+			throw DaedalusIllegalTypeAccess(this, DaedalusDataType::FLOAT);
 		}
 		if (count() <= index) {
-			throw illegal_index_access(this, index);
+			throw DaedalusIllegalIndexAccess(this, index);
 		}
 
 		if (is_member()) {
 			if (context == nullptr) {
-				throw no_context(this);
+				throw DaedalusNoContextError(this);
 			}
 			*get_member_ptr<float>(index, context) = value;
 		} else {
@@ -394,17 +399,18 @@ namespace phoenix {
 		}
 	}
 
-	void symbol::set_int(std::int32_t value, std::size_t index, const std::shared_ptr<instance>& context) {
-		if (type() != datatype::integer && type() != datatype::function) {
-			throw illegal_type_access(this, datatype::integer);
+	void
+	DaedalusSymbol::set_int(std::int32_t value, std::size_t index, const std::shared_ptr<DaedalusInstance>& context) {
+		if (type() != DaedalusDataType::INT && type() != DaedalusDataType::FUNCTION) {
+			throw DaedalusIllegalTypeAccess(this, DaedalusDataType::INT);
 		}
 		if (count() <= index) {
-			throw illegal_index_access(this, index);
+			throw DaedalusIllegalIndexAccess(this, index);
 		}
 
 		if (is_member()) {
 			if (context == nullptr) {
-				throw no_context(this);
+				throw DaedalusNoContextError(this);
 			}
 			*get_member_ptr<std::int32_t>(index, context) = value;
 		} else {
@@ -412,19 +418,19 @@ namespace phoenix {
 		}
 	}
 
-	const std::shared_ptr<instance>& symbol::get_instance() {
-		if (type() != datatype::instance) {
-			throw illegal_type_access(this, datatype::instance);
+	const std::shared_ptr<DaedalusInstance>& DaedalusSymbol::get_instance() {
+		if (type() != DaedalusDataType::INSTANCE) {
+			throw DaedalusIllegalTypeAccess(this, DaedalusDataType::INSTANCE);
 		}
 
-		return std::get<std::shared_ptr<instance>>(_m_value);
+		return std::get<std::shared_ptr<DaedalusInstance>>(_m_value);
 	}
 
-	void symbol::set_instance(const std::shared_ptr<instance>& inst) {
-		if (type() != datatype::instance) {
-			throw illegal_type_access(this, datatype::instance);
+	void DaedalusSymbol::set_instance(const std::shared_ptr<DaedalusInstance>& inst) {
+		if (type() != DaedalusDataType::INSTANCE) {
+			throw DaedalusIllegalTypeAccess(this, DaedalusDataType::INSTANCE);
 		}
 
-		std::get<std::shared_ptr<instance>>(_m_value) = inst;
+		std::get<std::shared_ptr<DaedalusInstance>>(_m_value) = inst;
 	}
 } // namespace phoenix

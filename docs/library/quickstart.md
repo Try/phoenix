@@ -85,8 +85,8 @@ int main(int argc, const char** argv) {
     }
 
     // Open the file and parse a font from it
-    phoenix::buffer font_data = font_file->open();
-    phoenix::font font = phoenix::font::parse(font_data);
+    phoenix::Buffer font_data = font_file->open();
+    phoenix::Font font = phoenix::Font::parse(font_data);
 
     // Print out the associated texture name
     std::cout << "The associated texture for FONT_DEFAULT.FNT is \"" << font.name << "\"\n";
@@ -104,8 +104,8 @@ path to the `Data/textures.vdf` file in any *Gothic* or *Gothic II* installation
 
 The most important data structure in *phoenix* is the `buffer`. It encapsulates raw bytes and is used to read other
 primitive types from files. Basically every public parsing API in *phoenix* accepts a `buffer` as input. As you can
-see, in this case we get a buffer by `open()`-ing a VDF entry, but we can also obtain one by calling `buffer::mmap()`,
-`buffer::read()` or `buffer::of()`. The functionality of each is described in the respective C++ documentation strings.
+see, in this case we get a buffer by `open()`-ing a VDF entry, but we can also obtain one by calling `Buffer::mmap()`,
+`Buffer::read()` or `Buffer::of()`. The functionality of each is described in the respective C++ documentation strings.
 
 More examples can be found in
 the [:octicons-mark-github-16: examples/](https://github.com/lmichaelis/phoenix/tree/main/examples)

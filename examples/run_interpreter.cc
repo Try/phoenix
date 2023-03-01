@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
-	phoenix::vm vm {phoenix::script::parse(argv[1])};
+	phoenix::DaedalusVm vm {phoenix::DaedalusScript::parse(argv[1])};
 	phoenix::register_all_script_classes(vm); // needed for Gothic scripts
 
 	vm.register_default_external([](std::string_view name) { std::cout << "VM: No external for " << name << "\n"; });

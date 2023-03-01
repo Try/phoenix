@@ -1,4 +1,4 @@
-// Copyright © 2023 Luis Michaelis <me@lmichaelis.de>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #pragma once
 

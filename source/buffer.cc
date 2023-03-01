@@ -1,8 +1,6 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <cctype>
-#include <cstddef>
-#include <phoenix/buffer.hh>
+#include "phoenix/buffer.hh"
 
 #include <mio/mmap.hpp>
 
@@ -11,19 +9,18 @@
 namespace phoenix {
 	namespace detail {
 		/// \brief A buffer backing which saves data on the heap.
-		class heap_backing : public buffer_backing {
+		class HeapBacking : public BufferBacking {
 		public:
 			/// \brief Creates a new, empty heap buffer backing with the given size.
 			/// \param size The number of bytes in the backing.
-			explicit heap_backing(std::uint64_t size) : _m_readonly(false) {
+			explicit HeapBacking(std::uint64_t size) : _m_readonly(false) {
 				_m_data.resize(size);
 			}
 
 			/// \brief Creates a new heap buffer backing from the given vector.
 			/// \param buf The data to insert into the backing.
 			/// \param readonly Set to `false` to allow writing to the backing.
-			heap_backing(std::vector<std::byte>&& buf, bool readonly)
-			    : _m_data(std::move(buf)), _m_readonly(readonly) {}
+			HeapBacking(std::vector<std::byte>&& buf, bool readonly) : _m_data(std::move(buf)), _m_readonly(readonly) {}
 
 			[[nodiscard]] bool direct() const noexcept override {
 				return false;
@@ -49,11 +46,11 @@ namespace phoenix {
 			           [[maybe_unused]] std::uint64_t size,
 			           [[maybe_unused]] std::uint64_t offset) override {
 				if (this->readonly()) {
-					throw buffer_readonly {};
+					throw BufferReadonlyError {};
 				}
 
 				if (offset + size > this->size()) {
-					throw buffer_overflow {offset, size, "in backing"};
+					throw BufferOverflowError {offset, size, "in backing"};
 				}
 
 				std::copy_n(buf, size, const_cast<std::byte*>(_m_data.data()) + static_cast<long>(offset));
@@ -66,11 +63,11 @@ namespace phoenix {
 
 		/// \brief A buffer backing for memory-mapped files.
 		template <mio::access_mode mode>
-		class mmap_backing : public buffer_backing {
+		class MmapBacking : public BufferBacking {
 		public:
 			/// \brief Creates a new memory-mapped buffer backing by mapping the file at the given path into memory
 			/// \param file The path of the file to map
-			explicit mmap_backing(const std::filesystem::path& file) : _m_data(file.c_str()) {}
+			explicit MmapBacking(const std::filesystem::path& file) : _m_data(file.c_str()) {}
 
 			[[nodiscard]] bool direct() const noexcept override {
 				return true;
@@ -96,11 +93,11 @@ namespace phoenix {
 			           [[maybe_unused]] std::uint64_t size,
 			           [[maybe_unused]] std::uint64_t offset) override {
 				if (this->readonly()) {
-					throw buffer_readonly {};
+					throw BufferReadonlyError {};
 				}
 
 				if (offset + size > this->size()) {
-					throw buffer_overflow {offset, size, "in backing"};
+					throw BufferOverflowError {offset, size, "in backing"};
 				}
 
 				std::copy_n(buf, size, const_cast<std::byte*>(_m_data.data()) + static_cast<long>(offset));
@@ -111,41 +108,41 @@ namespace phoenix {
 		};
 	} // namespace detail
 
-	buffer_underflow::buffer_underflow(std::uint64_t off, std::uint64_t rsize)
-	    : buffer_error("buffer underflow at byte " + std::to_string(off) + " while reading " + std::to_string(rsize) +
-	                   " additional bytes"),
+	BufferUnderflowError::BufferUnderflowError(std::uint64_t off, std::uint64_t rsize)
+	    : BufferError("buffer underflow at byte " + std::to_string(off) + " while reading " + std::to_string(rsize) +
+	                  " additional bytes"),
 	      byte(off), size(rsize), context(std::nullopt) {}
 
-	buffer_underflow::buffer_underflow(std::uint64_t off, std::uint64_t rsize, std::string&& ctx)
-	    : buffer_error("buffer underflow at byte " + std::to_string(off) + " while reading " + std::to_string(rsize) +
-	                   " additional bytes [context: " + ctx + "]"),
+	BufferUnderflowError::BufferUnderflowError(std::uint64_t off, std::uint64_t rsize, std::string&& ctx)
+	    : BufferError("buffer underflow at byte " + std::to_string(off) + " while reading " + std::to_string(rsize) +
+	                  " additional bytes [context: " + ctx + "]"),
 	      byte(off), size(rsize), context(std::move(ctx)) {}
 
-	buffer_underflow::buffer_underflow(std::uint64_t off, std::string&& ctx)
-	    : buffer_error("buffer underflow at byte " + std::to_string(off) + " [context: " + ctx + "]"), byte(off),
+	BufferUnderflowError::BufferUnderflowError(std::uint64_t off, std::string&& ctx)
+	    : BufferError("buffer underflow at byte " + std::to_string(off) + " [context: " + ctx + "]"), byte(off),
 	      size(0), context(std::move(ctx)) {}
 
-	buffer_overflow::buffer_overflow(std::uint64_t off, std::uint64_t wsize)
-	    : buffer_error("buffer overflow at byte " + std::to_string(off) + " while writing " + std::to_string(wsize) +
-	                   " additional bytes"),
+	BufferOverflowError::BufferOverflowError(std::uint64_t off, std::uint64_t wsize)
+	    : BufferError("buffer overflow at byte " + std::to_string(off) + " while writing " + std::to_string(wsize) +
+	                  " additional bytes"),
 	      byte(off), size(wsize), context(std::nullopt) {}
 
-	buffer_overflow::buffer_overflow(std::uint64_t off, std::uint64_t wsize, std::string&& ctx)
-	    : buffer_error("buffer overflow at byte " + std::to_string(off) + " while writing " + std::to_string(wsize) +
-	                   " additional bytes [context: " + ctx + "]"),
+	BufferOverflowError::BufferOverflowError(std::uint64_t off, std::uint64_t wsize, std::string&& ctx)
+	    : BufferError("buffer overflow at byte " + std::to_string(off) + " while writing " + std::to_string(wsize) +
+	                  " additional bytes [context: " + ctx + "]"),
 	      byte(off), size(wsize), context(std::move(ctx)) {}
 
-	std::unique_ptr<buffer> buffer::_m_empty {};
+	std::unique_ptr<Buffer> Buffer::_m_empty {};
 
-	buffer::buffer(std::shared_ptr<buffer_backing> backing)
+	Buffer::Buffer(std::shared_ptr<BufferBacking> backing)
 	    : _m_backing(std::move(backing)), _m_backing_begin(0), _m_backing_end(_m_backing->size()),
 	      _m_capacity(_m_backing->size()), _m_position(0) {}
 
-	buffer::buffer(std::shared_ptr<buffer_backing> backing, std::uint64_t begin, std::uint64_t end)
+	Buffer::Buffer(std::shared_ptr<BufferBacking> backing, std::uint64_t begin, std::uint64_t end)
 	    : _m_backing(std::move(backing)), _m_backing_begin(begin), _m_backing_end(end), _m_capacity(end - begin),
 	      _m_position(0) {}
 
-	buffer::buffer(std::shared_ptr<buffer_backing> backing,
+	Buffer::Buffer(std::shared_ptr<BufferBacking> backing,
 	               std::uint64_t begin,
 	               std::uint64_t end,
 	               std::uint64_t capacity,
@@ -154,64 +151,64 @@ namespace phoenix {
 	    : _m_backing(std::move(backing)), _m_backing_begin(begin), _m_backing_end(end), _m_capacity(capacity),
 	      _m_position(position), _m_mark(mark) {}
 
-	buffer buffer::allocate(std::uint64_t size) {
-		return buffer {std::make_shared<detail::heap_backing>(size)};
+	Buffer Buffer::allocate(std::uint64_t size) {
+		return Buffer {std::make_shared<detail::HeapBacking>(size)};
 	}
 
-	buffer buffer::of(std::vector<std::byte>&& buf, bool readonly) {
-		return buffer {std::make_shared<detail::heap_backing>(std::forward<std::vector<std::byte>>(buf), readonly)};
+	Buffer Buffer::of(std::vector<std::byte>&& buf, bool readonly) {
+		return Buffer {std::make_shared<detail::HeapBacking>(std::forward<std::vector<std::byte>>(buf), readonly)};
 	}
 
-	buffer buffer::mmap(const std::filesystem::path& path, bool readonly) {
+	Buffer Buffer::mmap(const std::filesystem::path& path, bool readonly) {
 		auto file_size = std::filesystem::file_size(path);
 		if (file_size == 0)
-			return buffer::empty();
+			return Buffer::empty();
 
 		if (readonly) {
-			return buffer {std::make_shared<detail::mmap_backing<mio::access_mode::read>>(path)};
+			return Buffer {std::make_shared<detail::MmapBacking<mio::access_mode::read>>(path)};
 		}
 
-		return buffer {std::make_shared<detail::mmap_backing<mio::access_mode::write>>(path)};
+		return Buffer {std::make_shared<detail::MmapBacking<mio::access_mode::write>>(path)};
 	}
 
-	buffer buffer::read(const std::filesystem::path& path, bool readonly) {
+	Buffer Buffer::read(const std::filesystem::path& path, bool readonly) {
 		std::ifstream in {path, std::ios::binary | std::ios::ate};
 		std::vector<std::byte> data {static_cast<size_t>(in.tellg())};
 
 		in.seekg(0);
 		in.read((char*) data.data(), data.size());
 
-		return buffer::of(std::move(data), readonly);
+		return Buffer::of(std::move(data), readonly);
 	}
 
-	buffer buffer::empty() {
-		if (buffer::_m_empty == nullptr) {
+	Buffer Buffer::empty() {
+		if (Buffer::_m_empty == nullptr) {
 			// If we don't have an empty buffer yet, create one.
-			buffer::_m_empty = std::make_unique<buffer>(buffer::allocate(0));
+			Buffer::_m_empty = std::make_unique<Buffer>(Buffer::allocate(0));
 		}
 
-		return buffer::_m_empty->duplicate();
+		return Buffer::_m_empty->duplicate();
 	}
 
-	void buffer::clear() noexcept {
+	void Buffer::clear() noexcept {
 		_m_position = 0;
 		_m_backing_end = _m_backing_begin + _m_capacity;
 		_m_mark.reset();
 	}
 
-	buffer buffer::duplicate() const noexcept {
-		return buffer {_m_backing, _m_backing_begin, _m_backing_end, _m_capacity, _m_position, _m_mark};
+	Buffer Buffer::duplicate() const noexcept {
+		return Buffer {_m_backing, _m_backing_begin, _m_backing_end, _m_capacity, _m_position, _m_mark};
 	}
 
-	void buffer::flip() noexcept {
+	void Buffer::flip() noexcept {
 		_m_backing_end = _m_backing_begin + _m_position;
 		_m_position = 0;
 		_m_mark.reset();
 	}
 
-	void buffer::limit(std::uint64_t limit) {
+	void Buffer::limit(std::uint64_t limit) {
 		if (limit > this->capacity()) {
-			throw buffer_underflow {limit, "setting limit"};
+			throw BufferUnderflowError {limit, "setting limit"};
 		}
 
 		_m_position = std::min(limit, _m_position);
@@ -222,9 +219,9 @@ namespace phoenix {
 		}
 	}
 
-	void buffer::position(std::uint64_t pos) {
+	void Buffer::position(std::uint64_t pos) {
 		if (pos > this->limit()) {
-			throw buffer_underflow {pos, "setting position"};
+			throw BufferUnderflowError {pos, "setting position"};
 		}
 
 		if (_m_mark && *_m_mark > pos) {
@@ -234,30 +231,30 @@ namespace phoenix {
 		_m_position = pos;
 	}
 
-	buffer buffer::slice() const noexcept {
-		return buffer {_m_backing, _m_backing_begin + _m_position, _m_backing_end};
+	Buffer Buffer::slice() const noexcept {
+		return Buffer {_m_backing, _m_backing_begin + _m_position, _m_backing_end};
 	}
 
-	buffer buffer::slice(std::uint64_t index, std::uint64_t size) const {
+	Buffer Buffer::slice(std::uint64_t index, std::uint64_t size) const {
 		if (index + size > this->limit()) {
-			throw buffer_underflow {index, size, "slicing"};
+			throw BufferUnderflowError {index, size, "slicing"};
 		}
 
-		return buffer {_m_backing, _m_backing_begin + index, _m_backing_begin + index + size};
+		return Buffer {_m_backing, _m_backing_begin + index, _m_backing_begin + index + size};
 	}
 
-	void buffer::get(std::byte* buf, std::uint64_t size) {
+	void Buffer::get(std::byte* buf, std::uint64_t size) {
 		if (this->remaining() < size) {
-			throw buffer_underflow {this->position(), size, "relative bulk get"};
+			throw BufferUnderflowError {this->position(), size, "relative bulk get"};
 		}
 
 		_m_backing->read(buf, size, _m_backing_begin + _m_position);
 		_m_position += size;
 	}
 
-	std::string buffer::get_string(std::uint64_t size) {
+	std::string Buffer::get_string(std::uint64_t size) {
 		if (this->remaining() < size) {
-			throw buffer_overflow {position(), size, "relative string get"};
+			throw BufferOverflowError {position(), size, "relative string get"};
 		}
 
 		std::string tmp {};
@@ -266,7 +263,7 @@ namespace phoenix {
 		return tmp;
 	}
 
-	std::string buffer::get_line(bool skip_whitespace) {
+	std::string Buffer::get_line(bool skip_whitespace) {
 		if (skip_whitespace) {
 			return this->get_line_and_ignore(" \f\n\r\t\v");
 		}
@@ -274,7 +271,7 @@ namespace phoenix {
 		return this->get_line_and_ignore("");
 	}
 
-	std::string buffer::get_line_and_ignore(std::string_view whitespace) {
+	std::string Buffer::get_line_and_ignore(std::string_view whitespace) {
 		std::string tmp {};
 
 		// Fix for #70, avoid attempting to read bytes from a
@@ -303,7 +300,7 @@ namespace phoenix {
 		return tmp;
 	}
 
-	std::string buffer::get_line_escaped(bool skip_whitespace) {
+	std::string Buffer::get_line_escaped(bool skip_whitespace) {
 		auto tmp = this->get_line(skip_whitespace);
 
 		for (auto i = 0u; i < tmp.size(); ++i) {
@@ -324,84 +321,84 @@ namespace phoenix {
 		return tmp;
 	}
 
-	void buffer::put(const std::byte* buf, std::uint64_t size) {
+	void Buffer::put(const std::byte* buf, std::uint64_t size) {
 		if (this->remaining() < size) {
-			throw buffer_overflow {this->position(), size, "relative bulk put"};
+			throw BufferOverflowError {this->position(), size, "relative bulk put"};
 		}
 
 		_m_backing->write(buf, size, _m_backing_begin + _m_position);
 		_m_position += size;
 	}
 
-	void buffer::put_string(std::string_view str) {
+	void Buffer::put_string(std::string_view str) {
 		this->put((const std::byte*) str.data(), str.size());
 	}
 
-	void buffer::put_line(std::string_view str) {
+	void Buffer::put_line(std::string_view str) {
 		put_string(str);
 		put_char('\n');
 	}
 
-	bool operator==(const buffer& self, const buffer& other) {
+	bool operator==(const Buffer& self, const Buffer& other) {
 		return &other == &self ||
 		    (other._m_backing == self._m_backing && other._m_backing_begin == self._m_backing_begin &&
 		     other._m_backing_end == self._m_backing_end && other._m_capacity == self._m_capacity &&
 		     other._m_position == self._m_position);
 	}
 
-	std::uint8_t buffer::get() {
+	std::uint8_t Buffer::get() {
 		return _get_t<std::uint8_t>();
 	}
 
-	char buffer::get_char() {
+	char Buffer::get_char() {
 		return _get_t<char>();
 	}
 
-	std::int16_t buffer::get_short() {
+	std::int16_t Buffer::get_short() {
 		return _get_t<std::int16_t>();
 	}
 
-	std::uint16_t buffer::get_ushort() {
+	std::uint16_t Buffer::get_ushort() {
 		return _get_t<std::uint16_t>();
 	}
 
-	std::int32_t buffer::get_int() {
+	std::int32_t Buffer::get_int() {
 		return _get_t<std::int32_t>();
 	}
 
-	std::uint32_t buffer::get_uint() {
+	std::uint32_t Buffer::get_uint() {
 		return _get_t<std::uint32_t>();
 	}
 
-	std::int64_t buffer::get_long() {
+	std::int64_t Buffer::get_long() {
 		return _get_t<std::int64_t>();
 	}
 
-	std::uint64_t buffer::get_ulong() {
+	std::uint64_t Buffer::get_ulong() {
 		return _get_t<std::uint64_t>();
 	}
 
-	float buffer::get_float() {
+	float Buffer::get_float() {
 		return _get_t<float>();
 	}
 
-	double buffer::get_double() {
+	double Buffer::get_double() {
 		return _get_t<double>();
 	}
 
-	glm::vec2 buffer::get_vec2() {
+	glm::vec2 Buffer::get_vec2() {
 		float content[2];
 		this->get((std::byte*) content, sizeof(content));
 		return {content[0], content[1]};
 	}
 
-	glm::vec3 buffer::get_vec3() {
+	glm::vec3 Buffer::get_vec3() {
 		float content[3];
 		this->get((std::byte*) content, sizeof(content));
 		return glm::vec3 {content[0], content[1], content[2]};
 	}
 
-	glm::mat3x3 buffer::get_mat3x3() {
+	glm::mat3x3 Buffer::get_mat3x3() {
 		float content[3 * 3];
 		this->get((std::byte*) content, sizeof(content));
 		return glm::transpose(glm::mat3x3 {
@@ -417,7 +414,7 @@ namespace phoenix {
 		});
 	}
 
-	glm::mat4x4 buffer::get_mat4x4() {
+	glm::mat4x4 Buffer::get_mat4x4() {
 		float content[4 * 4];
 		this->get((std::byte*) content, sizeof(content));
 		return glm::transpose(glm::mat4x4 {
@@ -440,60 +437,60 @@ namespace phoenix {
 		});
 	}
 
-	glm::vec4 buffer::get_vec4() {
+	glm::vec4 Buffer::get_vec4() {
 		float content[4];
 		this->get((std::byte*) content, sizeof(content));
 		return glm::vec4 {content[0], content[1], content[2], content[3]};
 	}
 
-	void buffer::put(const std::uint8_t* buf, std::uint64_t size) {
+	void Buffer::put(const std::uint8_t* buf, std::uint64_t size) {
 		this->put((const std::byte*) buf, size);
 	}
 
-	void buffer::put(std::uint8_t value) {
+	void Buffer::put(std::uint8_t value) {
 		_put_t(value);
 	}
 
-	void buffer::put_char(char value) {
+	void Buffer::put_char(char value) {
 		_put_t(value);
 	}
 
-	void buffer::put_short(std::int16_t value) {
+	void Buffer::put_short(std::int16_t value) {
 		_put_t(value);
 	}
 
-	void buffer::put_ushort(std::uint16_t value) {
+	void Buffer::put_ushort(std::uint16_t value) {
 		_put_t(value);
 	}
 
-	void buffer::put_int(std::int32_t value) {
+	void Buffer::put_int(std::int32_t value) {
 		_put_t(value);
 	}
 
-	void buffer::put_uint(std::uint32_t value) {
+	void Buffer::put_uint(std::uint32_t value) {
 		_put_t(value);
 	}
 
-	void buffer::put_long(std::int64_t value) {
+	void Buffer::put_long(std::int64_t value) {
 		_put_t(value);
 	}
 
-	void buffer::put_ulong(std::uint64_t value) {
+	void Buffer::put_ulong(std::uint64_t value) {
 		_put_t(value);
 	}
 
-	void buffer::put_float(float value) {
+	void Buffer::put_float(float value) {
 		_put_t(value);
 	}
 
-	void buffer::put_double(double value) {
+	void Buffer::put_double(double value) {
 		_put_t(value);
 	}
 
 	template <typename T, typename>
-	PHOENIX_INTERNAL void buffer::_put_t(T value) {
+	PHOENIX_INTERNAL void Buffer::_put_t(T value) {
 		if (this->remaining() < sizeof(T)) {
-			throw buffer_overflow {this->position(), sizeof(T)};
+			throw BufferOverflowError {this->position(), sizeof(T)};
 		}
 
 		_m_backing->write((std::byte*) &value, sizeof(T), _m_backing_begin + _m_position);
@@ -501,9 +498,9 @@ namespace phoenix {
 	}
 
 	template <typename T, typename>
-	PHOENIX_INTERNAL T buffer::_get_t(std::uint64_t pos) const {
+	PHOENIX_INTERNAL T Buffer::_get_t(std::uint64_t pos) const {
 		if (pos + sizeof(T) > limit()) {
-			throw buffer_underflow {pos, sizeof(T)};
+			throw BufferUnderflowError {pos, sizeof(T)};
 		}
 
 		T tmp;
@@ -512,7 +509,7 @@ namespace phoenix {
 	}
 
 	template <typename T, typename>
-	PHOENIX_INTERNAL T buffer::_get_t() {
+	PHOENIX_INTERNAL T Buffer::_get_t() {
 		auto tmp = this->_get_t<T>(this->position());
 		_m_position += sizeof(T);
 		return tmp;

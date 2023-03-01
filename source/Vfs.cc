@@ -1,9 +1,6 @@
-// Copyright © 2023 Luis Michaelis <me@lmichaelis.de>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #include "phoenix/Vfs.hh"
-#include "model_script_dsl.hh"
-#include "phoenix/ext/daedalus_classes.hh"
-#include "phoenix/phoenix.hh"
 
 #include <algorithm>
 #include <chrono>
@@ -36,7 +33,7 @@ namespace phoenix {
 
 	VfsNode::VfsNode(std::string_view name, time_t ts) : _m_name(name), _m_time(ts), _m_data(std::vector<VfsNode> {}) {}
 
-	VfsNode::VfsNode(std::string_view name, buffer dev, time_t ts)
+	VfsNode::VfsNode(std::string_view name, Buffer dev, time_t ts)
 	    : _m_name(name), _m_time(ts), _m_data(std::move(dev)) {}
 
 	std::vector<VfsNode> const& VfsNode::children() const {
@@ -76,15 +73,15 @@ namespace phoenix {
 		return true;
 	}
 
-	buffer VfsNode::open() const {
-		return std::get<buffer>(_m_data).duplicate();
+	Buffer VfsNode::open() const {
+		return std::get<Buffer>(_m_data).duplicate();
 	}
 
 	VfsNode VfsNode::directory(std::string_view name) {
 		return directory(name, -1);
 	}
 
-	VfsNode VfsNode::file(std::string_view name, buffer dev) {
+	VfsNode VfsNode::file(std::string_view name, Buffer dev) {
 		return file(name, std::move(dev), -1);
 	}
 
@@ -92,12 +89,12 @@ namespace phoenix {
 		return VfsNode(name, ts);
 	}
 
-	VfsNode VfsNode::file(std::string_view name, buffer dev, time_t ts) {
+	VfsNode VfsNode::file(std::string_view name, Buffer dev, time_t ts) {
 		return VfsNode(name, std::move(dev), ts);
 	}
 
 	VfsNodeType VfsNode::type() const noexcept {
-		return std::holds_alternative<buffer>(_m_data) ? VfsNodeType::FILE : VfsNodeType::DIRECTORY;
+		return std::holds_alternative<Buffer>(_m_data) ? VfsNodeType::FILE : VfsNodeType::DIRECTORY;
 	}
 
 	std::time_t VfsNode::time() const noexcept {
@@ -164,7 +161,7 @@ namespace phoenix {
 	}
 
 	void Vfs::mount_disk(const std::filesystem::path& host, VfsOverwriteBehavior overwrite) {
-		this->mount_disk(buffer::mmap(host), overwrite);
+		this->mount_disk(Buffer::mmap(host), overwrite);
 	}
 
 	static std::time_t vfs_dos_to_unix_time(std::uint32_t dos) noexcept {
@@ -180,7 +177,7 @@ namespace phoenix {
 		return mktime(&t);
 	}
 
-	void Vfs::mount_disk(buffer buf, VfsOverwriteBehavior overwrite) {
+	void Vfs::mount_disk(Buffer buf, VfsOverwriteBehavior overwrite) {
 		auto comment = buf.get_string(256);
 		auto signature = buf.get_string(16);
 		[[maybe_unused]] auto entry_count = buf.get_uint();
@@ -396,7 +393,7 @@ namespace phoenix {
 					    VfsNode* newP = parent->create(VfsNode::directory(path.filename().string(), time.count()));
 					    load_directory(newP, path);
 				    } else if (ref.file_size() > 0) {
-					    parent->create(VfsNode::file(path.filename().string(), buffer::mmap(path), time.count()));
+					    parent->create(VfsNode::file(path.filename().string(), Buffer::mmap(path), time.count()));
 				    }
 			    }
 		    };

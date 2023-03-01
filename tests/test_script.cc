@@ -1,18 +1,18 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #include <doctest/doctest.h>
 #include <phoenix/script.hh>
 
 namespace px = phoenix;
 
-[[maybe_unused]] static bool compare_instruction(phoenix::instruction a, phoenix::instruction b) {
+[[maybe_unused]] static bool compare_instruction(phoenix::DaedalusInstruction a, phoenix::DaedalusInstruction b) {
 	return a.op == b.op && a.index == b.index && a.immediate == b.immediate && a.address == b.address &&
 	    a.symbol == b.symbol;
 }
 
 TEST_SUITE("script") {
 	TEST_CASE("script(parse)") {
-		auto scr = phoenix::script::parse("./samples/menu.proprietary.dat");
+		auto scr = phoenix::DaedalusScript::parse("./samples/menu.proprietary.dat");
 
 		auto& syms = scr.symbols();
 		CHECK_EQ(syms.size(), 1093);
@@ -40,42 +40,42 @@ TEST_SUITE("script") {
 
 		CHECK_EQ(class_symbol->name(), "C_MENU");
 		CHECK_EQ(class_symbol->count(), 13);
-		CHECK_EQ(class_symbol->type(), px::datatype::class_);
+		CHECK_EQ(class_symbol->type(), px::DaedalusDataType::CLASS);
 		CHECK_FALSE(class_symbol->has_return());
 		CHECK_EQ(class_symbol->class_size(), 3096);
 		// CHECK_EQ(class_symbol->parent(), -1); FIXME
 
 		CHECK_EQ(member_symbol->name(), "C_MENU.BACKPIC");
 		CHECK_EQ(member_symbol->count(), 1);
-		CHECK_EQ(member_symbol->type(), px::datatype::string);
+		CHECK_EQ(member_symbol->type(), px::DaedalusDataType::STRING);
 		CHECK_FALSE(member_symbol->has_return());
 		CHECK_EQ(member_symbol->parent(), 118);
 
 		CHECK_EQ(prototype_symbol->name(), "C_MENU_DEF");
 		CHECK_EQ(prototype_symbol->count(), 0);
 		CHECK_EQ(prototype_symbol->address(), 236);
-		CHECK_EQ(prototype_symbol->type(), px::datatype::prototype);
+		CHECK_EQ(prototype_symbol->type(), px::DaedalusDataType::PROTOTYPE);
 		CHECK_FALSE(prototype_symbol->has_return());
 		CHECK_EQ(prototype_symbol->parent(), 118);
 
 		CHECK_EQ(instance_symbol->name(), "MENU_MAIN");
 		CHECK_EQ(instance_symbol->count(), 0);
 		CHECK_EQ(instance_symbol->address(), 372);
-		CHECK_EQ(instance_symbol->type(), px::datatype::instance);
+		CHECK_EQ(instance_symbol->type(), px::DaedalusDataType::INSTANCE);
 		CHECK_FALSE(instance_symbol->has_return());
 		CHECK_EQ(instance_symbol->parent(), 133);
 
 		CHECK_EQ(function_symbol->name(), "SHOWINTRO");
 		CHECK_EQ(function_symbol->count(), 0);
 		CHECK_EQ(function_symbol->address(), 1877);
-		CHECK_EQ(function_symbol->type(), px::datatype::function);
+		CHECK_EQ(function_symbol->type(), px::DaedalusDataType::FUNCTION);
 		CHECK(function_symbol->has_return());
-		CHECK_EQ(function_symbol->rtype(), px::datatype::integer);
+		CHECK_EQ(function_symbol->rtype(), px::DaedalusDataType::INT);
 		// CHECK(function_symbol->parent(), -1); FIXME
 
 		CHECK_EQ(external_symbol->name(), "UPDATE_CHOICEBOX");
 		CHECK_EQ(external_symbol->count(), 1);
-		CHECK_EQ(external_symbol->type(), px::datatype::function);
+		CHECK_EQ(external_symbol->type(), px::DaedalusDataType::FUNCTION);
 		CHECK(external_symbol->is_external());
 		CHECK(external_symbol->is_const());
 		CHECK_FALSE(external_symbol->has_return());

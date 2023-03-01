@@ -1,23 +1,24 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/world/bsp_tree.hh>
+#include "phoenix/world/bsp_tree.hh"
+#include "phoenix/buffer.hh"
 
 namespace phoenix {
 	static constexpr auto version_g1 = 0x2090000;
 	[[maybe_unused]] static constexpr auto version_g2 = 0x4090000;
 
-	enum class bsp_chunk : std::uint16_t {
-		unknown,
-		header = 0xC000,
-		polygons = 0xC010,
-		tree = 0xC040,
-		outdoors = 0xC050,
-		light = 0xC045,
-		end = 0xC0FF
+	enum class BspChunkType : std::uint16_t {
+		UNKNOWN,
+		HEADER = 0xC000,
+		POLYGONS = 0xC010,
+		TREE = 0xC040,
+		OUTDOOR = 0xC050,
+		LIGHT = 0xC045,
+		END = 0xC0FF
 	};
 
-	static void _parse_bsp_nodes(buffer& in,
-	                             std::vector<bsp_node>& nodes,
+	static void _parse_bsp_nodes(Buffer& in,
+	                             std::vector<BspNode>& nodes,
 	                             std::vector<std::uint64_t>& indices,
 	                             std::uint32_t version,
 	                             std::int32_t parent_index,
@@ -26,7 +27,7 @@ namespace phoenix {
 
 		auto& node = nodes.emplace_back();
 		node.parent_index = parent_index;
-		node.bbox = bounding_box::parse(in);
+		node.bbox = AxisAlignedBoundingBox::parse(in);
 		node.polygon_index = in.get_uint();
 		node.polygon_count = in.get_uint();
 
@@ -57,32 +58,32 @@ namespace phoenix {
 		}
 	}
 
-	bsp_tree bsp_tree::parse(buffer& in, std::uint32_t version) {
-		bsp_tree bsp {};
-		bsp_chunk type = bsp_chunk::unknown;
+	BspTree BspTree::parse(Buffer& in, std::uint32_t version) {
+		BspTree bsp {};
+		BspChunkType type = BspChunkType::UNKNOWN;
 		bool finished = false;
 
 		do {
-			type = static_cast<bsp_chunk>(in.get_ushort());
+			type = static_cast<BspChunkType>(in.get_ushort());
 
 			auto length = in.get_uint();
 			auto chunk = in.extract(length);
 
-			PX_LOGI("bsp_tree: parsing chunk ", std::hex, std::uint16_t(type));
+			PX_LOGI("BspTree: parsing chunk ", std::hex, std::uint16_t(type));
 
 			switch (type) {
-			case bsp_chunk::header:
+			case BspChunkType::HEADER:
 				(void) chunk.get_ushort();
-				bsp.mode = static_cast<bsp_tree_mode>(chunk.get_uint());
+				bsp.mode = static_cast<BspTreeType>(chunk.get_uint());
 				break;
-			case bsp_chunk::polygons:
+			case BspChunkType::POLYGONS:
 				bsp.polygon_indices.resize(chunk.get_uint());
 
 				for (uint32_t& index : bsp.polygon_indices) {
 					index = chunk.get_uint();
 				}
 				break;
-			case bsp_chunk::tree: {
+			case BspChunkType::TREE: {
 				uint32_t node_count = chunk.get_uint();
 				uint32_t leaf_count = chunk.get_uint();
 
@@ -103,7 +104,7 @@ namespace phoenix {
 				assert(leaf_count == bsp.leaf_node_indices.size());
 				break;
 			}
-			case bsp_chunk::light: {
+			case BspChunkType::LIGHT: {
 				bsp.light_points.resize(bsp.leaf_node_indices.size());
 
 				for (std::uint32_t i = 0; i < bsp.light_points.size(); ++i) {
@@ -111,7 +112,7 @@ namespace phoenix {
 				}
 				break;
 			}
-			case bsp_chunk::outdoors: {
+			case BspChunkType::OUTDOOR: {
 				auto sector_count = chunk.get_uint();
 				bsp.sectors.reserve(sector_count);
 
@@ -143,7 +144,7 @@ namespace phoenix {
 				}
 				break;
 			}
-			case bsp_chunk::end:
+			case BspChunkType::END:
 				(void) chunk.get();
 				finished = true;
 				break;
@@ -152,7 +153,7 @@ namespace phoenix {
 			}
 
 			if (chunk.remaining() != 0) {
-				PX_LOGW("bsp_tree: ", chunk.remaining(), " bytes remaining in section ", std::hex, std::uint16_t(type));
+				PX_LOGW("BspTree: ", chunk.remaining(), " bytes remaining in section ", std::hex, std::uint16_t(type));
 			}
 		} while (!finished);
 

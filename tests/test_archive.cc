@@ -1,15 +1,15 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #include <phoenix/archive.hh>
 
 #include <doctest/doctest.h>
 
-TEST_SUITE("archive") {
-	TEST_CASE("archive(open:ASCII)") {
-		auto in = phoenix::buffer::mmap("./samples/ascii.zen");
-		auto reader = phoenix::archive_reader::open(in);
+TEST_SUITE("ArchiveReader") {
+	TEST_CASE("ArchiveReader(open:ASCII)") {
+		auto in = phoenix::Buffer::mmap("./samples/ascii.zen");
+		auto reader = phoenix::ArchiveReader::open(in);
 
-		phoenix::archive_object obj;
+		phoenix::ArchiveObject obj;
 
 		CHECK(reader->read_object_begin(obj));
 		CHECK_FALSE(reader->read_object_begin(obj));
@@ -23,7 +23,7 @@ TEST_SUITE("archive") {
 
 		// This failure will skip the offending entry. I am not yet sure if this is the correct behavior
 		// or if it should just revert to the beginning of the line to enable re-parsing it.
-		REQUIRE_THROWS_AS(reader->read_string(), phoenix::parser_error);
+		REQUIRE_THROWS_AS(reader->read_string(), phoenix::ParserError);
 
 		reader->skip_object(false);
 
@@ -84,15 +84,15 @@ TEST_SUITE("archive") {
 
 		CHECK(reader->read_object_end());
 		CHECK(reader->read_object_end());
-		REQUIRE_THROWS_AS(reader->read_float(), phoenix::parser_error);
+		REQUIRE_THROWS_AS(reader->read_float(), phoenix::ParserError);
 	}
 
-	TEST_CASE("archive(open:BINARY)") {
-		auto in = phoenix::buffer::mmap("./samples/binary.zen");
-		auto reader = phoenix::archive_reader::open(in);
+	TEST_CASE("ArchiveReader(open:BINARY)") {
+		auto in = phoenix::Buffer::mmap("./samples/binary.zen");
+		auto reader = phoenix::ArchiveReader::open(in);
 		CHECK_EQ(reader->read_string(), "DT_BOOKSHELF_V1_1");
 
-		phoenix::archive_object obj;
+		phoenix::ArchiveObject obj;
 		CHECK(reader->read_object_begin(obj));
 
 		CHECK_EQ(obj.object_name, "%");
@@ -115,7 +115,7 @@ TEST_SUITE("archive") {
 		CHECK_EQ(reader->read_float(), 0.0f);
 	}
 
-	TEST_CASE("archive(open:BIN_SAFE)" * doctest::skip()) {
+	TEST_CASE("ArchiveReader(open:BIN_SAFE)" * doctest::skip()) {
 		// FIXME: Stub
 	}
 }

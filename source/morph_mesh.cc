@@ -1,53 +1,54 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/morph_mesh.hh>
+#include "phoenix/morph_mesh.hh"
+#include "phoenix/buffer.hh"
 
 namespace phoenix {
-	enum class morph_mesh_chunk {
-		unknown,
-		sources = 0xE010,
-		header = 0xE020,
-		animations = 0xE030,
-		proto = 0xB100,
-		morph = 0xB1FF
+	enum class MorphMeshChunkType {
+		UNKNOWN,
+		SOURCE = 0xE010,
+		HEADER = 0xE020,
+		ANIMATION = 0xE030,
+		MESH = 0xB100,
+		MORPH = 0xB1FF
 	};
 
-	morph_mesh morph_mesh::parse(buffer& in) {
-		morph_mesh msh {};
-		morph_mesh_chunk type = morph_mesh_chunk::unknown;
+	MorphMesh MorphMesh::parse(Buffer& in) {
+		MorphMesh msh {};
+		MorphMeshChunkType type = MorphMeshChunkType::UNKNOWN;
 
 		do {
-			type = static_cast<morph_mesh_chunk>(in.get_ushort());
+			type = static_cast<MorphMeshChunkType>(in.get_ushort());
 
 			auto length = in.get_uint();
 			auto chunk = in.extract(length);
 
 			switch (type) {
-			case morph_mesh_chunk::sources: {
+			case MorphMeshChunkType::SOURCE: {
 				auto count = chunk.get_ushort();
 				msh.sources.resize(count);
 
 				for (int32_t i = 0; i < count; ++i) {
-					msh.sources[i].file_date = date::parse(chunk);
+					msh.sources[i].file_date = Date::parse(chunk);
 					msh.sources[i].file_name = chunk.get_line();
 				}
 
 				break;
 			}
-			case morph_mesh_chunk::header:
+			case MorphMeshChunkType::HEADER:
 				/* version = */ (void) chunk.get_uint();
 				msh.name = chunk.get_line();
 				break;
-			case morph_mesh_chunk::proto:
-				msh.mesh = proto_mesh::parse_from_section(chunk);
+			case MorphMeshChunkType::MESH:
+				msh.mesh = MultiResolutionMesh::parse_from_section(chunk);
 				msh.morph_positions.resize(msh.mesh.positions.size());
 				break;
-			case morph_mesh_chunk::morph:
-				for (std::uint32_t i = 0; i < msh.morph_positions.size(); ++i) {
-					msh.morph_positions[i] = chunk.get_vec3();
+			case MorphMeshChunkType::MORPH:
+				for (auto& morph_position : msh.morph_positions) {
+					morph_position = chunk.get_vec3();
 				}
 				break;
-			case morph_mesh_chunk::animations: {
+			case MorphMeshChunkType::ANIMATION: {
 				auto animation_count = chunk.get_ushort();
 				msh.animations.reserve(animation_count);
 
@@ -82,7 +83,7 @@ namespace phoenix {
 			}
 
 			if (chunk.remaining() != 0) {
-				PX_LOGW("morph_mesh: ",
+				PX_LOGW("MorphMesh: ",
 				        chunk.remaining(),
 				        " bytes remaining in section ",
 				        std::hex,

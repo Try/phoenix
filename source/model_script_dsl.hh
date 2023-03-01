@@ -1,22 +1,23 @@
-// Copyright © 2023 Luis Michaelis <me@lmichaelis.de>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #pragma once
+#include "phoenix/buffer.hh"
+#include "phoenix/model_script.hh"
+#include "phoenix/phoenix.hh"
+
 #include <iterator>
 #include <optional>
-#include <phoenix/buffer.hh>
-#include <phoenix/model_script.hh>
-#include <phoenix/phoenix.hh>
-
 #include <stdexcept>
 #include <string>
 #include <string_view>
 
 namespace phoenix::mds {
-	event_tag make_event_tag(int32_t, std::string&&, std::optional<std::string>&&, std::optional<std::string>&&, bool);
+	MdsEventTag
+	make_event_tag(int32_t, std::string&&, std::optional<std::string>&&, std::optional<std::string>&&, bool);
 }
 
-namespace phoenix::parser {
-	enum class token {
+namespace phoenix {
+	enum class MdsToken {
 		keyword = 0,
 		integer = 1,
 		float_ = 2,
@@ -28,11 +29,11 @@ namespace phoenix::parser {
 		null = 10,
 	};
 
-	class tokenizer {
+	class MdsTokenizer {
 	public:
-		explicit tokenizer(buffer buf);
+		explicit MdsTokenizer(Buffer buf);
 
-		token next();
+		MdsToken next();
 
 		void backtrack() {
 			this->_m_buffer.reset();
@@ -49,41 +50,41 @@ namespace phoenix::parser {
 		[[nodiscard]] std::string format_location() const;
 
 	private:
-		buffer _m_buffer;
+		Buffer _m_buffer;
 		uint32_t _m_line {1}, _m_column {1};
 		std::string _m_value;
 	};
 
-	class parser {
+	class MdsParser {
 	public:
-		explicit parser(buffer buf);
+		explicit MdsParser(Buffer buf);
 
-		model_script parse_script();
-		mds::skeleton parse_meshAndTree();
+		ModelScript parse_script();
+		MdsSkeleton parse_meshAndTree();
 		std::string parse_registerMesh();
-		void parse_aniEnum(model_script& into);
-		void parse_events(mds::animation& ani);
+		void parse_aniEnum(ModelScript& into);
+		void parse_events(MdsAnimation& ani);
 		void ignore_block();
-		mds::event_tag parse_eventTag();
-		mds::event_sfx parse_eventSFX();
-		mds::event_pfx parse_eventPFX();
-		mds::event_sfx_ground parse_eventSFXGrnd();
-		mds::event_pfx_stop parse_eventPFXStop();
-		mds::event_morph_animate parse_eventMMStartAni();
-		mds::event_camera_tremor parse_eventCamTremor();
-		mds::animation parse_ani();
-		mds::animation_combination parse_aniComb();
-		mds::animation_alias parse_aniAlias();
-		mds::animation_blending parse_aniBlend();
+		MdsEventTag parse_eventTag();
+		MdsSoundEffect parse_eventSFX();
+		MdsParticleEffect parse_eventPFX();
+		MdsSoundEffectGround parse_eventSFXGrnd();
+		MdsParticleEffectStop parse_eventPFXStop();
+		MdsMorphAnimation parse_eventMMStartAni();
+		MdsCameraTremor parse_eventCamTremor();
+		MdsAnimation parse_ani();
+		MdsAnimationCombine parse_aniComb();
+		MdsAnimationAlias parse_aniAlias();
+		MdsAnimationBlend parse_aniBlend();
 		std::string parse_aniDisable();
-		mds::model_tag parse_modelTag();
+		MdsModelTag parse_modelTag();
 
 	private:
 		[[nodiscard]] bool eof() const {
 			return this->_m_stream.eof();
 		}
 
-		template <token kind>
+		template <MdsToken kind>
 		void expect();
 
 		[[nodiscard]] std::string expect_string();
@@ -91,9 +92,9 @@ namespace phoenix::parser {
 		void expect_keyword(std::string_view value);
 		[[nodiscard]] float expect_number();
 		[[nodiscard]] int expect_int();
-		[[nodiscard]] mds::animation_flags expect_flags();
+		[[nodiscard]] AnimationFlags expect_flags();
 
-		template <token kind>
+		template <MdsToken kind>
 		bool maybe();
 
 		[[nodiscard]] std::optional<int> maybe_int();
@@ -103,6 +104,6 @@ namespace phoenix::parser {
 		[[nodiscard]] std::optional<float> maybe_named(std::string_view name);
 
 	private:
-		tokenizer _m_stream;
+		MdsTokenizer _m_stream;
 	};
-} // namespace phoenix::parser
+} // namespace phoenix

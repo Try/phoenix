@@ -1,24 +1,26 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <doctest/doctest.h>
+#include <phoenix/buffer.hh>
 #include <phoenix/proto_mesh.hh>
 
-static bool compare_triangle(phoenix::triangle a, phoenix::triangle b) {
+#include <doctest/doctest.h>
+
+static bool compare_triangle(phoenix::MeshTriangle a, phoenix::MeshTriangle b) {
 	return a.wedges[0] == b.wedges[0] && a.wedges[1] == b.wedges[1] && a.wedges[2] == b.wedges[2];
 }
 
-static bool compare_wedge(phoenix::wedge a, phoenix::wedge b) {
+static bool compare_wedge(phoenix::MeshWedge a, phoenix::MeshWedge b) {
 	return a.normal == b.normal && a.texture == b.texture && a.index == b.index;
 }
 
-static bool compare_plane(phoenix::plane a, phoenix::plane b) {
+static bool compare_plane(phoenix::MeshPlane a, phoenix::MeshPlane b) {
 	return a.normal == b.normal && a.distance == b.distance;
 }
 
-TEST_SUITE("proto_mesh") {
-	TEST_CASE("proto_mesh(parse:?)") {
-		auto in = phoenix::buffer::mmap("./samples/mesh0.mrm");
-		auto mesh = phoenix::proto_mesh::parse(in);
+TEST_SUITE("MultiResolutionMesh") {
+	TEST_CASE("MultiResolutionMesh(parse:?)") {
+		auto in = phoenix::Buffer::mmap("./samples/mesh0.mrm");
+		auto mesh = phoenix::MultiResolutionMesh::parse(in);
 
 		const auto& positions = mesh.positions;
 		CHECK_EQ(positions.size(), 8);
@@ -76,11 +78,11 @@ TEST_SUITE("proto_mesh") {
 		CHECK_EQ(submesh.wedge_map[31], 0);
 	}
 
-	TEST_CASE("proto_mesh(parse:g1)" * doctest::skip()) {
+	TEST_CASE("MultiResolutionMesh(parse:g1)" * doctest::skip()) {
 		// TODO: Stub
 	}
 
-	TEST_CASE("proto_mesh(parse:g2)" * doctest::skip()) {
+	TEST_CASE("MultiResolutionMesh(parse:g2)" * doctest::skip()) {
 		// TODO: Stub
 	}
 }

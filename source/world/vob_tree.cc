@@ -1,15 +1,15 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/world/vob_tree.hh>
-
-#include <phoenix/vobs/camera.hh>
-#include <phoenix/vobs/light.hh>
-#include <phoenix/vobs/misc.hh>
-#include <phoenix/vobs/mob.hh>
-#include <phoenix/vobs/sound.hh>
-#include <phoenix/vobs/trigger.hh>
-#include <phoenix/vobs/vob.hh>
-#include <phoenix/vobs/zone.hh>
+#include "phoenix/world/vob_tree.hh"
+#include "phoenix/archive.hh"
+#include "phoenix/vobs/camera.hh"
+#include "phoenix/vobs/light.hh"
+#include "phoenix/vobs/misc.hh"
+#include "phoenix/vobs/mob.hh"
+#include "phoenix/vobs/sound.hh"
+#include "phoenix/vobs/trigger.hh"
+#include "phoenix/vobs/vob.hh"
+#include "phoenix/vobs/zone.hh"
 
 #include <unordered_map>
 
@@ -62,12 +62,12 @@ namespace phoenix {
 	    {"\xA7", vob_type::ignored}, // some sort of padding object, probably. seems to be always empty
 	};
 
-	std::unique_ptr<vob> parse_vob_tree(archive_reader& in, game_version version) {
-		std::vector<std::unique_ptr<vob>> vobs {};
+	std::unique_ptr<VirtualObject> parse_vob_tree(ArchiveReader& in, GameVersion version) {
+		std::vector<std::unique_ptr<VirtualObject>> vobs {};
 
-		archive_object obj;
+		ArchiveObject obj;
 		if (!in.read_object_begin(obj)) {
-			throw parser_error("vob_tree: expected object where there was none");
+			throw ParserError {"vob_tree", "expected object where there was none"};
 		}
 
 		vob_type type;
@@ -78,7 +78,7 @@ namespace phoenix {
 			type = vob_type::unknown;
 		}
 
-		std::unique_ptr<vob> object;
+		std::unique_ptr<VirtualObject> object;
 
 		switch (type) {
 		case vob_type::zCCamTrj_KeyFrame:
@@ -88,132 +88,132 @@ namespace phoenix {
 		case vob_type::zCVobStair:
 		case vob_type::zCVobSpot:
 		case vob_type::zCVob:
-			object = std::make_unique<vob>();
-			vob::parse(*object, in, version);
+			object = std::make_unique<VirtualObject>();
+			VirtualObject::parse(*object, in, version);
 			break;
 		case vob_type::zCCSCamera:
-			object = std::make_unique<vobs::cs_camera>();
-			vobs::cs_camera::parse(dynamic_cast<vobs::cs_camera&>(*object), in, version);
+			object = std::make_unique<vobs::CutsceneCamera>();
+			vobs::CutsceneCamera::parse(dynamic_cast<vobs::CutsceneCamera&>(*object), in, version);
 			break;
 		case vob_type::zCVobAnimate:
-			object = std::make_unique<vobs::animate>();
-			vobs::animate::parse(dynamic_cast<vobs::animate&>(*object), in, version);
+			object = std::make_unique<vobs::Animate>();
+			vobs::Animate::parse(dynamic_cast<vobs::Animate&>(*object), in, version);
 			break;
 		case vob_type::zCZoneVobFarPlane:
 		case vob_type::zCZoneVobFarPlaneDefault:
-			object = std::make_unique<vobs::zone_far_plane>();
-			vobs::zone_far_plane::parse(dynamic_cast<vobs::zone_far_plane&>(*object), in, version);
+			object = std::make_unique<vobs::ZoneFarPlane>();
+			vobs::ZoneFarPlane::parse(dynamic_cast<vobs::ZoneFarPlane&>(*object), in, version);
 			break;
 		case vob_type::zCZoneZFogDefault:
 		case vob_type::zCZoneZFog:
-			object = std::make_unique<vobs::zone_fog>();
-			vobs::zone_fog::parse(dynamic_cast<vobs::zone_fog&>(*object), in, version);
+			object = std::make_unique<vobs::ZoneFog>();
+			vobs::ZoneFog::parse(dynamic_cast<vobs::ZoneFog&>(*object), in, version);
 			break;
 		case vob_type::zCVobLensFlare:
-			object = std::make_unique<vobs::lens_flare>();
-			vobs::lens_flare::parse(dynamic_cast<vobs::lens_flare&>(*object), in, version);
+			object = std::make_unique<vobs::LensFlare>();
+			vobs::LensFlare::parse(dynamic_cast<vobs::LensFlare&>(*object), in, version);
 			break;
 		case vob_type::oCItem:
-			object = std::make_unique<vobs::item>();
-			vobs::item::parse(dynamic_cast<vobs::item&>(*object), in, version);
+			object = std::make_unique<vobs::Item>();
+			vobs::Item::parse(dynamic_cast<vobs::Item&>(*object), in, version);
 			break;
 		case vob_type::zCTrigger:
 		case vob_type::oCCSTrigger:
-			object = std::make_unique<vobs::trigger>();
-			vobs::trigger::parse(dynamic_cast<vobs::trigger&>(*object), in, version);
+			object = std::make_unique<vobs::Trigger>();
+			vobs::Trigger::parse(dynamic_cast<vobs::Trigger&>(*object), in, version);
 			break;
 		case vob_type::oCMOB:
-			object = std::make_unique<vobs::mob>();
-			vobs::mob::parse(dynamic_cast<vobs::mob&>(*object), in, version);
+			object = std::make_unique<vobs::MovableObject>();
+			vobs::MovableObject::parse(dynamic_cast<vobs::MovableObject&>(*object), in, version);
 			break;
 		case vob_type::oCMobInter:
 		case vob_type::oCMobLadder:
 		case vob_type::oCMobSwitch:
 		case vob_type::oCMobWheel:
 		case vob_type::oCMobBed:
-			object = std::make_unique<vobs::mob_inter>();
-			vobs::mob_inter::parse(dynamic_cast<vobs::mob_inter&>(*object), in, version);
+			object = std::make_unique<vobs::InteractiveObject>();
+			vobs::InteractiveObject::parse(dynamic_cast<vobs::InteractiveObject&>(*object), in, version);
 			break;
 		case vob_type::oCMobFire:
-			object = std::make_unique<vobs::mob_fire>();
-			vobs::mob_fire::parse(dynamic_cast<vobs::mob_fire&>(*object), in, version);
+			object = std::make_unique<vobs::Fire>();
+			vobs::Fire::parse(dynamic_cast<vobs::Fire&>(*object), in, version);
 			break;
 		case vob_type::oCMobContainer:
-			object = std::make_unique<vobs::mob_container>();
-			vobs::mob_container::parse(dynamic_cast<vobs::mob_container&>(*object), in, version);
+			object = std::make_unique<vobs::Container>();
+			vobs::Container::parse(dynamic_cast<vobs::Container&>(*object), in, version);
 			break;
 		case vob_type::oCMobDoor:
-			object = std::make_unique<vobs::mob_door>();
-			vobs::mob_door::parse(dynamic_cast<vobs::mob_door&>(*object), in, version);
+			object = std::make_unique<vobs::Door>();
+			vobs::Door::parse(dynamic_cast<vobs::Door&>(*object), in, version);
 			break;
 		case vob_type::zCPFXController:
-			object = std::make_unique<vobs::pfx_controller>();
-			vobs::pfx_controller::parse(dynamic_cast<vobs::pfx_controller&>(*object), in, version);
+			object = std::make_unique<vobs::ParticleEffectController>();
+			vobs::ParticleEffectController::parse(dynamic_cast<vobs::ParticleEffectController&>(*object), in, version);
 			break;
 		case vob_type::zCVobLight:
-			object = std::make_unique<vobs::light>();
-			vobs::light::parse((vobs::light&) *object, in, version);
+			object = std::make_unique<vobs::Light>();
+			vobs::Light::parse((vobs::Light&) *object, in, version);
 			break;
 		case vob_type::zCVobSound:
-			object = std::make_unique<vobs::sound>();
-			vobs::sound::parse(dynamic_cast<vobs::sound&>(*object), in, version);
+			object = std::make_unique<vobs::Sound>();
+			vobs::Sound::parse(dynamic_cast<vobs::Sound&>(*object), in, version);
 			break;
 		case vob_type::zCVobSoundDaytime:
-			object = std::make_unique<vobs::sound_daytime>();
-			vobs::sound_daytime::parse(dynamic_cast<vobs::sound_daytime&>(*object), in, version);
+			object = std::make_unique<vobs::SoundDaytime>();
+			vobs::SoundDaytime::parse(dynamic_cast<vobs::SoundDaytime&>(*object), in, version);
 			break;
 		case vob_type::oCZoneMusic:
 		case vob_type::oCZoneMusicDefault:
-			object = std::make_unique<vobs::zone_music>();
-			vobs::zone_music::parse(dynamic_cast<vobs::zone_music&>(*object), in, version);
+			object = std::make_unique<vobs::ZoneMusic>();
+			vobs::ZoneMusic::parse(dynamic_cast<vobs::ZoneMusic&>(*object), in, version);
 			break;
 		case vob_type::zCMessageFilter:
-			object = std::make_unique<vobs::message_filter>();
-			vobs::message_filter::parse(dynamic_cast<vobs::message_filter&>(*object), in, version);
+			object = std::make_unique<vobs::MessageFilter>();
+			vobs::MessageFilter::parse(dynamic_cast<vobs::MessageFilter&>(*object), in, version);
 			break;
 		case vob_type::zCCodeMaster:
-			object = std::make_unique<vobs::code_master>();
-			vobs::code_master::parse(dynamic_cast<vobs::code_master&>(*object), in, version);
+			object = std::make_unique<vobs::CodeMaster>();
+			vobs::CodeMaster::parse(dynamic_cast<vobs::CodeMaster&>(*object), in, version);
 			break;
 		case vob_type::zCTriggerList:
-			object = std::make_unique<vobs::trigger_list>();
-			vobs::trigger_list::parse(dynamic_cast<vobs::trigger_list&>(*object), in, version);
+			object = std::make_unique<vobs::TriggerList>();
+			vobs::TriggerList::parse(dynamic_cast<vobs::TriggerList&>(*object), in, version);
 			break;
 		case vob_type::oCTriggerScript:
-			object = std::make_unique<vobs::trigger_script>();
-			vobs::trigger_script::parse(dynamic_cast<vobs::trigger_script&>(*object), in, version);
+			object = std::make_unique<vobs::TriggerScript>();
+			vobs::TriggerScript::parse(dynamic_cast<vobs::TriggerScript&>(*object), in, version);
 			break;
 		case vob_type::zCMover:
-			object = std::make_unique<vobs::trigger_mover>();
-			vobs::trigger_mover::parse(dynamic_cast<vobs::trigger_mover&>(*object), in, version);
+			object = std::make_unique<vobs::Mover>();
+			vobs::Mover::parse(dynamic_cast<vobs::Mover&>(*object), in, version);
 			break;
 		case vob_type::oCTriggerChangeLevel:
-			object = std::make_unique<vobs::trigger_change_level>();
-			vobs::trigger_change_level::parse(dynamic_cast<vobs::trigger_change_level&>(*object), in, version);
+			object = std::make_unique<vobs::TriggerChangeLevel>();
+			vobs::TriggerChangeLevel::parse(dynamic_cast<vobs::TriggerChangeLevel&>(*object), in, version);
 			break;
 		case vob_type::zCTriggerWorldStart:
-			object = std::make_unique<vobs::trigger_world_start>();
-			vobs::trigger_world_start::parse(dynamic_cast<vobs::trigger_world_start&>(*object), in, version);
+			object = std::make_unique<vobs::TriggerWorldStart>();
+			vobs::TriggerWorldStart::parse(dynamic_cast<vobs::TriggerWorldStart&>(*object), in, version);
 			break;
 		case vob_type::oCTouchDamage:
-			object = std::make_unique<vobs::touch_damage>();
-			vobs::touch_damage::parse(dynamic_cast<vobs::touch_damage&>(*object), in, version);
+			object = std::make_unique<vobs::TouchDamage>();
+			vobs::TouchDamage::parse(dynamic_cast<vobs::TouchDamage&>(*object), in, version);
 			break;
 		case vob_type::zCTriggerUntouch:
-			object = std::make_unique<vobs::trigger_untouch>();
-			vobs::trigger_untouch::parse(dynamic_cast<vobs::trigger_untouch&>(*object), in, version);
+			object = std::make_unique<vobs::TriggerUntouch>();
+			vobs::TriggerUntouch::parse(dynamic_cast<vobs::TriggerUntouch&>(*object), in, version);
 			break;
 		case vob_type::zCEarthquake:
-			object = std::make_unique<vobs::earthquake>();
-			vobs::earthquake::parse(dynamic_cast<vobs::earthquake&>(*object), in, version);
+			object = std::make_unique<vobs::Earthquake>();
+			vobs::Earthquake::parse(dynamic_cast<vobs::Earthquake&>(*object), in, version);
 			break;
 		case vob_type::zCMoverController:
-			object = std::make_unique<vobs::mover_controller>();
-			vobs::mover_controller::parse(dynamic_cast<vobs::mover_controller&>(*object), in, version);
+			object = std::make_unique<vobs::MoverController>();
+			vobs::MoverController::parse(dynamic_cast<vobs::MoverController&>(*object), in, version);
 			break;
 		case vob_type::oCNpc:
-			object = std::make_unique<vobs::npc>();
-			vobs::npc::parse(dynamic_cast<vobs::npc&>(*object), in, version);
+			object = std::make_unique<vobs::Npc>();
+			vobs::Npc::parse(dynamic_cast<vobs::Npc&>(*object), in, version);
 			break;
 		case vob_type::ignored:
 			break;
@@ -231,7 +231,7 @@ namespace phoenix {
 		}
 
 		if (!in.read_object_end()) {
-			PX_LOGW("vob: VOb \"", obj.class_name, "\" not fully parsed");
+			PX_LOGW("VirtualObject: VOb \"", obj.class_name, "\" not fully parsed");
 			in.skip_object(true);
 		}
 

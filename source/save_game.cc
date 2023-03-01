@@ -1,19 +1,19 @@
-// Copyright © 2022 Luis Michaelis <me@lmichaelis.de>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/archive.hh>
-#include <phoenix/save_game.hh>
+#include "phoenix/save_game.hh"
+#include "phoenix/archive.hh"
 
 #include <optional>
 #include <set>
 
 namespace phoenix::unstable {
-	save_info save_info::parse(buffer&& buf) {
-		save_info info;
-		auto archive = archive_reader::open(buf);
+	SaveInfo SaveInfo::parse(Buffer&& buf) {
+		SaveInfo info;
+		auto archive = ArchiveReader::open(buf);
 
-		archive_object hdr;
+		ArchiveObject hdr;
 		if (!archive->read_object_begin(hdr) || hdr.class_name != "oCSavegameInfo") {
-			throw parser_error {"save_info", "expected oCSavegameInfo object not found"};
+			throw ParserError {"SaveInfo", "expected oCSavegameInfo object not found"};
 		}
 
 		info.title = archive->read_string();          // Title
@@ -34,15 +34,15 @@ namespace phoenix::unstable {
 		}
 
 		if (!archive->read_object_end()) {
-			PX_LOGW("save_info: ", hdr.class_name, " not fully parsed");
+			PX_LOGW("SaveInfo: ", hdr.class_name, " not fully parsed");
 		}
 
 		return info;
 	}
 
-	script_state script_state::parse(buffer&& buf, bool g2) {
-		script_state sav;
-		auto ar = archive_reader::open(buf);
+	SaveScriptState SaveScriptState::parse(Buffer&& buf, bool g2) {
+		SaveScriptState sav;
+		auto ar = ArchiveReader::open(buf);
 
 		sav.day = ar->read_int();    // day
 		sav.hour = ar->read_int();   // hour
@@ -62,10 +62,10 @@ namespace phoenix::unstable {
 
 		for (auto i = 0; i < topic_count; ++i) {
 			auto& topic = sav.log[i];
-			topic.description = ar->read_string();                       // TOPICDESCRIPTION
-			topic.section = static_cast<topic_section>(ar->read_enum()); // TOPICSECTION
-			topic.status = static_cast<topic_status>(ar->read_enum());   // TOPICSTATUS
-			topic.entries.resize(ar->read_int());                        // LOGTOPICENTRYCOUNT
+			topic.description = ar->read_string();                          // TOPICDESCRIPTION
+			topic.section = static_cast<SaveTopicSection>(ar->read_enum()); // TOPICSECTION
+			topic.status = static_cast<SaveTopicStatus>(ar->read_enum());   // TOPICSTATUS
+			topic.entries.resize(ar->read_int());                           // LOGTOPICENTRYCOUNT
 
 			(void) ar->read_int(); // LOGMANAGERENTRYCOUNT
 
@@ -74,15 +74,15 @@ namespace phoenix::unstable {
 			}
 		}
 
-		archive_object obj;
+		ArchiveObject obj;
 		if (!ar->read_object_begin(obj) || obj.class_name != "oCCSManager:zCCSManager") {
-			throw parser_error {"save_info", "expected oCCSManager:zCCSManager object not found"};
+			throw ParserError {"SaveInfo", "expected oCCSManager:zCCSManager object not found"};
 		}
 
 		ar->read_int(); // poolCount
 
 		if (!ar->read_object_end()) {
-			PX_LOGE("save_game: ", obj.class_name, " not fully parsed");
+			PX_LOGE("SaveGame: ", obj.class_name, " not fully parsed");
 			ar->skip_object(true);
 		}
 
@@ -90,7 +90,7 @@ namespace phoenix::unstable {
 		sav.symbols.resize(symbol_count);
 
 		for (auto i = 0; i < symbol_count; ++i) {
-			symbol_state sym;
+			SaveSymbolState sym;
 			sym.name = ar->read_string(); // symName0
 
 			// For Gothic II saves, there is additional data stored
@@ -115,7 +115,7 @@ namespace phoenix::unstable {
 		}
 
 		if (buf.remaining() > 0) {
-			PX_LOGE("save_game: not fully parsed");
+			PX_LOGE("SaveGame: not fully parsed");
 		}
 
 		return sav;
@@ -134,12 +134,12 @@ namespace phoenix::unstable {
 		return *result;
 	}
 
-	save_game save_game::parse(const std::filesystem::path& path) {
-		save_game sav;
+	SaveGame SaveGame::parse(const std::filesystem::path& path) {
+		SaveGame sav;
 		sav._m_root_path = path;
 
 		if (!std::filesystem::is_directory(path)) {
-			throw parser_error {"save_game", "save game path does not exist or is not a directory"};
+			throw ParserError {"SaveGame", "save game path does not exist or is not a directory"};
 		}
 
 		std::set<std::filesystem::path> entries {};
@@ -149,47 +149,47 @@ namespace phoenix::unstable {
 
 		// Load SAVEINFO.SAV
 		{
-			PX_LOGI("save_game: loading SAVEINFO.SAV");
+			PX_LOGI("SaveGame: loading SAVEINFO.SAV");
 			auto file_save_info = find_file_matching(entries, "SAVEINFO.SAV");
 			if (!file_save_info) {
-				throw parser_error {"save_game",
-				                    "expected SAVEINFO.SAV not found. this is probably not a Gothic savegame"};
+				throw ParserError {"SaveGame",
+				                   "expected SAVEINFO.SAV not found. this is probably not a Gothic savegame"};
 			}
 
-			sav.metadata = save_info::parse(buffer::mmap(*file_save_info));
+			sav.metadata = SaveInfo::parse(Buffer::mmap(*file_save_info));
 			sav.current_world = sav.metadata.world + ".ZEN";
 		}
 
 		// Load THUMB.SAV
 		{
-			PX_LOGI("save_game: loading THUMB.SAV");
+			PX_LOGI("SaveGame: loading THUMB.SAV");
 			auto file_thumb = find_file_matching(entries, "THUMB.SAV");
 			if (file_thumb) {
-				sav.thumbnail = texture::parse(buffer::mmap(*file_thumb));
+				sav.thumbnail = Texture::parse(Buffer::mmap(*file_thumb));
 			}
 		}
 
 		// Load SAVEDAT.SAV
 		{
-			PX_LOGI("save_game: loading SAVEDAT.SAV");
+			PX_LOGI("SaveGame: loading SAVEDAT.SAV");
 			auto file_save_dat = find_file_matching(entries, "SAVEDAT.SAV");
 			if (!file_save_dat) {
-				throw parser_error {"save_game",
-				                    "expected SAVEDAT.SAV not found. this is probably not a Gothic savegame"};
+				throw ParserError {"SaveGame",
+				                   "expected SAVEDAT.SAV not found. this is probably not a Gothic savegame"};
 			}
 
-			sav.script = script_state::parse(buffer::mmap(*file_save_dat), !sav.metadata.version_app_name.empty());
+			sav.script = SaveScriptState::parse(Buffer::mmap(*file_save_dat), !sav.metadata.version_app_name.empty());
 		}
 
 		return sav;
 	}
 
-	std::optional<buffer> save_game::open_world_save(std::string_view world_name) const {
+	std::optional<Buffer> SaveGame::open_world_save(std::string_view world_name) const {
 		auto path = _m_root_path / world_name;
 		path.replace_extension("SAV");
 
 		if (!std::filesystem::exists(path))
 			return std::nullopt;
-		return buffer::mmap(path);
+		return Buffer::mmap(path);
 	}
 } // namespace phoenix::unstable

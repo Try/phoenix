@@ -1,43 +1,44 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/font.hh>
+#include "phoenix/font.hh"
+#include "phoenix/buffer.hh"
 
 namespace phoenix {
-	font::font(std::string font_name, std::uint32_t font_height, std::vector<glyph> font_glyphs)
+	Font::Font(std::string font_name, std::uint32_t font_height, std::vector<FontGlyph> font_glyphs)
 	    : name(std::move(font_name)), height(font_height), glyphs(std::move(font_glyphs)) {}
 
-	font font::parse(buffer& in) {
+	Font Font::parse(Buffer& in) {
 		try {
 			auto version = in.get_line();
 			if (version != "1") {
-				throw parser_error {"font", "version mismatch: expected version 1, got " + version};
+				throw ParserError {"Font", "version mismatch: expected version 1, got " + version};
 			}
 
 			auto name = in.get_line(false);
 			auto height = in.get_uint();
 
-			std::vector<glyph> glyphs {};
+			std::vector<FontGlyph> glyphs {};
 			glyphs.resize(in.get_uint());
 
-			for (auto& glyph : glyphs) {
-				glyph.width = in.get();
+			for (auto& g : glyphs) {
+				g.width = in.get();
 			}
 
-			for (auto& glyph : glyphs) {
-				glyph.uv[0] = in.get_vec2();
+			for (auto& g : glyphs) {
+				g.uv[0] = in.get_vec2();
 			}
 
-			for (auto& glyph : glyphs) {
-				glyph.uv[1] = in.get_vec2();
+			for (auto& g : glyphs) {
+				g.uv[1] = in.get_vec2();
 			}
 
-			return font {
+			return Font {
 			    name,
 			    height,
 			    std::move(glyphs),
 			};
-		} catch (const buffer_error& exc) {
-			throw parser_error {"font", exc, "eof reached"};
+		} catch (const BufferError& exc) {
+			throw ParserError {"Font", exc, "eof reached"};
 		}
 	}
 } // namespace phoenix

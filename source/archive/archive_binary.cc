@@ -1,30 +1,30 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #include "archive_binary.hh"
 
 #include <stdexcept>
 
 namespace phoenix {
-	void archive_reader_binary::read_header() {
+	void ArchiveReaderBinary::read_header() {
 		{
 			std::string objects = input.get_line();
 			if (objects.find("objects ") != 0) {
-				throw parser_error {"archive_reader_binary", "objects header field missing"};
+				throw ParserError {"ArchiveReaderBinary", "objects header field missing"};
 			}
 
 			try {
 				_m_objects = std::stoi(objects.substr(objects.find(' ') + 1));
 			} catch (std::invalid_argument const& e) {
-				throw parser_error {"archive_reader_binary", e, "reading int"};
+				throw ParserError {"ArchiveReaderBinary", e, "reading int"};
 			}
 		}
 
 		if (input.get_line_and_ignore("\n") != "END") {
-			throw parser_error {"archive_reader_binary", "second END missing"};
+			throw ParserError {"ArchiveReaderBinary", "second END missing"};
 		}
 	}
 
-	bool archive_reader_binary::read_object_begin(archive_object& obj) {
+	bool ArchiveReaderBinary::read_object_begin(ArchiveObject& obj) {
 		if (input.remaining() < 12)
 			return false;
 
@@ -38,7 +38,7 @@ namespace phoenix {
 		return true;
 	}
 
-	bool archive_reader_binary::read_object_end() {
+	bool ArchiveReaderBinary::read_object_end() {
 		if (input.position() == _m_object_end.top()) {
 			_m_object_end.pop();
 			return true;
@@ -47,35 +47,35 @@ namespace phoenix {
 		return input.remaining() == 0;
 	}
 
-	std::string archive_reader_binary::read_string() {
+	std::string ArchiveReaderBinary::read_string() {
 		return input.get_line(false);
 	}
 
-	std::int32_t archive_reader_binary::read_int() {
+	std::int32_t ArchiveReaderBinary::read_int() {
 		return input.get_int();
 	}
 
-	float archive_reader_binary::read_float() {
+	float ArchiveReaderBinary::read_float() {
 		return input.get_float();
 	}
 
-	std::uint8_t archive_reader_binary::read_byte() {
+	std::uint8_t ArchiveReaderBinary::read_byte() {
 		return input.get();
 	}
 
-	std::uint16_t archive_reader_binary::read_word() {
+	std::uint16_t ArchiveReaderBinary::read_word() {
 		return input.get_ushort();
 	}
 
-	std::uint32_t archive_reader_binary::read_enum() {
+	std::uint32_t ArchiveReaderBinary::read_enum() {
 		return input.get();
 	}
 
-	bool archive_reader_binary::read_bool() {
+	bool ArchiveReaderBinary::read_bool() {
 		return input.get() != 0;
 	}
 
-	glm::u8vec4 archive_reader_binary::read_color() {
+	glm::u8vec4 ArchiveReaderBinary::read_color() {
 		auto b = input.get();
 		auto g = input.get();
 		auto r = input.get();
@@ -84,35 +84,35 @@ namespace phoenix {
 		return {r, g, b, a};
 	}
 
-	glm::vec3 archive_reader_binary::read_vec3() {
+	glm::vec3 ArchiveReaderBinary::read_vec3() {
 		return input.get_vec3();
 	}
 
-	glm::vec2 archive_reader_binary::read_vec2() {
+	glm::vec2 ArchiveReaderBinary::read_vec2() {
 		return input.get_vec2();
 	}
 
-	bounding_box archive_reader_binary::read_bbox() {
-		return bounding_box::parse(input);
+	AxisAlignedBoundingBox ArchiveReaderBinary::read_bbox() {
+		return AxisAlignedBoundingBox::parse(input);
 	}
 
-	glm::mat3x3 archive_reader_binary::read_mat3x3() {
+	glm::mat3x3 ArchiveReaderBinary::read_mat3x3() {
 		return input.get_mat3x3();
 	}
 
-	buffer archive_reader_binary::read_raw_bytes() {
+	Buffer ArchiveReaderBinary::read_raw_bytes() {
 		return input.slice();
 	}
 
-	buffer archive_reader_binary::read_raw_bytes(uint32_t size) {
+	Buffer ArchiveReaderBinary::read_raw_bytes(uint32_t size) {
 		return input.extract(size);
 	}
 
-	void archive_reader_binary::skip_entry() {
-		throw parser_error {"archive_reader", "cannot skip entry in binary archive"};
+	void ArchiveReaderBinary::skip_entry() {
+		throw ParserError {"ArchiveReader", "cannot skip entry in binary archive"};
 	}
 
-	void archive_reader_binary::skip_object(bool skip_current) {
+	void ArchiveReaderBinary::skip_object(bool skip_current) {
 		if (skip_current) {
 			input.position(_m_object_end.top());
 			_m_object_end.pop();
@@ -121,7 +121,7 @@ namespace phoenix {
 		}
 	}
 
-	std::variant<archive_object, archive_object_end, archive_entry> archive_reader_binary::unstable__next() {
-		throw parser_error {"archive_reader", "next() doesn't work for binary archives"};
+	std::variant<ArchiveObject, ArchiveObjectEnd, ArchiveEntry> ArchiveReaderBinary::unstable__next() {
+		throw ParserError {"ArchiveReader", "next() doesn't work for binary archives"};
 	}
 } // namespace phoenix

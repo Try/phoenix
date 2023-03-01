@@ -1,10 +1,12 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/vobs/trigger.hh>
+#include "phoenix/vobs/trigger.hh"
+#include "phoenix/animation.hh"
+#include "phoenix/archive.hh"
 
 namespace phoenix::vobs {
-	void trigger::parse(trigger& obj, archive_reader& ctx, game_version version) {
-		vob::parse(obj, ctx, version);
+	void Trigger::parse(Trigger& obj, ArchiveReader& ctx, GameVersion version) {
+		VirtualObject::parse(obj, ctx, version);
 		obj.target = ctx.read_string();                 // triggerTarget
 		obj.flags = ctx.read_raw_bytes(1).get();        // flags
 		obj.filter_flags = ctx.read_raw_bytes(1).get(); // filterFlags
@@ -22,29 +24,29 @@ namespace phoenix::vobs {
 			ctx.skip_object(false);                         // [savedOtherVob % 0 0]
 			obj.s_count_can_be_activated = ctx.read_int();  // countCanBeActivated
 
-			if (version == game_version::gothic_2) {
+			if (version == GameVersion::GOTHIC_2) {
 				obj.s_is_enabled = ctx.read_bool(); // isEnabled
 			}
 		}
 	}
 
-	void trigger_mover::parse(trigger_mover& obj, archive_reader& ctx, game_version version) {
-		trigger::parse(obj, ctx, version);
-		obj.behavior = static_cast<mover_behavior>(ctx.read_enum()); // moverBehavior
-		obj.touch_blocker_damage = ctx.read_float();                 // touchBlockerDamage
-		obj.stay_open_time_sec = ctx.read_float();                   // stayOpenTimeSec
-		obj.locked = ctx.read_bool();                                // moverLocked
-		obj.auto_link = ctx.read_bool();                             // autoLinkEnabled
+	void Mover::parse(Mover& obj, ArchiveReader& ctx, GameVersion version) {
+		Trigger::parse(obj, ctx, version);
+		obj.behavior = static_cast<MoverBehavior>(ctx.read_enum()); // moverBehavior
+		obj.touch_blocker_damage = ctx.read_float();                // touchBlockerDamage
+		obj.stay_open_time_sec = ctx.read_float();                  // stayOpenTimeSec
+		obj.locked = ctx.read_bool();                               // moverLocked
+		obj.auto_link = ctx.read_bool();                            // autoLinkEnabled
 
-		if (version == game_version::gothic_2) {
+		if (version == GameVersion::GOTHIC_2) {
 			obj.auto_rotate = ctx.read_bool(); // autoRotate
 		}
 
 		auto keyframe_count = ctx.read_word(); // numKeyframes
 		if (keyframe_count > 0) {
-			obj.speed = ctx.read_float();                                    // moveSpeed
-			obj.lerp_mode = static_cast<mover_lerp_mode>(ctx.read_enum());   // posLerpType
-			obj.speed_mode = static_cast<mover_speed_mode>(ctx.read_enum()); // speedType
+			obj.speed = ctx.read_float();                                  // moveSpeed
+			obj.lerp_mode = static_cast<MoverLerpType>(ctx.read_enum());   // posLerpType
+			obj.speed_mode = static_cast<MoverSpeedType>(ctx.read_enum()); // speedType
 
 			auto sample_reader = ctx.read_raw_bytes(keyframe_count * sizeof(float) * 7); // keyframes
 
@@ -56,7 +58,7 @@ namespace phoenix::vobs {
 				auto z = sample_reader.get_float();
 				auto w = sample_reader.get_float();
 
-				obj.keyframes.push_back(animation_sample {position, glm::quat {w, x, y, z}});
+				obj.keyframes.push_back(AnimationSample {position, glm::quat {w, x, y, z}});
 			}
 		}
 
@@ -83,9 +85,9 @@ namespace phoenix::vobs {
 		obj.sfx_use_locked = ctx.read_string();    // sfxUseLocked
 	}
 
-	void trigger_list::parse(trigger_list& obj, archive_reader& ctx, game_version version) {
-		trigger::parse(obj, ctx, version);
-		obj.mode = static_cast<trigger_batch_mode>(ctx.read_enum()); // listProcess
+	void TriggerList::parse(TriggerList& obj, ArchiveReader& ctx, GameVersion version) {
+		Trigger::parse(obj, ctx, version);
+		obj.mode = static_cast<TriggerBatchMode>(ctx.read_enum()); // listProcess
 
 		auto target_count = ctx.read_byte(); // numTarget
 		for (int32_t i = 0; i < target_count; ++i) {
@@ -102,30 +104,30 @@ namespace phoenix::vobs {
 		}
 	}
 
-	void trigger_script::parse(trigger_script& obj, archive_reader& ctx, game_version version) {
-		trigger::parse(obj, ctx, version);
+	void TriggerScript::parse(TriggerScript& obj, ArchiveReader& ctx, GameVersion version) {
+		Trigger::parse(obj, ctx, version);
 		obj.function = ctx.read_string(); // scriptFunc
 	}
 
-	void trigger_change_level::parse(trigger_change_level& obj, archive_reader& ctx, game_version version) {
-		trigger::parse(obj, ctx, version);
+	void TriggerChangeLevel::parse(TriggerChangeLevel& obj, ArchiveReader& ctx, GameVersion version) {
+		Trigger::parse(obj, ctx, version);
 		obj.level_name = ctx.read_string(); // levelName
 		obj.start_vob = ctx.read_string();  // startVobName
 	}
 
-	void trigger_world_start::parse(trigger_world_start& obj, archive_reader& ctx, game_version version) {
-		vob::parse(obj, ctx, version);
+	void TriggerWorldStart::parse(TriggerWorldStart& obj, ArchiveReader& ctx, GameVersion version) {
+		VirtualObject::parse(obj, ctx, version);
 		obj.target = ctx.read_string();  // triggerTarget
 		obj.fire_once = ctx.read_bool(); // fireOnlyFirstTime
 
-		if (ctx.is_save_game() && version == game_version::gothic_2) {
+		if (ctx.is_save_game() && version == GameVersion::GOTHIC_2) {
 			// In Gothic 2 save-games, world start triggers contain extra variables
 			obj.s_has_fired = ctx.read_bool(); // hasFired
 		}
 	}
 
-	void trigger_untouch::parse(trigger_untouch& obj, archive_reader& ctx, game_version version) {
-		vob::parse(obj, ctx, version);
+	void TriggerUntouch::parse(TriggerUntouch& obj, ArchiveReader& ctx, GameVersion version) {
+		VirtualObject::parse(obj, ctx, version);
 		obj.target = ctx.read_string(); // triggerTarget
 	}
 } // namespace phoenix::vobs

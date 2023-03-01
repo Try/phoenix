@@ -1,4 +1,4 @@
-// Copyright © 2022 Luis Michaelis <me@lmichaelis.de>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #include <doctest/doctest.h>
 #include <phoenix/vobs/light.hh>
@@ -9,18 +9,20 @@
 #include <phoenix/vobs/vob.hh>
 #include <phoenix/vobs/zone.hh>
 
+#include <phoenix/archive.hh>
+
 TEST_SUITE("vobs") {
-	static phoenix::archive_object obj;
+	static phoenix::ArchiveObject obj;
 
 	TEST_CASE("zCVob(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/zCVob.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vob>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/zCVob.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::VirtualObject>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "zCVob");
 
-		phoenix::vob::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::VirtualObject::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_EQ(vob->bbox.min, glm::vec3 {-18966.623f, -236.707687f, 4373.23486f});
 		CHECK_EQ(vob->bbox.max, glm::vec3 {-18772.623f, -42.7076874f, 4567.23486f});
@@ -32,13 +34,13 @@ TEST_SUITE("vobs") {
 		             {0, 0, 1},
 		         });
 		CHECK(vob->show_visual);
-		CHECK_EQ(vob->sprite_camera_facing_mode, phoenix::sprite_alignment::none);
+		CHECK_EQ(vob->sprite_camera_facing_mode, phoenix::SpriteAlignment::NONE);
 		CHECK_FALSE(vob->cd_static);
 		CHECK_FALSE(vob->cd_dynamic);
 		CHECK_FALSE(vob->vob_static);
-		CHECK_EQ(vob->dynamic_shadows, phoenix::shadow_mode::none);
+		CHECK_EQ(vob->dynamic_shadows, phoenix::ShadowType::NONE);
 		CHECK_FALSE(vob->physics_enabled);
-		CHECK_EQ(vob->anim_mode, phoenix::animation_mode::none);
+		CHECK_EQ(vob->anim_mode, phoenix::AnimationType::NONE);
 		CHECK_EQ(vob->bias, 0);
 		CHECK_FALSE(vob->ambient);
 		CHECK_EQ(vob->anim_strength, 0.0f);
@@ -46,7 +48,7 @@ TEST_SUITE("vobs") {
 		CHECK_EQ(vob->preset_name, "");
 		CHECK_EQ(vob->vob_name, "");
 		CHECK_EQ(vob->visual_name, "FIRE.pfx");
-		CHECK_EQ(vob->associated_visual_type, phoenix::visual_type::particle_system);
+		CHECK_EQ(vob->associated_visual_type, phoenix::VisualType::PARTICLE_EFFECT);
 		CHECK_EQ(vob->visual_decal, std::nullopt);
 		CHECK_EQ(vob->saved, std::nullopt);
 
@@ -55,14 +57,14 @@ TEST_SUITE("vobs") {
 	}
 
 	TEST_CASE("zCVobAnimate(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/zCVobAnimate.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::animate>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/zCVobAnimate.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::Animate>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "zCVobAnimate:zCVob");
 
-		phoenix::vobs::animate::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::Animate::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_FALSE(vob->start_on);
 
@@ -71,14 +73,14 @@ TEST_SUITE("vobs") {
 	}
 
 	TEST_CASE("zCZoneVobFarPlane(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/zCZoneVobFarPlane.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::zone_far_plane>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/zCZoneVobFarPlane.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::ZoneFarPlane>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "zCZoneVobFarPlane:zCVob");
 
-		phoenix::vobs::zone_far_plane::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::ZoneFarPlane::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_EQ(vob->vob_far_plane_z, 9000.0f);
 		CHECK_EQ(vob->inner_range_percentage, 0.699999988f);
@@ -88,14 +90,14 @@ TEST_SUITE("vobs") {
 	}
 
 	TEST_CASE("zCZoneZFog(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/zCZoneZFog.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::zone_fog>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/zCZoneZFog.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::ZoneFog>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "zCZoneZFog:zCVob");
 
-		phoenix::vobs::zone_fog::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::ZoneFog::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_EQ(vob->range_center, 8000.0f);
 		CHECK_EQ(vob->inner_range_percentage, 0.850000024f);
@@ -108,14 +110,14 @@ TEST_SUITE("vobs") {
 	}
 
 	TEST_CASE("zCVobLensFlare(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/zCVobLensFlare.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::lens_flare>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/zCVobLensFlare.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::LensFlare>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "zCVobLensFlare:zCVob");
 
-		phoenix::vobs::lens_flare::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::LensFlare::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_EQ(vob->fx, "TORCHFX01");
 
@@ -124,14 +126,14 @@ TEST_SUITE("vobs") {
 	}
 
 	TEST_CASE("oCItem(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/oCItem.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::item>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/oCItem.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::Item>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "oCItem:zCVob");
 
-		phoenix::vobs::item::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::Item::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_EQ(vob->instance, "ITMW_1H_AXE_01");
 
@@ -140,14 +142,14 @@ TEST_SUITE("vobs") {
 	}
 
 	TEST_CASE("oCCSTrigger(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/oCCSTrigger.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::trigger>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/oCCSTrigger.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::Trigger>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "oCCSTrigger:zCTrigger:zCVob");
 
-		phoenix::vobs::trigger::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::Trigger::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_EQ(vob->target, "AMB_PSI_CS003.CS");
 		CHECK_EQ(vob->flags, 3);
@@ -163,14 +165,14 @@ TEST_SUITE("vobs") {
 	}
 
 	TEST_CASE("oCMOB(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/oCMOB.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::mob>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/oCMOB.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::MovableObject>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "oCMOB:zCVob");
 
-		phoenix::vobs::mob::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::MovableObject::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_EQ(vob->name, "");
 		CHECK_EQ(vob->hp, 10);
@@ -178,7 +180,7 @@ TEST_SUITE("vobs") {
 		CHECK_FALSE(vob->movable);
 		CHECK_FALSE(vob->takable);
 		CHECK_FALSE(vob->focus_override);
-		CHECK_EQ(vob->material, phoenix::sound_material::wood);
+		CHECK_EQ(vob->material, phoenix::SoundMaterialType::WOOD);
 		CHECK_EQ(vob->visual_destroyed, "");
 		CHECK_EQ(vob->owner, "");
 		CHECK_EQ(vob->owner_guild, "");
@@ -189,14 +191,14 @@ TEST_SUITE("vobs") {
 	}
 
 	TEST_CASE("oCMobInter(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/oCMobInter.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::mob_inter>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/oCMobInter.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::InteractiveObject>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "oCMobInter:oCMOB:zCVob");
 
-		phoenix::vobs::mob_inter::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::InteractiveObject::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_EQ(vob->state, 1);
 		CHECK_EQ(vob->target, "OW_ORC_MAINGATE_01");
@@ -210,14 +212,14 @@ TEST_SUITE("vobs") {
 	}
 
 	TEST_CASE("oCMobFire(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/oCMobFire.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::mob_fire>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/oCMobFire.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::Fire>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "oCMobFire:oCMobInter:oCMOB:zCVob");
 
-		phoenix::vobs::mob_fire::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::Fire::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_EQ(vob->slot, "BIP01 FIRE");
 		CHECK_EQ(vob->vob_tree, "FIRETREE_MEDIUM.ZEN");
@@ -227,14 +229,14 @@ TEST_SUITE("vobs") {
 	}
 
 	TEST_CASE("oCMobContainer(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/oCMobContainer.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::mob_container>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/oCMobContainer.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::Container>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "oCMobContainer:oCMobInter:oCMOB:zCVob");
 
-		phoenix::vobs::mob_container::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::Container::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_FALSE(vob->locked);
 		CHECK_EQ(vob->key, "");
@@ -246,14 +248,14 @@ TEST_SUITE("vobs") {
 	}
 
 	TEST_CASE("oCMobDoor(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/oCMobDoor.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::mob_door>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/oCMobDoor.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::Door>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "oCMobDoor:oCMobInter:oCMOB:zCVob");
 
-		phoenix::vobs::mob_door::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::Door::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_FALSE(vob->locked);
 		CHECK_EQ(vob->key, "");
@@ -264,14 +266,14 @@ TEST_SUITE("vobs") {
 	}
 
 	TEST_CASE("zCPFXControler(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/zCPFXControler.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::pfx_controller>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/zCPFXControler.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::ParticleEffectController>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "zCPFXControler:zCVob");
 
-		phoenix::vobs::pfx_controller::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::ParticleEffectController::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_EQ(vob->pfx_name, "CS_miltenfog.PFX");
 		CHECK(vob->kill_when_done);
@@ -297,22 +299,22 @@ TEST_SUITE("vobs") {
 	};
 
 	TEST_CASE("zCVobLight(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/zCVobLight.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::light>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/zCVobLight.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::Light>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "zCVobLight:zCVob");
 
-		phoenix::vobs::light::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::Light::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_EQ(vob->preset, "");
-		CHECK_EQ(vob->light_type, phoenix::light_mode::point);
+		CHECK_EQ(vob->light_type, phoenix::LightType::point);
 		CHECK_EQ(vob->range, 2000.0f);
 		CHECK_EQ(vob->color, glm::u8vec4 {223, 173, 117, 255});
 		CHECK_EQ(vob->cone_angle, 0.0f);
 		CHECK_FALSE(vob->is_static);
-		CHECK_EQ(vob->quality, phoenix::light_quality::low);
+		CHECK_EQ(vob->quality, phoenix::LightQuality::low);
 		CHECK_EQ(vob->lensflare_fx, "");
 		CHECK(vob->on);
 		CHECK_EQ(vob->range_animation_scale, G1_LIGHT_RANGE_ANIMATION_SCALE);
@@ -328,24 +330,24 @@ TEST_SUITE("vobs") {
 	}
 
 	TEST_CASE("zCVobSound(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/zCVobSound.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::sound>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/zCVobSound.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::Sound>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "zCVobSound:zCVob");
 
-		phoenix::vobs::sound::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::Sound::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_EQ(vob->volume, 100.0f);
-		CHECK_EQ(vob->mode, phoenix::sound_mode::loop);
+		CHECK_EQ(vob->mode, phoenix::SoundMode::LOOP);
 		CHECK_EQ(vob->random_delay, 5.0f);
 		CHECK_EQ(vob->random_delay_var, 2.0f);
 		CHECK(vob->initially_playing);
 		CHECK_FALSE(vob->ambient3d);
 		CHECK_FALSE(vob->obstruction);
 		CHECK_EQ(vob->cone_angle, 0.0f);
-		CHECK_EQ(vob->volume_type, phoenix::sound_trigger_volume::spherical);
+		CHECK_EQ(vob->volume_type, phoenix::SoundTriggerVolumeType::SPHERICAL);
 		CHECK_EQ(vob->radius, 1500.0f);
 		CHECK_EQ(vob->sound_name, "FIRE_MEDIUM");
 
@@ -354,14 +356,14 @@ TEST_SUITE("vobs") {
 	}
 
 	TEST_CASE("zCVobSoundDaytime(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/zCVobSoundDaytime.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::sound_daytime>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/zCVobSoundDaytime.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::SoundDaytime>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "zCVobSoundDaytime:zCVobSound:zCVob");
 
-		phoenix::vobs::sound_daytime::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::SoundDaytime::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_EQ(vob->start_time, 8.0f);
 		CHECK_EQ(vob->end_time, 18.0f);
@@ -372,14 +374,14 @@ TEST_SUITE("vobs") {
 	}
 
 	TEST_CASE("oCZoneMusic(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/oCZoneMusic.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::zone_music>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/oCZoneMusic.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::ZoneMusic>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "oCZoneMusic:zCVob");
 
-		phoenix::vobs::zone_music::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::ZoneMusic::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK(vob->enabled);
 		CHECK_EQ(vob->priority, 1);
@@ -392,7 +394,7 @@ TEST_SUITE("vobs") {
 		CHECK(ar->read_object_end());
 	}
 
-	static const std::vector<phoenix::vobs::trigger_list::target> G1_TRIGGER_LIST_TARGETS {
+	static const std::vector<phoenix::vobs::TriggerList::target> G1_TRIGGER_LIST_TARGETS {
 	    {"EVT_CASTLE_PLATE", 0.0f},
 	    {"EVT_CASTLE_FLOOR_5", 6.0f},
 	    {"EVT_CASTLE_FLOOR_4", 2.0f},
@@ -402,16 +404,16 @@ TEST_SUITE("vobs") {
 	};
 
 	TEST_CASE("zCTriggerList(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/zCTriggerList.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::trigger_list>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/zCTriggerList.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::TriggerList>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "zCTriggerList:zCTrigger:zCVob");
 
-		phoenix::vobs::trigger_list::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::TriggerList::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
-		CHECK_EQ(vob->mode, phoenix::trigger_batch_mode::all);
+		CHECK_EQ(vob->mode, phoenix::TriggerBatchMode::ALL);
 		CHECK_EQ(vob->targets, G1_TRIGGER_LIST_TARGETS);
 
 		CHECK_FALSE(vob->is_save_game());
@@ -419,14 +421,14 @@ TEST_SUITE("vobs") {
 	}
 
 	TEST_CASE("oCTriggerScript(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/oCTriggerScript.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::trigger_script>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/oCTriggerScript.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::TriggerScript>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "oCTriggerScript:zCTrigger:zCVob");
 
-		phoenix::vobs::trigger_script::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::TriggerScript::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_EQ(vob->function, "ON_NC_GATE_TRIGGER");
 
@@ -434,7 +436,7 @@ TEST_SUITE("vobs") {
 		CHECK(ar->read_object_end());
 	}
 
-	static const std::vector<phoenix::animation_sample> G1_MOVER_KEYFRAMES {
+	static const std::vector<phoenix::AnimationSample> G1_MOVER_KEYFRAMES {
 	    {glm::vec3 {-23325.1992f, 3438.91333f, -21834.9473f},
 	     glm::quat {0.105035283f, 0.091305837f, 0.747364759f, 0.649674594f}},
 	    {glm::vec3 {-23325.1543f, 3438.91333f, -21844.3672f},
@@ -442,24 +444,24 @@ TEST_SUITE("vobs") {
 	};
 
 	TEST_CASE("zCMover(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/zCMover.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::trigger_mover>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/zCMover.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::Mover>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "zCMover:zCTrigger:zCVob");
 
-		phoenix::vobs::trigger_mover::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::Mover::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
-		CHECK_EQ(vob->behavior, phoenix::mover_behavior::trigger_control);
+		CHECK_EQ(vob->behavior, phoenix::MoverBehavior::TRIGGER_CONTROL);
 		CHECK_EQ(vob->touch_blocker_damage, 0.0f);
 		CHECK_EQ(vob->stay_open_time_sec, 2.0f);
 		CHECK_FALSE(vob->locked);
 		CHECK_FALSE(vob->auto_link);
 		CHECK_FALSE(vob->auto_rotate);
 		CHECK_EQ(vob->speed, 0.00200023991f);
-		CHECK_EQ(vob->lerp_mode, phoenix::mover_lerp_mode::curve);
-		CHECK_EQ(vob->speed_mode, phoenix::mover_speed_mode::slow_start_end);
+		CHECK_EQ(vob->lerp_mode, phoenix::MoverLerpType::CURVE);
+		CHECK_EQ(vob->speed_mode, phoenix::MoverSpeedType::SLOW_START_END);
 		CHECK_EQ(vob->keyframes, G1_MOVER_KEYFRAMES);
 		CHECK_EQ(vob->sfx_open_start, "GATE_START");
 		CHECK_EQ(vob->sfx_open_end, "GATE_STOP");
@@ -475,14 +477,14 @@ TEST_SUITE("vobs") {
 	}
 
 	TEST_CASE("oCTriggerChangeLevel(parse:g1)") {
-		auto buf = phoenix::buffer::mmap("./samples/G1/VOb/oCTriggerChangeLevel.zen");
-		auto ar = phoenix::archive_reader::open(buf);
-		auto vob = std::make_unique<phoenix::vobs::trigger_change_level>();
+		auto buf = phoenix::Buffer::mmap("./samples/G1/VOb/oCTriggerChangeLevel.zen");
+		auto ar = phoenix::ArchiveReader::open(buf);
+		auto vob = std::make_unique<phoenix::vobs::TriggerChangeLevel>();
 
 		CHECK(ar->read_object_begin(obj));
 		CHECK_EQ(obj.class_name, "oCTriggerChangeLevel:zCTrigger:zCVob");
 
-		phoenix::vobs::trigger_change_level::parse(*vob, *ar, phoenix::game_version::gothic_1);
+		phoenix::vobs::TriggerChangeLevel::parse(*vob, *ar, phoenix::GameVersion::GOTHIC_1);
 
 		CHECK_EQ(vob->level_name, "ORCTEMPEL.ZEN");
 		CHECK_EQ(vob->start_vob, "ENTRANCE_ORCTEMPLE_SURFACE");

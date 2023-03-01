@@ -31,23 +31,23 @@ You can also contact me on Discord, ideally by pinging me (lmichaelis#6242) in t
 ## supported file formats
 Currently, the following file formats are supported.
 
-| Format                   |           Extension            | Description                                                                                                                | _phoenix_ Class Name |
-|--------------------------|:------------------------------:|----------------------------------------------------------------------------------------------------------------------------|----------------------|
-| Model Animation          |             `.MAN`             | Contains animations for a model                                                                                            | `animation`          |
-| Model Hierarchy          |             `.MDH`             | Contains skeletal information for a model                                                                                  | `model_hierarchy`    |
-| Model Mesh               |             `.MDM`             | Contains the mesh of a model                                                                                               | `model_mesh`         |
-| Model                    |             `.MDL`             | Contains a mesh and a hierarchy which make up a model                                                                      | `model`              |
-| Morph Mesh Binary        |             `.MMB`             | Contains a morph mesh with its mesh, skeleton and animation data                                                           | `morph_mesh`         |
-| Multi Resolution Mesh    |             `.MRM`             | Contains a mesh with [CLOD](https://en.wikipedia.org/wiki/Level_of_detail_(computer_graphics)) information                 | `proto_mesh`         |
-| Mesh                     |             `.MSH`             | Contains mesh vertices and vertex features like materials                                                                  | `mesh`               |
-| Daedalus Script Binaries |             `.DAT`             | Contains a compiled _Daedalus_ script                                                                                      | `script`             |
-| Texture                  |             `.TEX`             | Contains texture data in a variety of formats                                                                              | `texture`            |
-| Font                     |             `.FNT`             | Contains font data                                                                                                         | `font`               |
-| ZenGin Archive           |             `.ZEN`             | Contains various structured data. Used mostly for world hierarchy data and object persistence.                             | `archive`            |
-| Text/Cutscenes           | `.BIN`, `.CSL`, `.DAT`, `.LSC` | Contains text and cutscene data                                                                                            | `messages`           |
-| Model Script             |             `.MDS`             | Contains model animation script data and associated hierarchy and mesh information                                         | `model_script`       |
-| Model Script Binary      |             `.MSB`             | Contains model animation script data and associated hierarchy and mesh information (binary form)                           | `model_script`       |
-| Virtual Disk             |             `.VDF`             | Contains a directory structure containing multiple files; similar to [tar](https://en.wikipedia.org/wiki/Tar_(computing)). | `vdf_file`           |
+| Format                   |           Extension            | Description                                                                                                                | _phoenix_ Class Name  |
+|--------------------------|:------------------------------:|----------------------------------------------------------------------------------------------------------------------------|-----------------------|
+| Model Animation          |             `.MAN`             | Contains animations for a model                                                                                            | `animation`           |
+| Model Hierarchy          |             `.MDH`             | Contains skeletal information for a model                                                                                  | `ModelHierarchy`      |
+| Model Mesh               |             `.MDM`             | Contains the mesh of a model                                                                                               | `ModelMesh`           |
+| Model                    |             `.MDL`             | Contains a mesh and a hierarchy which make up a model                                                                      | `model`               |
+| Morph Mesh Binary        |             `.MMB`             | Contains a morph mesh with its mesh, skeleton and animation data                                                           | `MorphMesh`           |
+| Multi Resolution Mesh    |             `.MRM`             | Contains a mesh with [CLOD](https://en.wikipedia.org/wiki/Level_of_detail_(computer_graphics)) information                 | `MultiResolutionMesh` |
+| Mesh                     |             `.MSH`             | Contains mesh vertices and vertex features like materials                                                                  | `mesh`                |
+| Daedalus Script Binaries |             `.DAT`             | Contains a compiled _Daedalus_ script                                                                                      | `script`              |
+| Texture                  |             `.TEX`             | Contains texture data in a variety of formats                                                                              | `Texture`             |
+| Font                     |             `.FNT`             | Contains font data                                                                                                         | `font`                |
+| ZenGin Archive           |             `.ZEN`             | Contains various structured data. Used mostly for world hierarchy data and object persistence.                             | `archive`             |
+| Text/Cutscenes           | `.BIN`, `.CSL`, `.DAT`, `.LSC` | Contains text and cutscene data                                                                                            | `CutsceneLibrary`     |
+| Model Script             |             `.MDS`             | Contains model animation script data and associated hierarchy and mesh information                                         | `ModelScript`         |
+| Model Script Binary      |             `.MSB`             | Contains model animation script data and associated hierarchy and mesh information (binary form)                           | `ModelScript`         |
+| Virtual Disk             |             `.VDF`             | Contains a directory structure containing multiple files; similar to [tar](https://en.wikipedia.org/wiki/Tar_(computing)). | `vdf_file`            |
 
 ## contributing
 
@@ -99,14 +99,14 @@ int main(int, char**) {
 	auto buf = entry->open();
 	
 	// One could also memory-map a normal file from disk:
-	//   auto buf = phoenix::buffer::mmap("/path/to/file");
+	//   auto buf = phoenix::Buffer::mmap("/path/to/file");
 
 	// Or if you have a vector of data:
 	//   std::vector<uint8_t> data { /* ... */ };
-	//   auto buf = phoenix::buffer::of(std::move(data));
+	//   auto buf = phoenix::Buffer::of(std::move(data));
 	
 	// Parse the model
-	auto mdl = phoenix::model::parse(buf);
+	auto mdl = phoenix::Model::parse(buf);
 	
 	// Do something with mdl ...
 	
@@ -171,7 +171,7 @@ std::string MyInternalFunction(int param1) {
 
 int main(int, char**) {
     // Open a buffer containing the script.
-    auto buf = phoenix::buffer::mmap("MyScript.DAT");
+    auto buf = phoenix::Buffer::mmap("MyScript.DAT");
     
     // Create the VM instance
     phoenix::vm vm {phoenix::script::parse(buf)};

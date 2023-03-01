@@ -1,7 +1,6 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #include "archive_ascii.hh"
-#include "phoenix/phoenix.hh"
 
 #include <charconv>
 #include <cstring>
@@ -10,41 +9,41 @@
 #include <utility>
 
 namespace phoenix {
-	static const std::unordered_map<std::string, archive_entry_type> type_name_to_enum {
-	    {"string", archive_entry_type::string},
-	    {"int", archive_entry_type::int_},
-	    {"float", archive_entry_type::float_},
-	    {"byte", archive_entry_type::byte},
-	    {"word", archive_entry_type::word},
-	    {"bool_", archive_entry_type::bool_},
-	    {"vec3", archive_entry_type::vec3},
-	    {"color", archive_entry_type::color},
-	    {"raw", archive_entry_type::raw},
-	    {"rawFloat", archive_entry_type::raw_float},
-	    {"enum", archive_entry_type::enum_},
-	    {"hash", archive_entry_type::hash},
+	static const std::unordered_map<std::string, ArchiveEntryType> type_name_to_enum {
+	    {"string", ArchiveEntryType::STRING},
+	    {"int", ArchiveEntryType::INTEGER},
+	    {"float", ArchiveEntryType::FLOAT},
+	    {"byte", ArchiveEntryType::BYTE},
+	    {"word", ArchiveEntryType::WORD},
+	    {"bool_", ArchiveEntryType::BOOL},
+	    {"vec3", ArchiveEntryType::VEC3},
+	    {"color", ArchiveEntryType::COLOR},
+	    {"raw", ArchiveEntryType::RAW},
+	    {"rawFloat", ArchiveEntryType::RAW_FLOAT},
+	    {"enum", ArchiveEntryType::ENUM},
+	    {"hash", ArchiveEntryType::HASH},
 	};
 
-	void archive_reader_ascii::read_header() {
+	void ArchiveReaderAscii::read_header() {
 		{
 			std::string objects = input.get_line();
 			if (objects.find("objects ") != 0) {
-				throw parser_error {"archive_reader_ascii", "objects field missing"};
+				throw ParserError {"ArchiveReaderAscii", "objects field missing"};
 			}
 
 			try {
 				_m_objects = std::stoi(objects.substr(objects.find(' ') + 1));
 			} catch (std::invalid_argument const& e) {
-				throw parser_error {"archive_reader_ascii", e, "reading int"};
+				throw ParserError {"ArchiveReaderAscii", e, "reading int"};
 			}
 		}
 
 		if (input.get_line() != "END") {
-			throw parser_error {"archive_reader_ascii", "second END missing"};
+			throw ParserError {"ArchiveReaderAscii", "second END missing"};
 		}
 	}
 
-	bool archive_reader_ascii::read_object_begin(archive_object& obj) {
+	bool ArchiveReaderAscii::read_object_begin(ArchiveObject& obj) {
 		if (input.remaining() < 3)
 			return false;
 
@@ -74,7 +73,7 @@ namespace phoenix {
 		return true;
 	}
 
-	bool archive_reader_ascii::read_object_end() {
+	bool ArchiveReaderAscii::read_object_end() {
 		// When there are less than 3 bytes left in the input, this must be the end of the archive.
 		if (input.remaining() < 3)
 			return true;
@@ -96,73 +95,73 @@ namespace phoenix {
 		return true;
 	}
 
-	std::string archive_reader_ascii::read_entry(std::string_view type) {
+	std::string ArchiveReaderAscii::read_entry(std::string_view type) {
 		auto line = input.get_line();
 		line = line.substr(line.find('=') + 1);
 		auto colon = line.find(':');
 
 		if (line.substr(0, colon) != type) {
-			throw parser_error {"archive_reader_ascii",
-			                    "type mismatch: expected " + std::string {type} + ", got: " + line.substr(0, colon)};
+			throw ParserError {"ArchiveReaderAscii",
+			                   "type mismatch: expected " + std::string {type} + ", got: " + line.substr(0, colon)};
 		}
 
 		auto rv = line.substr(colon + 1);
 		return rv;
 	}
 
-	std::string archive_reader_ascii::read_string() {
+	std::string ArchiveReaderAscii::read_string() {
 		return read_entry("string");
 	}
 
-	std::int32_t archive_reader_ascii::read_int() {
+	std::int32_t ArchiveReaderAscii::read_int() {
 		try {
 			return std::stoi(read_entry("int"));
 		} catch (std::invalid_argument const& e) {
-			throw parser_error {"archive_reader_ascii", e, "reading int"};
+			throw ParserError {"ArchiveReaderAscii", e, "reading int"};
 		}
 	}
 
-	float archive_reader_ascii::read_float() {
+	float ArchiveReaderAscii::read_float() {
 		try {
 			return std::stof(read_entry("float"));
 		} catch (std::invalid_argument const& e) {
-			throw parser_error {"archive_reader_ascii", e, "reading int"};
+			throw ParserError {"ArchiveReaderAscii", e, "reading int"};
 		}
 	}
 
-	std::uint8_t archive_reader_ascii::read_byte() {
+	std::uint8_t ArchiveReaderAscii::read_byte() {
 		try {
 			return std::stoul(read_entry("int")) & 0xFF;
 		} catch (std::invalid_argument const& e) {
-			throw parser_error {"archive_reader_ascii", e, "reading int"};
+			throw ParserError {"ArchiveReaderAscii", e, "reading int"};
 		}
 	}
 
-	std::uint16_t archive_reader_ascii::read_word() {
+	std::uint16_t ArchiveReaderAscii::read_word() {
 		try {
 			return std::stoul(read_entry("int")) & 0xFF'FF;
 		} catch (std::invalid_argument const& e) {
-			throw parser_error {"archive_reader_ascii", e, "reading int"};
+			throw ParserError {"ArchiveReaderAscii", e, "reading int"};
 		}
 	}
 
-	std::uint32_t archive_reader_ascii::read_enum() {
+	std::uint32_t ArchiveReaderAscii::read_enum() {
 		try {
 			return std::stoul(read_entry("enum")) & 0xFFFF'FFFF;
 		} catch (std::invalid_argument const& e) {
-			throw parser_error {"archive_reader_ascii", e, "reading int"};
+			throw ParserError {"ArchiveReaderAscii", e, "reading int"};
 		}
 	}
 
-	bool archive_reader_ascii::read_bool() {
+	bool ArchiveReaderAscii::read_bool() {
 		try {
 			return std::stoul(read_entry("bool")) != 0;
 		} catch (std::invalid_argument const& e) {
-			throw parser_error {"archive_reader_ascii", e, "reading int"};
+			throw ParserError {"ArchiveReaderAscii", e, "reading int"};
 		}
 	}
 
-	glm::u8vec4 archive_reader_ascii::read_color() {
+	glm::u8vec4 ArchiveReaderAscii::read_color() {
 		std::stringstream in {read_entry("color")};
 
 		std::uint16_t r, g, b, a;
@@ -170,7 +169,7 @@ namespace phoenix {
 		return glm::u8vec4 {(std::uint8_t) r, (std::uint8_t) g, (std::uint8_t) b, (std::uint8_t) a};
 	}
 
-	glm::vec3 archive_reader_ascii::read_vec3() {
+	glm::vec3 ArchiveReaderAscii::read_vec3() {
 		std::stringstream in {read_entry("vec3")};
 		glm::vec3 v {};
 
@@ -178,7 +177,7 @@ namespace phoenix {
 		return v;
 	}
 
-	glm::vec2 archive_reader_ascii::read_vec2() {
+	glm::vec2 ArchiveReaderAscii::read_vec2() {
 		std::stringstream in {read_entry("rawFloat")};
 		glm::vec2 v {};
 
@@ -186,23 +185,23 @@ namespace phoenix {
 		return v;
 	}
 
-	void archive_reader_ascii::skip_entry() {
+	void ArchiveReaderAscii::skip_entry() {
 		(void) input.get_line();
 	}
 
-	bounding_box archive_reader_ascii::read_bbox() {
+	AxisAlignedBoundingBox ArchiveReaderAscii::read_bbox() {
 		std::stringstream in {read_entry("rawFloat")};
-		bounding_box box {};
+		AxisAlignedBoundingBox box {};
 
 		in >> box.min.x >> box.min.y >> box.min.z >> box.max.x >> box.max.y >> box.max.z;
 		return box;
 	}
 
-	glm::mat3x3 archive_reader_ascii::read_mat3x3() {
+	glm::mat3x3 ArchiveReaderAscii::read_mat3x3() {
 		auto in = read_entry("raw");
 
 		if (in.length() < 2 /* 2 chars a byte */ * sizeof(float) * 9) {
-			throw parser_error {"archive_reader_ascii", "raw entry does not contain enough bytes to be a 3x3 matrix"};
+			throw ParserError {"ArchiveReaderAscii", "raw entry does not contain enough bytes to be a 3x3 matrix"};
 		}
 
 		auto beg_it = in.data();
@@ -223,7 +222,7 @@ namespace phoenix {
 		return glm::transpose(v);
 	}
 
-	buffer archive_reader_ascii::read_raw_bytes() {
+	Buffer ArchiveReaderAscii::read_raw_bytes() {
 		auto in = read_entry("raw");
 		auto length = in.length() / 2;
 
@@ -237,15 +236,15 @@ namespace phoenix {
 			beg_it += 2;
 		}
 
-		return buffer::of(std::move(out));
+		return Buffer::of(std::move(out));
 	}
 
-	buffer archive_reader_ascii::read_raw_bytes(uint32_t size) {
+	Buffer ArchiveReaderAscii::read_raw_bytes(uint32_t size) {
 		auto in = read_entry("raw");
 		auto length = in.length() / 2;
 
 		if (length < size) {
-			throw parser_error {"archive_reader_ascii", "not enough raw bytes to read!"};
+			throw ParserError {"ArchiveReaderAscii", "not enough raw bytes to read!"};
 		} else if (length > size) {
 			PX_LOGW("read_raw_bytes: reading ", size, " bytes although ", length, " are actually available");
 		}
@@ -260,19 +259,19 @@ namespace phoenix {
 			beg_it += 2;
 		}
 
-		return buffer::of(std::move(out));
+		return Buffer::of(std::move(out));
 	}
 
-	std::variant<archive_object, archive_object_end, archive_entry> archive_reader_ascii::unstable__next() {
-		static archive_object tmp {};
+	std::variant<ArchiveObject, ArchiveObjectEnd, ArchiveEntry> ArchiveReaderAscii::unstable__next() {
+		static ArchiveObject tmp {};
 		if (read_object_begin(tmp)) {
 			return tmp;
 		} else if (read_object_end()) {
-			return archive_object_end {};
+			return ArchiveObjectEnd {};
 		} else {
 			input.mark();
 
-			archive_entry entry {};
+			ArchiveEntry entry {};
 
 			auto line = input.get_line();
 			entry.name = line.substr(line.find('='));
@@ -283,38 +282,38 @@ namespace phoenix {
 			input.reset();
 
 			switch (entry.type) {
-			case archive_entry_type::string:
+			case ArchiveEntryType::STRING:
 				entry.value = read_string();
 				break;
-			case archive_entry_type::int_:
+			case ArchiveEntryType::INTEGER:
 				entry.value = read_int();
 				break;
-			case archive_entry_type::float_:
+			case ArchiveEntryType::FLOAT:
 				entry.value = read_float();
 				break;
-			case archive_entry_type::byte:
+			case ArchiveEntryType::BYTE:
 				entry.value = read_byte();
 				break;
-			case archive_entry_type::word:
+			case ArchiveEntryType::WORD:
 				entry.value = read_word();
 				break;
-			case archive_entry_type::bool_:
+			case ArchiveEntryType::BOOL:
 				entry.value = read_bool();
 				break;
-			case archive_entry_type::vec3:
+			case ArchiveEntryType::VEC3:
 				entry.value = read_vec3();
 				break;
-			case archive_entry_type::color:
+			case ArchiveEntryType::COLOR:
 				entry.value = read_color();
 				break;
-			case archive_entry_type::raw:
-			case archive_entry_type::raw_float:
+			case ArchiveEntryType::RAW:
+			case ArchiveEntryType::RAW_FLOAT:
 				entry.value = read_raw_bytes();
 				break;
-			case archive_entry_type::enum_:
+			case ArchiveEntryType::ENUM:
 				entry.value = read_enum();
 				break;
-			case archive_entry_type::hash:
+			case ArchiveEntryType::HASH:
 				entry.value = 0u;
 				break;
 			}

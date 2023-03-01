@@ -1,42 +1,42 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/model_mesh.hh>
+#include "phoenix/model_mesh.hh"
+#include "phoenix/buffer.hh"
 
 namespace phoenix {
-	enum class model_mesh_chunk {
-		unknown,
-		header = 0xD000,
-		source = 0xD010,
-		nodes = 0xD020,
-		softskins = 0xD030,
-		end = 0xD040,
-		proto = 0xB100,
+	enum class ModelMeshChunkType {
+		UNKNOWN,
+		HEADER = 0xD000,
+		SOURCE = 0xD010,
+		NODES = 0xD020,
+		SOFTSKINS = 0xD030,
+		END = 0xD040,
+		ATTACHMENTS = 0xB100,
 	};
 
-	model_mesh model_mesh::parse(buffer& in) {
-		model_mesh msh {};
-		model_mesh_chunk type = model_mesh_chunk::unknown;
+	ModelMesh ModelMesh::parse(Buffer& in) {
+		ModelMesh msh {};
+		ModelMeshChunkType type = ModelMeshChunkType::UNKNOWN;
 		bool end_mesh = false;
 
 		std::vector<std::string> attachment_names {};
 
 		do {
-			type = static_cast<model_mesh_chunk>(in.get_ushort());
+			type = static_cast<ModelMeshChunkType>(in.get_ushort());
 
 			auto length = in.get_uint();
 			auto chunk = in.extract(length);
 
 			switch (type) {
-			case model_mesh_chunk::header:
+			case ModelMeshChunkType::HEADER:
 				(void) /* version = */ chunk.get_uint();
 				break;
-			case model_mesh_chunk::source: {
-				// supposedly a date? weird values
-				(void) /* date = */ date::parse(chunk);
+			case ModelMeshChunkType::SOURCE: {
+				(void) /* date = */ Date::parse(chunk);
 				(void) /* source file = */ chunk.get_line(false);
 				break;
 			}
-			case model_mesh_chunk::nodes: {
+			case ModelMeshChunkType::NODES: {
 				auto node_count = chunk.get_ushort();
 
 				for (std::uint32_t i = 0; i < node_count; ++i) {
@@ -44,10 +44,11 @@ namespace phoenix {
 				}
 				break;
 			}
-			case model_mesh_chunk::proto:
-				msh.attachments[attachment_names[msh.attachments.size()]] = proto_mesh::parse_from_section(chunk);
+			case ModelMeshChunkType::ATTACHMENTS:
+				msh.attachments[attachment_names[msh.attachments.size()]] =
+				    MultiResolutionMesh::parse_from_section(chunk);
 				break;
-			case model_mesh_chunk::softskins: {
+			case ModelMeshChunkType::SOFTSKINS: {
 				msh.checksum = chunk.get_uint();
 				auto count = chunk.get_ushort();
 				msh.meshes.reserve(count);
@@ -55,11 +56,11 @@ namespace phoenix {
 				// Quirk: the meshes are not embedded within the chunk (as in: the stored length does not contain
 				//        the size of these meshes) so they have to be read directly from `in`.
 				for (int32_t i = 0; i < count; ++i) {
-					msh.meshes.push_back(softskin_mesh::parse(in));
+					msh.meshes.push_back(SoftSkinMesh::parse(in));
 				}
 				break;
 			}
-			case model_mesh_chunk::end:
+			case ModelMeshChunkType::END:
 				end_mesh = true;
 				break;
 			default:
@@ -67,7 +68,7 @@ namespace phoenix {
 			}
 
 			if (chunk.remaining() != 0) {
-				PX_LOGW("model_mesh: ",
+				PX_LOGW("ModelMesh: ",
 				        chunk.remaining(),
 				        " bytes remaining in section ",
 				        std::hex,

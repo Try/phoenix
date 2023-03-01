@@ -1,19 +1,20 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/messages.hh>
+#include "phoenix/messages.hh"
+#include "phoenix/archive.hh"
 
 namespace phoenix {
-	messages messages::parse(buffer& buf) {
-		auto archive = archive_reader::open(buf);
-		messages msgs {};
+	CutsceneLibrary CutsceneLibrary::parse(Buffer& buf) {
+		auto archive = ArchiveReader::open(buf);
+		CutsceneLibrary msgs {};
 
-		archive_object obj;
+		ArchiveObject obj;
 		if (!archive->read_object_begin(obj)) {
-			throw parser_error {"messages", "root object missing"};
+			throw ParserError {"CutsceneLibrary", "root object missing"};
 		}
 
 		if (obj.class_name != "zCCSLib") {
-			throw parser_error {"messages", "root object is not 'zCCSLib'"};
+			throw ParserError {"CutsceneLibrary", "root object is not 'zCCSLib'"};
 		}
 
 		auto item_count = archive->read_int(); // NumOfItems
@@ -21,7 +22,7 @@ namespace phoenix {
 
 		for (int32_t i = 0; i < item_count; ++i) {
 			if (!archive->read_object_begin(obj) || obj.class_name != "zCCSBlock") {
-				throw parser_error {"messages", "expected 'zCCSBlock' but didn't find it"};
+				throw ParserError {"CutsceneLibrary", "expected 'zCCSBlock' but didn't find it"};
 			}
 
 			auto& itm = msgs.blocks.emplace_back();
@@ -30,17 +31,17 @@ namespace phoenix {
 			(void) archive->read_float();           // subBlock0
 
 			if (block_count != 1) {
-				throw parser_error {"messages",
-				                    "expected only one block but got " + std::to_string(block_count) + " for " +
-				                        itm.name};
+				throw ParserError {"CutsceneLibrary",
+				                   "expected only one block but got " + std::to_string(block_count) + " for " +
+				                       itm.name};
 			}
 
 			if (!archive->read_object_begin(obj) || obj.class_name != "zCCSAtomicBlock") {
-				throw parser_error {"messages", "expected atomic block not found for " + itm.name};
+				throw ParserError {"CutsceneLibrary", "expected atomic block not found for " + itm.name};
 			}
 
 			if (!archive->read_object_begin(obj) || obj.class_name != "oCMsgConversation:oCNpcMessage:zCEventMessage") {
-				throw parser_error {"messages", "expected oCMsgConversation not found for " + itm.name};
+				throw ParserError {"CutsceneLibrary", "expected oCMsgConversation not found for " + itm.name};
 			}
 
 			itm.message.type = archive->read_enum();
@@ -49,23 +50,23 @@ namespace phoenix {
 
 			if (!archive->read_object_end()) {
 				archive->skip_object(true);
-				PX_LOGW("messages: oCMsgConversation(\"", itm.name, "\") not fully parsed");
+				PX_LOGW("CutsceneLibrary: oCMsgConversation(\"", itm.name, "\") not fully parsed");
 			}
 
 			if (!archive->read_object_end()) {
 				// FIXME: in Gothic I cutscene libraries, there is a `synchronized` attribute here
 				archive->skip_object(true);
-				PX_LOGW("messages: zCCSAtomicBlock(\"", itm.name, "\") not fully parsed");
+				PX_LOGW("CutsceneLibrary: zCCSAtomicBlock(\"", itm.name, "\") not fully parsed");
 			}
 
 			if (!archive->read_object_end()) {
 				archive->skip_object(true);
-				PX_LOGW("messages: zCCSBlock(\"", itm.name, "\") not fully parsed");
+				PX_LOGW("CutsceneLibrary: zCCSBlock(\"", itm.name, "\") not fully parsed");
 			}
 		}
 
 		if (!archive->read_object_end()) {
-			PX_LOGW("messages: not fully parsed");
+			PX_LOGW("CutsceneLibrary: not fully parsed");
 		}
 
 		// Prepare blocks for binary search in block_by_name
@@ -73,7 +74,7 @@ namespace phoenix {
 		return msgs;
 	}
 
-	const message_block* messages::block_by_name(std::string_view name) const {
+	const CutsceneBlock* CutsceneLibrary::block_by_name(std::string_view name) const {
 		auto result = std::lower_bound(this->blocks.begin(), this->blocks.end(), name, [](const auto& it, auto n) {
 			return it.name < n;
 		});

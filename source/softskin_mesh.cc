@@ -1,29 +1,30 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/softskin_mesh.hh>
+#include "phoenix/softskin_mesh.hh"
+#include "phoenix/buffer.hh"
 
 namespace phoenix {
-	enum class softmesh_chunk { unknown, header = 0xE100, end = 0xE110, proto = 0xB100, nodes = 0xB1FF };
+	enum class SoftSkinChunkType { UNKNOWN, HEADER = 0xE100, END = 0xE110, MESH = 0xB100, NODES = 0xB1FF };
 
-	softskin_mesh softskin_mesh::parse(buffer& in) {
-		softskin_mesh msh {};
-		softmesh_chunk type = softmesh_chunk::unknown;
+	SoftSkinMesh SoftSkinMesh::parse(Buffer& in) {
+		SoftSkinMesh msh {};
+		SoftSkinChunkType type = SoftSkinChunkType::UNKNOWN;
 		bool end_mesh = false;
 
 		do {
-			type = static_cast<softmesh_chunk>(in.get_ushort());
+			type = static_cast<SoftSkinChunkType>(in.get_ushort());
 
 			auto length = in.get_uint();
 			auto chunk = in.extract(length);
 
 			switch (type) {
-			case softmesh_chunk::header:
+			case SoftSkinChunkType::HEADER:
 				(void) /* version = */ chunk.get_uint();
 				break;
-			case softmesh_chunk::proto:
-				msh.mesh = proto_mesh::parse_from_section(chunk);
+			case SoftSkinChunkType::MESH:
+				msh.mesh = MultiResolutionMesh::parse_from_section(chunk);
 				break;
-			case softmesh_chunk::nodes: {
+			case SoftSkinChunkType::NODES: {
 				// weights
 				auto weight_buffer_size = chunk.get_uint();
 				auto weight_buffer_end = chunk.position() + weight_buffer_size;
@@ -42,7 +43,7 @@ namespace phoenix {
 				}
 
 				if (chunk.position() != weight_buffer_end) {
-					PX_LOGW("softskin_mesh: ",
+					PX_LOGW("SoftSkinMesh: ",
 					        weight_buffer_end - chunk.position(),
 					        " bytes remaining in weight section");
 					chunk.position(weight_buffer_end);
@@ -65,12 +66,12 @@ namespace phoenix {
 				}
 
 				for (std::uint32_t i = 0; i < msh.nodes.size(); ++i) {
-					msh.bboxes.push_back(obb::parse(chunk));
+					msh.bboxes.push_back(OrientedBoundingBox::parse(chunk));
 				}
 
 				break;
 			}
-			case softmesh_chunk::end:
+			case SoftSkinChunkType::END:
 				end_mesh = true;
 				break;
 			default:
@@ -78,7 +79,7 @@ namespace phoenix {
 			}
 
 			if (chunk.remaining() != 0) {
-				PX_LOGW("softskin_mesh: ",
+				PX_LOGW("SoftSkinMesh: ",
 				        chunk.remaining(),
 				        " bytes remaining in section ",
 				        std::hex,

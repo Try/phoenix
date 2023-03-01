@@ -1,28 +1,26 @@
-// Copyright © 2023 Luis Michaelis <me@lmichaelis.de>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "Api.hh"
 #include "buffer.hh"
-#include "math.hh"
 
 #include <filesystem>
-#include <set>
 #include <string>
 #include <string_view>
 #include <variant>
 
 namespace phoenix {
-	class VfsBrokenDiskError : public error {
+	class VfsBrokenDiskError : public Error {
 	public:
 		PHOENIX_INTERNAL explicit VfsBrokenDiskError(std::string const& signature);
 	};
 
-	class VfsFileExistsError : public error {
+	class VfsFileExistsError : public Error {
 	public:
 		PHOENIX_INTERNAL explicit VfsFileExistsError(std::string const& name);
 	};
 
-	class VfsNotFoundError : public error {
+	class VfsNotFoundError : public Error {
 	public:
 		PHOENIX_INTERNAL explicit VfsNotFoundError(std::string const& name);
 	};
@@ -55,22 +53,22 @@ namespace phoenix {
 		PHOENIX_API VfsNode* create(VfsNode node);
 		PHOENIX_API bool remove(std::string_view name);
 
-		PHOENIX_API [[nodiscard]] buffer open() const;
+		PHOENIX_API [[nodiscard]] Buffer open() const;
 
 		PHOENIX_API [[nodiscard]] static VfsNode directory(std::string_view name);
-		PHOENIX_API [[nodiscard]] static VfsNode file(std::string_view name, buffer dev);
+		PHOENIX_API [[nodiscard]] static VfsNode file(std::string_view name, Buffer dev);
 
 		PHOENIX_API [[nodiscard]] static VfsNode directory(std::string_view name, std::time_t ts);
-		PHOENIX_API [[nodiscard]] static VfsNode file(std::string_view name, buffer dev, std::time_t ts);
+		PHOENIX_API [[nodiscard]] static VfsNode file(std::string_view name, Buffer dev, std::time_t ts);
 
 	protected:
 		PHOENIX_API explicit VfsNode(std::string_view name, std::time_t ts);
-		PHOENIX_API explicit VfsNode(std::string_view name, buffer dev, std::time_t ts);
+		PHOENIX_API explicit VfsNode(std::string_view name, Buffer dev, std::time_t ts);
 
 	private:
 		std::string _m_name;
 		std::time_t _m_time;
-		std::variant<std::vector<VfsNode>, buffer> _m_data;
+		std::variant<std::vector<VfsNode>, Buffer> _m_data;
 	};
 
 	enum class VfsOverwriteBehavior {
@@ -134,7 +132,7 @@ namespace phoenix {
 		/// \param buf A buffer containing the disk file contents.
 		/// \param overwrite The behavior of the system when conflicting files are found.
 		/// \throws VfsBrokenDiskError if the disk file is corrupted or invalid and thus, can't be loaded.
-		PHOENIX_API void mount_disk(buffer buf, VfsOverwriteBehavior overwrite = VfsOverwriteBehavior::OLDER);
+		PHOENIX_API void mount_disk(Buffer buf, VfsOverwriteBehavior overwrite = VfsOverwriteBehavior::OLDER);
 
 		/// \brief Mount a file or directory from the host file system into the Vfs.
 		/// \note If a path to a directory is provided, only its children are mounted, not the directory itself.

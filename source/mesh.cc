@@ -1,63 +1,64 @@
-// Copyright © 2022 Luis Michaelis <lmichaelis.all+dev@gmail.com>
+// Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/mesh.hh>
+#include "phoenix/mesh.hh"
+#include "phoenix/archive.hh"
 
 namespace phoenix {
 	[[maybe_unused]] static constexpr auto mesh_version_g1 = 9;
 	static constexpr auto mesh_version_g2 = 265;
 
-	enum class world_mesh_chunk : std::uint16_t {
-		unknown,
-		mesh = 0xB000,
-		bbox = 0xB010,
-		material = 0xB020,
-		lightmaps = 0xB025,
-		shared_lightmaps = 0xB026,
-		vertices = 0xB030,
-		features = 0xB040,
-		polygons = 0xB050,
-		end = 0xB060
+	enum class MeshChunkType : std::uint16_t {
+		UNKNOWN,
+		MESH = 0xB000,
+		BBOX = 0xB010,
+		MATERIAL = 0xB020,
+		LIGHTMAPS = 0xB025,
+		LIGHTMAPS_SHARED = 0xB026,
+		VERTICES = 0xB030,
+		FEATURES = 0xB040,
+		POLYGONS = 0xB050,
+		END = 0xB060
 	};
 
-	mesh mesh::parse(buffer& buf, std::optional<std::unordered_set<std::uint32_t>> const& leaf_polygons) {
-		mesh msh {};
+	Mesh Mesh::parse(Buffer& buf, std::optional<std::unordered_set<std::uint32_t>> const& leaf_polygons) {
+		Mesh msh {};
 
 		std::uint16_t version {};
 		bool finished = false;
-		world_mesh_chunk type = world_mesh_chunk::unknown;
+		MeshChunkType type = MeshChunkType::UNKNOWN;
 
 		do {
-			type = static_cast<world_mesh_chunk>(buf.get_ushort());
+			type = static_cast<MeshChunkType>(buf.get_ushort());
 
 			auto length = buf.get_uint();
 			auto chunk = buf.extract(length);
 
 			switch (type) {
-			case world_mesh_chunk::mesh:
+			case MeshChunkType::MESH:
 				version = chunk.get_ushort();
-				msh.date = date::parse(chunk);
+				msh.date = Date::parse(chunk);
 				msh.name = chunk.get_line(false);
 				break;
-			case world_mesh_chunk::bbox:
+			case MeshChunkType::BBOX:
 				// first, we find a basic AABB bounding box
-				msh.bbox = bounding_box::parse(chunk);
+				msh.bbox = AxisAlignedBoundingBox::parse(chunk);
 
 				// but second, we find a list of OOBBs with one acting as a parent
-				msh.obb = obb::parse(chunk);
+				msh.obb = OrientedBoundingBox::parse(chunk);
 				break;
-			case world_mesh_chunk::material: {
-				auto matreader = archive_reader::open(chunk);
+			case MeshChunkType::MATERIAL: {
+				auto matreader = ArchiveReader::open(chunk);
 
 				std::uint32_t material_count = chunk.get_uint();
 				msh.materials.reserve(material_count);
 
 				for (std::uint32_t i = 0; i < material_count; ++i) {
-					msh.materials.emplace_back(material::parse(*matreader));
+					msh.materials.emplace_back(Material::parse(*matreader));
 				}
 
 				break;
 			}
-			case world_mesh_chunk::vertices:
+			case MeshChunkType::VERTICES:
 				msh.vertices.resize(chunk.get_uint());
 
 				for (auto& vertex : msh.vertices) {
@@ -65,7 +66,7 @@ namespace phoenix {
 				}
 
 				break;
-			case world_mesh_chunk::features:
+			case MeshChunkType::FEATURES:
 				msh.features.resize(chunk.get_uint());
 
 				for (auto& feature : msh.features) {
@@ -75,7 +76,7 @@ namespace phoenix {
 				}
 
 				break;
-			case world_mesh_chunk::polygons: {
+			case MeshChunkType::POLYGONS: {
 				auto poly_count = chunk.get_uint();
 
 				msh.polygons.material_indices.reserve(poly_count);
@@ -89,8 +90,8 @@ namespace phoenix {
 					auto material_index = chunk.get_short();
 					auto lightmap_index = chunk.get_short();
 
-					[[maybe_unused]] plane polygon_plane = {chunk.get_float(), chunk.get_vec3()};
-					polygon_flags pflags {};
+					[[maybe_unused]] MeshPlane polygon_plane = {chunk.get_float(), chunk.get_vec3()};
+					PolygonFlags pflags {};
 
 					if (version == mesh_version_g2) {
 						std::uint8_t flags = chunk.get();
@@ -177,14 +178,14 @@ namespace phoenix {
 
 				break;
 			}
-			case world_mesh_chunk::shared_lightmaps: {
+			case MeshChunkType::LIGHTMAPS_SHARED: {
 				auto texture_count = chunk.get_uint();
 
-				std::vector<std::shared_ptr<texture>> lightmap_textures {};
+				std::vector<std::shared_ptr<Texture>> lightmap_textures {};
 				lightmap_textures.resize(texture_count);
 
 				for (std::uint32_t i = 0; i < texture_count; ++i) {
-					lightmap_textures[i] = std::make_shared<texture>(texture::parse(chunk));
+					lightmap_textures[i] = std::make_shared<Texture>(Texture::parse(chunk));
 				}
 
 				auto lightmap_count = chunk.get_uint();
@@ -195,28 +196,28 @@ namespace phoenix {
 					std::uint32_t texture_index = chunk.get_uint();
 
 					msh.lightmaps.emplace_back(
-					    light_map {lightmap_textures[texture_index], {normal_a, normal_b}, origin});
+					    LightMap {lightmap_textures[texture_index], {normal_a, normal_b}, origin});
 				}
 
 				break;
 			}
-			case world_mesh_chunk::lightmaps: {
+			case MeshChunkType::LIGHTMAPS: {
 				auto lightmap_count = chunk.get_uint();
 
 				for (std::uint32_t i = 0; i < lightmap_count; ++i) {
 					auto origin = chunk.get_vec3();
 					auto normal_a = chunk.get_vec3();
 					auto normal_b = chunk.get_vec3();
-					auto lightmap_texture = texture::parse(chunk);
+					auto lightmap_texture = Texture::parse(chunk);
 
-					msh.lightmaps.emplace_back(light_map {std::make_shared<texture>(std::move(lightmap_texture)),
-					                                      {normal_a, normal_b},
-					                                      origin});
+					msh.lightmaps.emplace_back(LightMap {std::make_shared<Texture>(std::move(lightmap_texture)),
+					                                     {normal_a, normal_b},
+					                                     origin});
 				}
 
 				break;
 			}
-			case world_mesh_chunk::end:
+			case MeshChunkType::END:
 				finished = true;
 				break;
 			default:
@@ -224,14 +225,14 @@ namespace phoenix {
 			}
 
 			if (chunk.remaining() != 0) {
-				PX_LOGW("mesh: ", chunk.remaining(), " bytes remaining in section ", std::hex, std::uint16_t(type));
+				PX_LOGW("Mesh: ", chunk.remaining(), " bytes remaining in section ", std::hex, std::uint16_t(type));
 			}
 		} while (!finished);
 
 		return msh;
 	}
 
-	bool polygon_flags::operator==(const polygon_flags& b) const {
+	bool PolygonFlags::operator==(const PolygonFlags& b) const {
 		return is_portal == b.is_portal && is_occluder == b.is_occluder && is_sector == b.is_sector &&
 		    should_relight == b.should_relight && is_outdoor == b.is_outdoor &&
 		    is_ghost_occluder == b.is_ghost_occluder && is_dynamically_lit == b.is_dynamically_lit &&
