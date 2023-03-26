@@ -87,14 +87,16 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::proto_mesh>()") PHOENIX_API static proto_mesh parse(buffer& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::proto_mesh>()") PHOENIX_API static proto_mesh
+		    parse(buffer& buf);
 
 		/// \brief Parses a proto mesh from the data in the given buffer.
 		/// \param[in] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed proto mesh.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::proto_mesh>()") PHOENIX_API static proto_mesh parse(buffer&& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::proto_mesh>()") PHOENIX_API static proto_mesh
+		    parse(buffer&& buf);
 
 		/// \brief Parses a proto mesh directly from the given buffer.
 		///
@@ -140,5 +142,5 @@ namespace phoenix {
 	/// \throws parser_error if parsing fails.
 	/// \see #parse(buffer&&)
 	template <>
-	proto_mesh parse<>(buffer& buf);
+	PHOENIX_API proto_mesh parse<>(buffer& buf);
 } // namespace phoenix

@@ -469,6 +469,7 @@ namespace phoenix {
 		return phoenix::parse<model_script>(buf);
 	}
 
+	template <>
 	model_script parse<>(buffer& buf) {
 		auto peek = buf.position();
 		auto potential_chunk_type = buf.get_ushort();

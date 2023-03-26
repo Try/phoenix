@@ -41,7 +41,8 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard, deprecated("use phoenix::parse<phoenix::model_hierarchy>()")]] PHOENIX_API static model_hierarchy parse(buffer& buf);
+		[[nodiscard, deprecated("use phoenix::parse<phoenix::model_hierarchy>()")]] PHOENIX_API static model_hierarchy
+		parse(buffer& buf);
 
 		/// \brief Parses a model hierarchy from the data in the given buffer.
 		///
@@ -52,7 +53,8 @@ namespace phoenix {
 		/// \return The parsed model hierarchy object.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::model_hierarchy>()") PHOENIX_API static model_hierarchy parse(buffer&& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::model_hierarchy>()") PHOENIX_API
+		    static model_hierarchy parse(buffer&& buf);
 
 	public:
 		/// \brief The list of nodes this hierarchy consists of.
@@ -84,5 +86,5 @@ namespace phoenix {
 	/// \throws parser_error if parsing fails.
 	/// \see #parse(buffer&&)
 	template <>
-	model_hierarchy parse<>(buffer& buf);
+	PHOENIX_API model_hierarchy parse<>(buffer& buf);
 } // namespace phoenix

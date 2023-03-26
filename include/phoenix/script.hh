@@ -632,12 +632,14 @@ namespace phoenix {
 		/// \brief Parses in a compiled daedalus script.
 		/// \param path The path of the script file.
 		/// \return The script parsed
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::script>()") PHOENIX_API static script parse(const std::string& path);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::script>()") PHOENIX_API static script
+		    parse(const std::string& path);
 
 		/// \brief Parses in a compiled daedalus script.
 		/// \param buf A buffer containing the script data.
 		/// \return The script parsed
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::script>()") PHOENIX_API static script parse(phoenix::buffer& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::script>()") PHOENIX_API static script
+		    parse(phoenix::buffer& buf);
 
 		/// \brief Registers a member offset
 		/// \param name The name of the member in the script
@@ -846,5 +848,5 @@ namespace phoenix {
 	/// \param buf A buffer containing the script data.
 	/// \return The script parsed
 	template <>
-	script parse<>(buffer& buf);
+	PHOENIX_API script parse<>(buffer& buf);
 } // namespace phoenix

@@ -55,15 +55,16 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::morph_mesh>()") PHOENIX_API static morph_mesh parse(buffer& buf);
-
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::morph_mesh>()") PHOENIX_API static morph_mesh
+		    parse(buffer& buf);
 
 		/// \brief Parses a morph mesh from the data in the given buffer.
 		/// \param[in] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed morph mesh.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::morph_mesh>()") PHOENIX_API static morph_mesh parse(buffer&& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::morph_mesh>()") PHOENIX_API static morph_mesh
+		    parse(buffer&& buf);
 
 	public:
 		/// \brief The name of the mesh.
@@ -91,5 +92,5 @@ namespace phoenix {
 	/// \throws parser_error if parsing fails.
 	/// \see #parse(buffer&&)
 	template <>
-	morph_mesh parse<>(buffer& buf);
+	PHOENIX_API morph_mesh parse<>(buffer& buf);
 } // namespace phoenix

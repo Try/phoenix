@@ -238,7 +238,7 @@ namespace phoenix {
 		    sector_index == b.sector_index && is_lod == b.is_lod && normal_axis == b.normal_axis;
 	}
 
-	mesh mesh::parse(buffer&& buf, const std::vector<std::uint32_t>& include_polygons) {
+	mesh mesh::parse(buffer&& buf, const std::unordered_set<std::uint32_t>& include_polygons) {
 		return mesh::parse(buf, include_polygons);
 	}
 

@@ -51,14 +51,16 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::texture>()") PHOENIX_API static texture parse(buffer& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::texture>()") PHOENIX_API static texture
+		    parse(buffer& buf);
 
 		/// \brief Parses a texture from the data in the given buffer.
 		/// \param[in,out] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed texture.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::texture>()") PHOENIX_API static texture parse(buffer&& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::texture>()") PHOENIX_API static texture
+		    parse(buffer&& buf);
 
 		/// \return The format of the texture.
 		[[nodiscard]] PHOENIX_API inline texture_format format() const noexcept {
@@ -157,5 +159,5 @@ namespace phoenix {
 	/// \throws parser_error if parsing fails.
 	/// \see #parse(buffer&&)
 	template <>
-	texture parse<>(buffer& buf);
+	PHOENIX_API texture parse<>(buffer& buf);
 } // namespace phoenix

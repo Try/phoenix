@@ -101,7 +101,8 @@ namespace phoenix {
 		/// \return The parsed mesh object.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&, const std::vector<std::uint32_t>&)
-		[[nodiscard]] PHOENIX_API inline static mesh parse(buffer&& buf, const std::unordered_set<std::uint32_t>& include_polygons = {});
+		[[nodiscard]] PHOENIX_API static mesh parse(buffer&& buf,
+		                                            const std::unordered_set<std::uint32_t>& include_polygons = {});
 
 	public:
 		/// \brief The creation date of this mesh.

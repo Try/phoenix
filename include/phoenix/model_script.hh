@@ -222,14 +222,16 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard, deprecated("use phoenix::parse<phoenix::model_script>()")]] PHOENIX_API static model_script parse(buffer& buf);
+		[[nodiscard, deprecated("use phoenix::parse<phoenix::model_script>()")]] PHOENIX_API static model_script
+		parse(buffer& buf);
 
 		/// \brief Parses a model script from the data in the given buffer.
 		/// \param[in] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed model script.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::model_script>()") PHOENIX_API static model_script parse(buffer&& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::model_script>()") PHOENIX_API static model_script
+		    parse(buffer&& buf);
 
 		/// \brief Parses a compiled model script from the data in the given buffer.
 		/// \param[in,out] buf The buffer to read from.
@@ -240,7 +242,8 @@ namespace phoenix {
 		/// \throws parser_error if parsing fails.
 		/// \deprecated model_script::parse can now handle both binary and text file types.
 		/// \see #parse_binary(buffer&&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use model_script::parse()") PHOENIX_API static model_script parse_binary(buffer& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use model_script::parse()") PHOENIX_API static model_script
+		    parse_binary(buffer& buf);
 
 		// \brief Parses a compiled model script from the data in the given buffer.
 		/// \param[in] buf The buffer to read from (by rvalue-reference).
@@ -277,5 +280,5 @@ namespace phoenix {
 	/// \throws parser_error if parsing fails.
 	/// \see #parse(buffer&&)
 	template <>
-	model_script parse<>(buffer& buf);
+	PHOENIX_API model_script parse<>(buffer& buf);
 } // namespace phoenix

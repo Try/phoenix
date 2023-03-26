@@ -67,14 +67,16 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::animation>()") PHOENIX_API static animation parse(buffer& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::animation>()") PHOENIX_API static animation
+		    parse(buffer& buf);
 
 		/// \brief Parses an animation from the data in the given buffer.
 		/// \param[in] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed animation.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::animation>()") PHOENIX_API inline static animation parse(buffer&& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::animation>()") PHOENIX_API inline static animation
+		    parse(buffer&& buf);
 
 	public:
 		/// \brief The name of the animation
@@ -134,5 +136,5 @@ namespace phoenix {
 	/// \throws parser_error if parsing fails.
 	/// \see #parse(buffer&&)
 	template <>
-	animation parse<>(buffer& buf);
+	PHOENIX_API animation parse<>(buffer& buf);
 } // namespace phoenix

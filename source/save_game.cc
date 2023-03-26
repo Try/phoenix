@@ -165,7 +165,7 @@ namespace phoenix::unstable {
 			PX_LOGI("save_game: loading THUMB.SAV");
 			auto file_thumb = find_file_matching(entries, "THUMB.SAV");
 			if (file_thumb) {
-				sav.thumbnail = texture::parse(buffer::mmap(*file_thumb));
+				sav.thumbnail = phoenix::parse<texture>(buffer::mmap(*file_thumb));
 			}
 		}
 

@@ -78,7 +78,8 @@ namespace phoenix {
 		/// \return The parsed material object.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(archive_reader&&) for an owning version this function.
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::material>()") PHOENIX_API static material parse(archive_reader& ctx);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::material>()") PHOENIX_API static material
+		    parse(archive_reader& ctx);
 
 	public:
 		std::string name;
@@ -119,7 +120,7 @@ namespace phoenix {
 	/// \throws parser_error if parsing fails.
 	/// \see #parse(archive_reader&&) for an owning version this function.
 	template <>
-	material parse<>(buffer& buf);
+	PHOENIX_API material parse<>(buffer& buf);
 
 	/// \brief Parses a material from the given *ZenGin* archive.
 	///
@@ -133,5 +134,5 @@ namespace phoenix {
 	/// \throws parser_error if parsing fails.
 	/// \see #parse(archive_reader&&) for an owning version this function.
 	template <>
-	material parse<>(archive_reader& ctx);
+	PHOENIX_API material parse<>(archive_reader& ctx);
 } // namespace phoenix

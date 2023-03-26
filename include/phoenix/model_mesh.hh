@@ -26,14 +26,16 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::model_mesh>()") PHOENIX_API static model_mesh parse(buffer& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::model_mesh>()") PHOENIX_API static model_mesh
+		    parse(buffer& buf);
 
 		/// \brief Parses a model mesh from the data in the given buffer.
 		/// \param[in] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed model mesh object.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::model_mesh>()") PHOENIX_API static model_mesh parse(buffer&& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::model_mesh>()") PHOENIX_API static model_mesh
+		    parse(buffer&& buf);
 
 	public:
 		/// \brief A list of soft-skin meshes associated with this model mesh.
@@ -59,5 +61,5 @@ namespace phoenix {
 	/// \throws parser_error if parsing fails.
 	/// \see #parse(buffer&&)
 	template <>
-	model_mesh parse<>(buffer& buf);
+	PHOENIX_API model_mesh parse<>(buffer& buf);
 } // namespace phoenix

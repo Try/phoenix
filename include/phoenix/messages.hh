@@ -54,14 +54,16 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::messages>()") PHOENIX_API static messages parse(buffer& path);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::messages>()") PHOENIX_API static messages
+		    parse(buffer& path);
 
 		/// \brief Parses a message database from the data in the given buffer.
 		/// \param[in] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed message database object.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::messages>()") PHOENIX_API static messages parse(buffer&& path);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::messages>()") PHOENIX_API static messages
+		    parse(buffer&& path);
 
 		/// \brief Retrieves a message block by it's name.
 		/// \param name The name of the block to get
@@ -86,7 +88,7 @@ namespace phoenix {
 	/// \throws parser_error if parsing fails.
 	/// \see #parse(buffer&&)
 	template <>
-	messages parse<>(buffer& buf);
+	PHOENIX_API messages parse<>(buffer& buf);
 
 	/// \brief Parses a message database from the data in the given buffer.
 	///
@@ -101,5 +103,5 @@ namespace phoenix {
 	/// \throws parser_error if parsing fails.
 	/// \see #parse(buffer&&)
 	template <>
-	messages parse<>(archive_reader& ctx);
+	PHOENIX_API messages parse<>(archive_reader& ctx);
 } // namespace phoenix

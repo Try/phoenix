@@ -22,14 +22,16 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::model>()") PHOENIX_API static model parse(buffer& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::model>()") PHOENIX_API static model
+		    parse(buffer& buf);
 
 		/// \brief Parses a model from the data in the given buffer.
 		/// \param[in] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed model object.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::model>()") PHOENIX_API static model parse(buffer&& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::model>()") PHOENIX_API static model
+		    parse(buffer&& buf);
 
 	public:
 		/// \brief The phoenix::model_hierarchy associated with this model.
@@ -48,5 +50,5 @@ namespace phoenix {
 	/// \throws parser_error if parsing fails.
 	/// \see #parse(buffer&&)
 	template <>
-	model parse<>(buffer& buf);
+	PHOENIX_API model parse<>(buffer& buf);
 } // namespace phoenix

@@ -49,7 +49,8 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::world>()") PHOENIX_API static world parse(buffer& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::world>()") PHOENIX_API static world
+		    parse(buffer& buf);
 
 		/// \brief Parses a world from the data in the given buffer.
 		/// \param[in,out] buf The buffer to read from (by rvalue-reference).
@@ -64,7 +65,8 @@ namespace phoenix {
 		/// \return The parsed world object.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::world>()") PHOENIX_API static world parse(buffer&& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::world>()") PHOENIX_API static world
+		    parse(buffer&& buf);
 
 		/// \brief The list of VObs defined in this world.
 		std::vector<std::unique_ptr<vob>> world_vobs;
@@ -99,5 +101,5 @@ namespace phoenix {
 	/// \throws parser_error if parsing fails.
 	/// \see #parse(buffer&&)
 	template <>
-	world parse<>(buffer& buf);
+	PHOENIX_API world parse<>(buffer& buf);
 } // namespace phoenix

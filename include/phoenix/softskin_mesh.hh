@@ -29,14 +29,16 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::softskin_mesh>()") PHOENIX_API static softskin_mesh parse(buffer& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::softskin_mesh>()") PHOENIX_API
+		    static softskin_mesh parse(buffer& buf);
 
 		/// \brief Parses a soft-skin mesh from the data in the given buffer.
 		/// \param[in] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed soft-skin mesh.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::softskin_mesh>()") PHOENIX_API static softskin_mesh parse(buffer&& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::softskin_mesh>()") PHOENIX_API
+		    static softskin_mesh parse(buffer&& buf);
 
 	public:
 		/// \brief The embedded proto-mesh.
@@ -64,5 +66,5 @@ namespace phoenix {
 	/// \throws parser_error if parsing fails.
 	/// \see #parse(buffer&&)
 	template <>
-	softskin_mesh parse<>(buffer& buf);
+	PHOENIX_API softskin_mesh parse<>(buffer& buf);
 } // namespace phoenix

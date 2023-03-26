@@ -57,16 +57,16 @@ namespace phoenix {
 		///       using buffer::duplicate.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::font>()") PHOENIX_API static font parse(buffer& buf);
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::font>()") PHOENIX_API static font
+		    parse(buffer& buf);
 
 		/// \brief Parses a font from the data in the given buffer.
 		/// \param[in] buf The buffer to read from (by rvalue-reference).
 		/// \return The parsed font object.
 		/// \throws parser_error if parsing fails.
 		/// \see #parse(buffer&)
-		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::font>()") PHOENIX_API inline static font parse(buffer&& in) {
-			return font::parse(in);
-		}
+		[[nodiscard]] PHOENIX_DEPRECATED("use phoenix::parse<phoenix::font>()") PHOENIX_API static font
+		    parse(buffer&& buf);
 
 	public:
 		/// \brief The name of this font.
@@ -104,5 +104,5 @@ namespace phoenix {
 	/// \throws parser_error if parsing fails.
 	/// \see #parse(buffer&&)
 	template <>
-	font parse<>(buffer& buf);
+	PHOENIX_API font parse<>(buffer& buf);
 } // namespace phoenix
