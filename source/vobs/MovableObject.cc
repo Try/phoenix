@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/vobs/mob.hh"
 #include "phoenix/archive.hh"
+#include "phoenix/vobs/mob.hh"
 
 namespace phoenix::vobs {
 	void MovableObject::parse(MovableObject& obj, ArchiveReader& ctx, GameVersion version) {

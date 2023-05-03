@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 #include "phoenix/archive.hh"
 
-#include "archive/archive_ascii.hh"
-#include "archive/archive_binary.hh"
-#include "archive/archive_binsafe.hh"
+#include "archive/ArchiveReaderAscii.hh"
+#include "archive/ArchiveReaderBinSafe.hh"
+#include "archive/ArchiveReaderBinary.hh"
 
 #include <iostream>
 

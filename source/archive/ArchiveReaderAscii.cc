@@ -1,6 +1,6 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "archive_ascii.hh"
+#include "ArchiveReaderAscii.hh"
 
 #include <charconv>
 #include <cstring>

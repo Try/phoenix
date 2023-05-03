@@ -1,6 +1,5 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/world/vob_tree.hh"
 #include "phoenix/archive.hh"
 #include "phoenix/vobs/camera.hh"
 #include "phoenix/vobs/light.hh"
@@ -10,6 +9,7 @@
 #include "phoenix/vobs/trigger.hh"
 #include "phoenix/vobs/vob.hh"
 #include "phoenix/vobs/zone.hh"
+#include "phoenix/world/vob_tree.hh"
 
 #include <unordered_map>
 

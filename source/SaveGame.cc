@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/save_game.hh"
 #include "phoenix/archive.hh"
+#include "phoenix/save_game.hh"
 
 #include <optional>
 #include <set>

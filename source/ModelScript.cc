@@ -3,7 +3,7 @@
 #include "phoenix/model_script.hh"
 #include "phoenix/phoenix.hh"
 
-#include "model_script_dsl.hh"
+#include "ModelScriptDsl"
 
 #include <iostream>
 #include <unordered_map>

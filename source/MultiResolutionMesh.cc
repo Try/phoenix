@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/proto_mesh.hh"
 #include "phoenix/archive.hh"
+#include "phoenix/proto_mesh.hh"
 
 namespace phoenix {
 	[[maybe_unused]] static constexpr auto version_g1 = 0x305;

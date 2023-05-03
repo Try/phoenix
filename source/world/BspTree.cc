@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/world/bsp_tree.hh"
 #include "phoenix/buffer.hh"
+#include "phoenix/world/bsp_tree.hh"
 
 namespace phoenix {
 	static constexpr auto version_g1 = 0x2090000;

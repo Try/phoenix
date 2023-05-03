@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/softskin_mesh.hh"
 #include "phoenix/buffer.hh"
+#include "phoenix/softskin_mesh.hh"
 
 namespace phoenix {
 	enum class SoftSkinChunkType { UNKNOWN, HEADER = 0xE100, END = 0xE110, MESH = 0xB100, NODES = 0xB1FF };

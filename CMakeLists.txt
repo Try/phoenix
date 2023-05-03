@@ -50,69 +50,69 @@ set(PHOENIX_DEFINES PHOENIX_LOG_LEVEL=${PHOENIX_LOG_LEVEL})
 file(GLOB_RECURSE PHOENIX_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/include/**/*.hh")
 
 set(PHOENIX_SOURCES
-        source/animation.cc
-        source/archive.cc
-        source/archive/archive_ascii.cc
-        source/archive/archive_binary.cc
-        source/archive/archive_binsafe.cc
-        source/buffer.cc
-        source/font.cc
-        source/material.cc
-        source/math.cc
-        source/mesh.cc
-        source/messages.cc
-        source/model.cc
-        source/model_hierarchy.cc
-        source/model_mesh.cc
-        source/model_script.cc
-        source/model_script_dsl.cc
-        source/morph_mesh.cc
-        source/phoenix.cc
-        source/proto_mesh.cc
-        source/save_game.cc
-        source/script.cc
-        source/softskin_mesh.cc
-        source/texture.cc
+        source/Animation.cc
+        source/Archive.cc
+        source/archive/ArchiveReaderAscii.cc
+        source/archive/ArchiveReaderBinary.cc
+        source/archive/ArchiveReaderBinSafe.cc
+        source/Buffer.cc
+        source/Font.cc
+        source/Material.cc
+        source/Math.cc
+        source/Mesh.cc
+        source/CutsceneLibary.cc
+        source/Model.cc
+        source/ModelHierarchy.cc
+        source/ModelMesh.cc
+        source/ModelScript.cc
+        source/ModelScriptDsl.cc
+        source/MorphMesh.cc
+        source/Phoenix.cc
+        source/MultiResolutionMesh.cc
+        source/SaveGame.cc
+        source/DaedalusScript.cc
+        source/SoftSkinMesh.cc
+        source/Texture.cc
         source/vdfs.cc
         source/Vfs.cc
-        source/vobs/camera.cc
-        source/vobs/light.cc
-        source/vobs/misc.cc
-        source/vobs/mob.cc
-        source/vobs/sound.cc
-        source/vobs/trigger.cc
-        source/vobs/vob.cc
-        source/vobs/zone.cc
-        source/vm.cc
-        source/world.cc
-        source/world/bsp_tree.cc
-        source/world/vob_tree.cc
-        source/world/way_net.cc)
+        source/vobs/Camera.cc
+        source/vobs/Light.cc
+        source/vobs/Misc.cc
+        source/vobs/MovableObject.cc
+        source/vobs/Sound.cc
+        source/vobs/Trigger.cc
+        source/vobs/VirtualObject.cc
+        source/vobs/Zone.cc
+        source/DaedalusVm.cc
+        source/World.cc
+        source/world/BspTree.cc
+        source/world/VobTree.cc
+        source/world/WayNet.cc)
 
 set(PHOENIX_EXTENSIONS
         source/ext/dds_convert.cc
         source/ext/daedalus_classes.cc)
 
 set(PHOENIX_TESTS
-        tests/test_animation.cc
-        tests/test_archive.cc
-        tests/test_buffer.cc
-        tests/test_font.cc
-        tests/test_material.cc
-        tests/test_messages.cc
-        tests/test_model.cc
-        tests/test_model_hierarchy.cc
-        tests/test_model_mesh.cc
-        tests/test_model_script.cc
-        tests/test_morph_mesh.cc
-        tests/test_proto_mesh.cc
-        tests/test_save_game.cc
-        tests/test_script.cc
-        tests/test_texture.cc
+        tests/TestAnimation.cc
+        tests/TestArchive.cc
+        tests/TestBuffer.cc
+        tests/TestFont.cc
+        tests/TestMaterial.cc
+        tests/TestMessages.cc
+        tests/TestModel.cc
+        tests/TestModelHierarchy.cc
+        tests/TestModelMesh.cc
+        tests/TestModelScript.cc
+        tests/TestMorphMesh.cc
+        tests/TestMultiResolutionMesh.cc
+        tests/TestSaveGame.cc
+        tests/TestDaedalusScript.cc
+        tests/TestTexture.cc
         tests/TestVfs.cc
-        tests/test_vobs_g1.cc
-        tests/test_vobs_g2.cc
-        tests/test_world.cc)
+        tests/TestVirtualObject_Gothic1.cc
+        tests/TestVirtualObject_Gothic2.cc
+        tests/TestWorld.cc)
 
 # add the phoenix library definition
 if (BUILD_SHARED_LIBS AND PHOENIX_BUILD_SHARED)
