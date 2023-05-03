@@ -1,15 +1,15 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/archive.hh"
-#include "phoenix/vobs/camera.hh"
-#include "phoenix/vobs/light.hh"
-#include "phoenix/vobs/misc.hh"
-#include "phoenix/vobs/mob.hh"
-#include "phoenix/vobs/sound.hh"
-#include "phoenix/vobs/trigger.hh"
-#include "phoenix/vobs/vob.hh"
-#include "phoenix/vobs/zone.hh"
-#include "phoenix/world/vob_tree.hh"
+#include "phoenix/world/VobTree.hh"
+#include "phoenix/Archive.hh"
+#include "phoenix/vobs/Camera.hh"
+#include "phoenix/vobs/Light.hh"
+#include "phoenix/vobs/Misc.hh"
+#include "phoenix/vobs/MovableObject.hh"
+#include "phoenix/vobs/Sound.hh"
+#include "phoenix/vobs/Trigger.hh"
+#include "phoenix/vobs/VirtualObject.hh"
+#include "phoenix/vobs/Zone.hh"
 
 #include <unordered_map>
 

@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "Api.hh"
-#include "mesh.hh"
-#include "world/bsp_tree.hh"
-#include "world/vob_tree.hh"
-#include "world/way_net.hh"
+#include "Mesh.hh"
+#include "world/BspTree.hh"
+#include "world/VobTree.hh"
+#include "world/WayNet.hh"
 
 #include <memory>
 #include <vector>

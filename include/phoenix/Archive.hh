@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "Api.hh"
-#include "buffer.hh"
-#include "math.hh"
+#include "Buffer.hh"
+#include "Math.hh"
 
 #include <glm/mat3x3.hpp>
 #include <glm/vec2.hpp>

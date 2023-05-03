@@ -1,8 +1,8 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #pragma once
-#include "../phoenix.hh"
-#include "../vobs/vob.hh"
+#include "../Phoenix.hh"
+#include "../vobs/VirtualObject.hh"
 
 #include <memory>
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "../Api.hh"
-#include "vob.hh"
+#include "VirtualObject.hh"
 
 namespace phoenix {
 	/// \brief Describes how a sound should be played when the player enters its trigger volume.

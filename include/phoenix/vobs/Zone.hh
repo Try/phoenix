@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "../Api.hh"
-#include "vob.hh"
+#include "VirtualObject.hh"
 
 namespace phoenix::vobs {
 	/// \brief A VOb which defines the background music in a certain zone.

@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #include "ModelScriptDsl"
-#include "phoenix/model_script.hh"
+#include "phoenix/ModelScript.hh"
 
 #include <iostream>
 

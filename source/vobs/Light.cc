@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/vobs/light.hh"
-#include "phoenix/archive.hh"
+#include "phoenix/vobs/Light.hh"
+#include "phoenix/Archive.hh"
 
 #include <sstream>
 

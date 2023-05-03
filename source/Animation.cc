@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/animation.hh"
-#include "phoenix/buffer.hh"
+#include "phoenix/Animation.hh"
+#include "phoenix/Buffer.hh"
 
 #include <cmath>
 

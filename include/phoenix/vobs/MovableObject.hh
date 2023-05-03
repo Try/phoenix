@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "../Api.hh"
-#include "misc.hh"
-#include "vob.hh"
+#include "Misc.hh"
+#include "VirtualObject.hh"
 
 namespace phoenix {
 	/// \brief The different sounds a material can make.

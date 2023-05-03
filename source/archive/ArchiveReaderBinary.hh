@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #pragma once
-#include "phoenix/archive.hh"
+#include "phoenix/Archive.hh"
 
 #include <stack>
 

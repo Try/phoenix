@@ -1,8 +1,8 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #include "phoenix/ext/dds_convert.hh"
-#include "phoenix/buffer.hh"
-#include "phoenix/texture.hh"
+#include "phoenix/Buffer.hh"
+#include "phoenix/Texture.hh"
 
 #define MAKEFOURCC(ch0, ch1, ch2, ch3)                                                                                 \
 	((uint32_t) (uint8_t) (ch0) | ((uint32_t) (uint8_t) (ch1) << 8) | ((uint32_t) (uint8_t) (ch2) << 16) |             \

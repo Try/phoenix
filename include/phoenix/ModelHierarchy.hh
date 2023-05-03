@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "Api.hh"
-#include "math.hh"
+#include "Math.hh"
 
 #include <glm/mat4x4.hpp>
 

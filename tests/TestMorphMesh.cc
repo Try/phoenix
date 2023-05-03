@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include <phoenix/buffer.hh>
-#include <phoenix/morph_mesh.hh>
+#include <phoenix/Buffer.hh>
+#include <phoenix/MorphMesh.hh>
 
 #include <doctest/doctest.h>
 

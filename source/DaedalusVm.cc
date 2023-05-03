@@ -1,6 +1,6 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/vm.hh"
+#include "phoenix/DaedalusVm.hh"
 
 #include <utility>
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "Api.hh"
-#include "buffer.hh"
+#include "Buffer.hh"
 
 #include <filesystem>
 #include <string>

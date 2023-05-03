@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/archive.hh"
-#include "phoenix/world/way_net.hh"
+#include "phoenix/world/WayNet.hh"
+#include "phoenix/Archive.hh"
 
 namespace phoenix {
 	static void read_waypoint_data(WayPoint& wp, ArchiveReader& in) {

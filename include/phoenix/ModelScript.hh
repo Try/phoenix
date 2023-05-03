@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "Api.hh"
-#include "phoenix.hh"
-#include "phoenix/material.hh"
+#include "Phoenix.hh"
+#include "phoenix/Material.hh"
 
 #include <string>
 #include <vector>

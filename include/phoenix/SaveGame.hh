@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "Api.hh"
-#include "texture.hh"
+#include "Texture.hh"
 
 #include <filesystem>
 #include <optional>

@@ -1,8 +1,8 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/vobs/trigger.hh"
-#include "phoenix/animation.hh"
-#include "phoenix/archive.hh"
+#include "phoenix/vobs/Trigger.hh"
+#include "phoenix/Animation.hh"
+#include "phoenix/Archive.hh"
 
 namespace phoenix::vobs {
 	void Trigger::parse(Trigger& obj, ArchiveReader& ctx, GameVersion version) {

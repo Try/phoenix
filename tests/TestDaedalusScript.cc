@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #include <doctest/doctest.h>
-#include <phoenix/script.hh>
+#include <phoenix/DaedalusScript.hh>
 
 namespace px = phoenix;
 

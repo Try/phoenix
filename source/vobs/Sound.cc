@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/vobs/sound.hh"
-#include "phoenix/archive.hh"
+#include "phoenix/vobs/Sound.hh"
+#include "phoenix/Archive.hh"
 
 namespace phoenix::vobs {
 	void Sound::parse(Sound& obj, ArchiveReader& ctx, GameVersion version) {

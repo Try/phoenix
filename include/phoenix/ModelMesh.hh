@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "Api.hh"
-#include "proto_mesh.hh"
-#include "softskin_mesh.hh"
+#include "MultiResolutionMesh.hh"
+#include "SoftSkinMesh.hh"
 
 #include <unordered_map>
 

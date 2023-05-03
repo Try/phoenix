@@ -1,9 +1,9 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #pragma once
+#include "../Animation.hh"
 #include "../Api.hh"
-#include "../animation.hh"
-#include "vob.hh"
+#include "VirtualObject.hh"
 
 namespace phoenix {
 	enum class MoverBehavior : uint32_t {

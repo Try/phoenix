@@ -1,6 +1,6 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/buffer.hh"
+#include "phoenix/Buffer.hh"
 
 #include <mio/mmap.hpp>
 

@@ -1,8 +1,8 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #pragma once
-#include "model_hierarchy.hh"
-#include "model_mesh.hh"
+#include "ModelHierarchy.hh"
+#include "ModelMesh.hh"
 
 #include <string>
 

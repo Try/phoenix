@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/vobs/camera.hh"
-#include "phoenix/archive.hh"
+#include "phoenix/vobs/Camera.hh"
+#include "phoenix/Archive.hh"
 
 namespace phoenix::vobs {
 	std::unique_ptr<CameraTrajectoryFrame> CameraTrajectoryFrame::parse(ArchiveReader& ctx, GameVersion version) {

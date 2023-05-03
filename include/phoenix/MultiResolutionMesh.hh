@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "Api.hh"
-#include "material.hh"
-#include "math.hh"
-#include "phoenix.hh"
+#include "Material.hh"
+#include "Math.hh"
+#include "Phoenix.hh"
 
 namespace phoenix {
 	struct MeshTriangle {

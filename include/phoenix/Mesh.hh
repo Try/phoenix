@@ -1,11 +1,11 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
 #pragma once
-#include "material.hh"
-#include "math.hh"
-#include "phoenix.hh"
-#include "proto_mesh.hh"
-#include "texture.hh"
+#include "Material.hh"
+#include "Math.hh"
+#include "MultiResolutionMesh.hh"
+#include "Phoenix.hh"
+#include "Texture.hh"
 
 #include <memory>
 #include <optional>

@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/font.hh"
-#include "phoenix/buffer.hh"
+#include "phoenix/Font.hh"
+#include "phoenix/Buffer.hh"
 
 namespace phoenix {
 	Font::Font(std::string font_name, std::uint32_t font_height, std::vector<FontGlyph> font_glyphs)

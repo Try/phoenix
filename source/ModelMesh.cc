@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/buffer.hh"
-#include "phoenix/model_mesh.hh"
+#include "phoenix/ModelMesh.hh"
+#include "phoenix/Buffer.hh"
 
 namespace phoenix {
 	enum class ModelMeshChunkType {

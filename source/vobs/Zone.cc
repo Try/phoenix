@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/vobs/zone.hh"
-#include "phoenix/archive.hh"
+#include "phoenix/vobs/Zone.hh"
+#include "phoenix/Archive.hh"
 
 namespace phoenix::vobs {
 	void ZoneMusic::parse(ZoneMusic& obj, ArchiveReader& ctx, GameVersion version) {

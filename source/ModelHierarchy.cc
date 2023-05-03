@@ -1,7 +1,7 @@
 // Copyright © 2023 GothicKit Contributors, Luis Michaelis <me@lmichaelis.de>
 // SPDX-License-Identifier: MIT
-#include "phoenix/buffer.hh"
-#include "phoenix/model_hierarchy.hh"
+#include "phoenix/ModelHierarchy.hh"
+#include "phoenix/Buffer.hh"
 
 namespace phoenix {
 	enum class ModelHierarchyChunkType { UNKNOWN, HIERARCHY = 0xD100, SOURCE = 0xD110, END = 0xD120 };

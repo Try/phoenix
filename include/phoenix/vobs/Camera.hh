@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "../Api.hh"
-#include "vob.hh"
+#include "VirtualObject.hh"
 
 namespace phoenix {
 	enum class CameraMotion : std::uint32_t {

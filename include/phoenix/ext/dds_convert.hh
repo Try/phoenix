@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "../Api.hh"
-#include "../buffer.hh"
-#include "../texture.hh"
+#include "../Buffer.hh"
+#include "../Texture.hh"
 
 namespace phoenix {
 	/// \brief Converts a texture to the DDS format.

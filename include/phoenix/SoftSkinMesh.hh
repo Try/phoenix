@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "Api.hh"
-#include "math.hh"
-#include "proto_mesh.hh"
+#include "Math.hh"
+#include "MultiResolutionMesh.hh"
 
 #include <vector>
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include "Api.hh"
-#include "script.hh"
+#include "DaedalusScript.hh"
 
 #include <array>
 #include <functional>
