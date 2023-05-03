@@ -73,7 +73,6 @@ set(PHOENIX_SOURCES
         source/DaedalusScript.cc
         source/SoftSkinMesh.cc
         source/Texture.cc
-        source/vdfs.cc
         source/Vfs.cc
         source/vobs/Camera.cc
         source/vobs/Light.cc
