@@ -19,7 +19,7 @@ namespace phoenix {
 
 	/// \brief All possible VOb types.
 	/// \summary Mostly copied from [ZenLib](https://github.com/Try/ZenLib).
-	enum class vob_type : std::uint8_t {
+	enum class VobType : std::uint8_t {
 		zCVob = 0,           ///< The base type for all VObs.
 		zCVobLevelCompo = 1, ///< A basic VOb used for grouping other VObs.
 		oCItem = 2,          ///< A VOb representing an item
@@ -154,8 +154,8 @@ namespace phoenix {
 
 		using save_state PHOENIX_DEPRECATED("renamed to SaveState") = SaveState;
 
-		vob_type type; ///< The type of this VOb.
-		uint32_t id;   ///< The index of this VOb in the archive it was read from.
+		VobType type; ///< The type of this VOb.
+		uint32_t id;  ///< The index of this VOb in the archive it was read from.
 
 		AxisAlignedBoundingBox bbox {};
 		glm::vec3 position {};
@@ -206,6 +206,7 @@ namespace phoenix {
 		PHOENIX_API static void parse(VirtualObject& obj, ArchiveReader& ctx, GameVersion version);
 	};
 
+	using vob_type PHOENIX_DEPRECATED("renamed to VobType") = VobType;
 	using shadow_mode PHOENIX_DEPRECATED("renamed to ShadowType") = ShadowType;
 	using visual_type PHOENIX_DEPRECATED("renamed to VisualType") = VisualType;
 	using sprite_alignment PHOENIX_DEPRECATED("renamed to SpriteAlignment") = SpriteAlignment;
