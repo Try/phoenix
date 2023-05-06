@@ -3,6 +3,7 @@
 #pragma once
 #include "Api.hh"
 
+#include <cstdint>
 #include <functional>
 #include <optional>
 #include <sstream>
