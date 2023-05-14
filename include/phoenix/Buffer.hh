@@ -440,7 +440,7 @@ namespace phoenix {
 		/// \return This buffer.
 		/// \throws BufferOverflowError if the value can't be written.
 		/// \throws BufferReadonlyError if the buffer is read-only.
-		PHOENIX_API void put(const std::byte* buf, std::uint64_t size);
+		PHOENIX_DEPRECATED("use phoenix::Output") PHOENIX_API void put(const std::byte* buf, std::uint64_t size);
 
 		/// \brief Put bytes from buf into the buffer and advance the position accordingly.
 		/// \param buf The data to write.
@@ -448,91 +448,91 @@ namespace phoenix {
 		/// \return This buffer.
 		/// \throws BufferOverflowError if the value can't be written.
 		/// \throws BufferReadonlyError if the buffer is read-only.
-		PHOENIX_API void put(const std::uint8_t* buf, std::uint64_t size);
+		PHOENIX_DEPRECATED("use phoenix::Output") PHOENIX_API void put(const std::uint8_t* buf, std::uint64_t size);
 
 		/// \brief Put a value of type std::uint8_t into the buffer and advance the position accordingly
 		/// \param value The value to put into the buffer
 		/// \return This buffer.
 		/// \throws BufferOverflowError if the value can't be written.
 		/// \throws BufferReadonlyError if the buffer is read-only.
-		PHOENIX_API void put(std::uint8_t value);
+		PHOENIX_DEPRECATED("use phoenix::Output") PHOENIX_API void put(std::uint8_t value);
 
 		/// \brief Put a value of type char into the buffer and advance the position accordingly
 		/// \param value The value to put into the buffer
 		/// \return This buffer.
 		/// \throws BufferOverflowError if the value can't be written.
 		/// \throws BufferReadonlyError if the buffer is read-only.
-		PHOENIX_API void put_char(char value);
+		PHOENIX_DEPRECATED("use phoenix::Output") PHOENIX_API void put_char(char value);
 
 		/// \brief Put a value of type std::int16_t into the buffer and advance the position accordingly
 		/// \param value The value to put into the buffer
 		/// \return This buffer.
 		/// \throws BufferOverflowError if the value can't be written.
 		/// \throws BufferReadonlyError if the buffer is read-only.
-		PHOENIX_API void put_short(std::int16_t value);
+		PHOENIX_DEPRECATED("use phoenix::Output") PHOENIX_API void put_short(std::int16_t value);
 
 		/// \brief Put a value of type std::uint16_t into the buffer and advance the position accordingly
 		/// \param value The value to put into the buffer
 		/// \return This buffer.
 		/// \throws BufferOverflowError if the value can't be written.
 		/// \throws BufferReadonlyError if the buffer is read-only.
-		PHOENIX_API void put_ushort(std::uint16_t value);
+		PHOENIX_DEPRECATED("use phoenix::Output") PHOENIX_API void put_ushort(std::uint16_t value);
 
 		/// \brief Put a value of type std::int32_t into the buffer and advance the position accordingly
 		/// \param value The value to put into the buffer
 		/// \return This buffer.
 		/// \throws BufferOverflowError if the value can't be written.
 		/// \throws BufferReadonlyError if the buffer is read-only.
-		PHOENIX_API void put_int(std::int32_t value);
+		PHOENIX_DEPRECATED("use phoenix::Output") PHOENIX_API void put_int(std::int32_t value);
 
 		/// \brief Put a value of type std::uint32_t into the buffer and advance the position accordingly
 		/// \param value The value to put into the buffer
 		/// \return This buffer.
 		/// \throws BufferOverflowError if the value can't be written.
 		/// \throws BufferReadonlyError if the buffer is read-only.
-		PHOENIX_API void put_uint(std::uint32_t value);
+		PHOENIX_DEPRECATED("use phoenix::Output") PHOENIX_API void put_uint(std::uint32_t value);
 
 		/// \brief Put a value of type std::int64_t into the buffer and advance the position accordingly
 		/// \param value The value to put into the buffer
 		/// \return This buffer.
 		/// \throws BufferOverflowError if the value can't be written.
 		/// \throws BufferReadonlyError if the buffer is read-only.
-		PHOENIX_API void put_long(std::int64_t value);
+		PHOENIX_DEPRECATED("use phoenix::Output") PHOENIX_API void put_long(std::int64_t value);
 
 		/// \brief Put a value of type std::uint64_t into the buffer and advance the position accordingly
 		/// \param value The value to put into the buffer
 		/// \return This buffer.
 		/// \throws BufferOverflowError if the value can't be written.
 		/// \throws BufferReadonlyError if the buffer is read-only.
-		PHOENIX_API void put_ulong(std::uint64_t value);
+		PHOENIX_DEPRECATED("use phoenix::Output") PHOENIX_API void put_ulong(std::uint64_t value);
 
 		/// \brief Put a value of type float into the buffer and advance the position accordingly
 		/// \param value The value to put into the buffer
 		/// \return This buffer.
 		/// \throws BufferOverflowError if the value can't be written.
 		/// \throws BufferReadonlyError if the buffer is read-only.
-		PHOENIX_API void put_float(float value);
+		PHOENIX_DEPRECATED("use phoenix::Output") PHOENIX_API void put_float(float value);
 
 		/// \brief Put a value of type double into the buffer and advance the position accordingly
 		/// \param value The value to put into the buffer
 		/// \return This buffer.
 		/// \throws BufferOverflowError if the value can't be written.
 		/// \throws BufferReadonlyError if the buffer is read-only.
-		PHOENIX_API void put_double(double value);
+		PHOENIX_DEPRECATED("use phoenix::Output") PHOENIX_API void put_double(double value);
 
 		/// \brief Put string into the buffer and advance the position accordingly
 		/// \param str The string to put into the buffer.
 		/// \return This buffer.
 		/// \throws BufferOverflowError if the string can't be written.
 		/// \throws BufferReadonlyError if the buffer is read-only.
-		PHOENIX_API void put_string(std::string_view str);
+		PHOENIX_DEPRECATED("use phoenix::Output") PHOENIX_API void put_string(std::string_view str);
 
 		/// \brief Put string followed by <LF> into the buffer and advance the position accordingly
 		/// \param str The string to put into the buffer.
 		/// \return This buffer.
 		/// \throws BufferOverflowError if the string can't be written.
 		/// \throws BufferReadonlyError if the buffer is read-only.
-		PHOENIX_API void put_line(std::string_view str);
+		PHOENIX_DEPRECATED("use phoenix::Output") PHOENIX_API void put_line(std::string_view str);
 
 		/// \brief Allocates a new buffer with the given size.
 		///

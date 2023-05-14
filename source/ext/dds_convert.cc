@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 #include "phoenix/ext/dds_convert.hh"
 #include "phoenix/Buffer.hh"
+#include "phoenix/Output.hh"
 #include "phoenix/Texture.hh"
 
 #define MAKEFOURCC(ch0, ch1, ch2, ch3)                                                                                 \
@@ -70,7 +71,7 @@ namespace phoenix {
 		uint32_t dwReserved2;
 	};
 
-	static void write_dds_header(Buffer& out, const Texture& tex) {
+	static void write_dds_header(OutputWriter& out, const Texture& tex) {
 		DDSURFACEDESC2 header {};
 		header.dwSize = sizeof(DDSURFACEDESC2);
 		header.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_PIXELFORMAT | DDSD_CAPS;
@@ -190,45 +191,45 @@ namespace phoenix {
 			break;
 		}
 
-		out.put_uint(header.dwSize);
-		out.put_uint(header.dwFlags);
-		out.put_uint(header.dwHeight);
-		out.put_uint(header.dwWidth);
-		out.put_uint(header.dwPitchOrLinearSize);
-		out.put_uint(header.dwDepth);
-		out.put_uint(header.dwMipMapCount);
+		out.write_uint(header.dwSize);
+		out.write_uint(header.dwFlags);
+		out.write_uint(header.dwHeight);
+		out.write_uint(header.dwWidth);
+		out.write_uint(header.dwPitchOrLinearSize);
+		out.write_uint(header.dwDepth);
+		out.write_uint(header.dwMipMapCount);
 
 		for (auto i : header.dwReserved1)
-			out.put_uint(i);
+			out.write_uint(i);
 
-		out.put_uint(header.ddpfPixelFormat.dwSize);
-		out.put_uint(header.ddpfPixelFormat.dwFlags);
-		out.put_uint(header.ddpfPixelFormat.dwFourCC);
-		out.put_uint(header.ddpfPixelFormat.dwRGBBitCount);
-		out.put_uint(header.ddpfPixelFormat.dwRBitMask);
-		out.put_uint(header.ddpfPixelFormat.dwGBitMask);
-		out.put_uint(header.ddpfPixelFormat.dwBBitMask);
-		out.put_uint(header.ddpfPixelFormat.dwRGBAlphaBitMask);
-		out.put_uint(header.ddsCaps.dwCaps1);
-		out.put_uint(header.ddsCaps.dwCaps2);
-		out.put_uint(header.ddsCaps.dwReserved[0]);
-		out.put_uint(header.ddsCaps.dwReserved[1]);
-		out.put_uint(header.dwReserved2);
+		out.write_uint(header.ddpfPixelFormat.dwSize);
+		out.write_uint(header.ddpfPixelFormat.dwFlags);
+		out.write_uint(header.ddpfPixelFormat.dwFourCC);
+		out.write_uint(header.ddpfPixelFormat.dwRGBBitCount);
+		out.write_uint(header.ddpfPixelFormat.dwRBitMask);
+		out.write_uint(header.ddpfPixelFormat.dwGBitMask);
+		out.write_uint(header.ddpfPixelFormat.dwBBitMask);
+		out.write_uint(header.ddpfPixelFormat.dwRGBAlphaBitMask);
+		out.write_uint(header.ddsCaps.dwCaps1);
+		out.write_uint(header.ddsCaps.dwCaps2);
+		out.write_uint(header.ddsCaps.dwReserved[0]);
+		out.write_uint(header.ddsCaps.dwReserved[1]);
+		out.write_uint(header.dwReserved2);
 	}
 
-	void write_dds_palette(Buffer& out, const Texture& tex) {
+	void write_dds_palette(OutputWriter& out, const Texture& tex) {
 		for (auto i = 0; i < ZTEX_PALETTE_ENTRIES; ++i) {
-			out.put(tex.palette()[i].b);
-			out.put(tex.palette()[i].g);
-			out.put(tex.palette()[i].r);
-			out.put(tex.palette()[i].a);
+			out.write_byte(tex.palette()[i].b);
+			out.write_byte(tex.palette()[i].g);
+			out.write_byte(tex.palette()[i].r);
+			out.write_byte(tex.palette()[i].a);
 		}
 	}
 
-	void write_dds_data(Buffer& out, const Texture& tex) {
+	void write_dds_data(OutputWriter& out, const Texture& tex) {
 		for (uint32_t level = 0; level < tex.mipmaps(); ++level) {
 			auto& data = tex.data(level);
-			out.put(data.data(), data.size());
+			out.write(reinterpret_cast<std::byte const*>(data.data()), data.size());
 		}
 	}
 
@@ -242,17 +243,18 @@ namespace phoenix {
 	}
 
 	Buffer texture_to_dds(const Texture& tex) {
-		auto buf = Buffer::allocate(4 + // FOURCC
-		                            sizeof(DDSURFACEDESC2) + (tex.format() == tex_p8 ? ZTEX_PALETTE_ENTRIES * 4 : 0) +
-		                            calculate_total_buffer_size(tex));
-		buf.put_string("DDS ");
-		write_dds_header(buf, tex);
+		std::vector<std::byte> storage {};
+		auto output = Output::to_vector(&storage);
+		OutputWriter ow {output};
+
+		ow.write_string("DDS ");
+		write_dds_header(ow, tex);
 
 		if (tex.format() == tex_p8) {
-			write_dds_palette(buf, tex);
+			write_dds_palette(ow, tex);
 		}
 
-		write_dds_data(buf, tex);
-		return buf;
+		write_dds_data(ow, tex);
+		return Buffer::of(std::move(storage));
 	}
 } // namespace phoenix

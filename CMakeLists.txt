@@ -67,6 +67,7 @@ set(PHOENIX_SOURCES
         source/ModelScript.cc
         source/ModelScriptDsl.cc
         source/MorphMesh.cc
+        source/Output.cc
         source/Phoenix.cc
         source/MultiResolutionMesh.cc
         source/SaveGame.cc
@@ -105,6 +106,7 @@ set(PHOENIX_TESTS
         tests/TestModelScript.cc
         tests/TestMorphMesh.cc
         tests/TestMultiResolutionMesh.cc
+        tests/TestOutput.cc
         tests/TestSaveGame.cc
         tests/TestDaedalusScript.cc
         tests/TestTexture.cc

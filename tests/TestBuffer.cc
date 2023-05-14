@@ -517,38 +517,6 @@ TEST_SUITE("Buffer") {
 		// TODO: Stub
 	}
 
-	TEST_CASE("Buffer(put*)") {
-		auto buf = phoenix::Buffer::allocate(57);
-
-		buf.put(0xFF);
-		buf.put_short(-16);
-		buf.put_ushort(16);
-		buf.put_int(-16);
-		buf.put_uint(16);
-		buf.put_long(-16);
-		buf.put_ulong(16);
-		buf.put_float(69.420f);
-		buf.put_double(420.69);
-		buf.put_string("Hi");
-		buf.put_line("Hello, World!");
-		buf.flip();
-
-		CHECK_EQ(buf.limit(), 57);
-		CHECK_EQ(buf.get(), 0xFF);
-		CHECK_EQ(buf.get_short(), -16);
-		CHECK_EQ(buf.get_ushort(), 16);
-		CHECK_EQ(buf.get_int(), -16);
-		CHECK_EQ(buf.get_uint(), 16);
-		CHECK_EQ(buf.get_long(), -16);
-		CHECK_EQ(buf.get_ulong(), 16);
-		CHECK_EQ(buf.get_float(), 69.420f);
-		CHECK_EQ(buf.get_double(), 420.69);
-		CHECK_EQ(buf.get_string(2), "Hi");
-		CHECK_EQ(buf.get_line(), "Hello, World!");
-
-		CHECK_EQ(buf.remaining(), 0);
-	}
-
 	TEST_CASE("Buffer(empty)") {
 		auto empty = phoenix::Buffer::empty();
 		CHECK_EQ(empty.limit(), 0);
