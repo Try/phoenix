@@ -713,7 +713,7 @@ namespace phoenix {
 				case DaedalusDataType::INSTANCE: {
 					auto& inst = ref->get_instance();
 					if (inst != nullptr) {
-						value = "<instance of '" + std::string(inst->_m_type->name()) + "'>";
+						value = "<instance of '" + std::to_string(inst->get_type_id()) + "'>";
 					} else {
 						value = "NULL";
 					}
@@ -744,7 +744,7 @@ namespace phoenix {
 						log::log(LogLevel::ERROR,
 						         tmp_stack_ptr,
 						         ": [IMMEDIATE INSTANCE] = <instance of '",
-						         std::string(inst->_m_type->name()),
+						         std::to_string(inst->get_type_id()),
 						         "'>");
 					}
 				}

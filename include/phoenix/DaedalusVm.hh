@@ -9,7 +9,6 @@
 #include <optional>
 #include <stack>
 #include <tuple>
-#include <typeinfo>
 #include <variant>
 
 namespace phoenix {
@@ -19,10 +18,10 @@ namespace phoenix {
 	static constexpr bool is_instance_ptr_v = false;
 
 	template <typename T>
-	static constexpr bool is_instance_ptr_v<std::shared_ptr<T>> = std::is_base_of_v<DaedalusInstance, T>;
+	static constexpr bool is_instance_ptr_v<std::shared_ptr<T>> = IsDaedalusInstance<T>;
 
 	template <typename T>
-	static constexpr bool is_raw_instance_ptr_v = std::is_base_of_v<DaedalusInstance, std::remove_pointer_t<T>>;
+	static constexpr bool is_raw_instance_ptr_v = IsDaedalusInstance<std::remove_pointer_t<T>>;
 
 	/// \brief An exception thrown if the definition of an external is incorrect.
 	class DaedalusIllegalExternalDefinition : public DaedalusScriptError {
@@ -290,7 +289,7 @@ namespace phoenix {
 		/// \param instance The instance to initialize.
 		/// \param sym The symbol to initialize.
 		template <typename _instance_t>
-		typename std::enable_if<std::is_base_of_v<DaedalusInstance, _instance_t>, void>::type
+		typename std::enable_if<IsDaedalusInstance<_instance_t>, void>::type
 		allocate_instance(const std::shared_ptr<_instance_t>& instance, DaedalusSymbol* sym) {
 			if (sym == nullptr) {
 				throw DaedalusVmException {"Cannot init instance: not found"};
@@ -312,7 +311,7 @@ namespace phoenix {
 				parent = find_symbol_by_index(parent->parent());
 			}
 
-			if (parent->registered_to() != typeid(_instance_t)) {
+			if (parent->registered_to() != _instance_t::TYPE_ID) {
 				throw DaedalusVmException {"Cannot init " + sym->name() +
 				                           ": parent class is not registered or is "
 				                           "registered to a different instance class"};
@@ -321,7 +320,6 @@ namespace phoenix {
 			PX_LOGD("vm: initializing instance ", sym->name());
 
 			instance->_m_symbol_index = sym->index();
-			instance->_m_type = &typeid(_instance_t);
 			sym->set_instance(instance);
 		}
 
@@ -741,16 +739,18 @@ namespace phoenix {
 				auto r = pop_instance();
 
 				if (r != nullptr && !std::is_same_v<T, std::shared_ptr<phoenix::DaedalusInstance>>) {
-					auto& expected = typeid(typename T::element_type);
+					uint32_t expected = T::element_type::TYPE_ID;
 
-					if (!r->_m_type) {
-						throw DaedalusVmException {"Popping instance of unregistered type: " +
-						                           std::string {r->_m_type->name()} + ", expected " + expected.name()};
+					if (r->get_type_id() == 0) {
+						throw DaedalusVmException {
+						    "Popping instance of unregistered type: " + std::to_string(r->get_type_id()) +
+						    ", expected " + std::to_string(expected)};
 					}
 
-					if (*r->_m_type != expected) {
-						throw DaedalusVmException {"Popping instance of wrong type: " +
-						                           std::string {r->_m_type->name()} + ", expected " + expected.name()};
+					if (r->get_type_id() != expected) {
+						throw DaedalusVmException {
+						    "Popping instance of wrong type: " + std::to_string(r->get_type_id()) + ", expected " +
+						    std::to_string(expected)};
 					}
 				}
 
@@ -759,16 +759,18 @@ namespace phoenix {
 				auto r = pop_instance();
 
 				if (r != nullptr && !std::is_same_v<T, phoenix::DaedalusInstance*>) {
-					auto& expected = typeid(typename std::remove_pointer_t<T>);
+					uint32_t expected = T::element_type::TYPE_ID;
 
-					if (!r->_m_type) {
-						throw DaedalusVmException {"Popping instance of unregistered type: " +
-						                           std::string {r->_m_type->name()} + ", expected " + expected.name()};
+					if (r->get_type_id() == 0) {
+						throw DaedalusVmException {
+						    "Popping instance of unregistered type: " + std::to_string(r->get_type_id()) +
+						    ", expected " + std::to_string(expected)};
 					}
 
-					if (*r->_m_type != expected) {
-						throw DaedalusVmException {"Popping instance of wrong type: " +
-						                           std::string {r->_m_type->name()} + ", expected " + expected.name()};
+					if (r->get_type_id() != expected) {
+						throw DaedalusVmException {
+						    "Popping instance of wrong type: " + std::to_string(r->get_type_id()) + ", expected " +
+						    std::to_string(expected)};
 					}
 				}
 
@@ -900,16 +902,18 @@ namespace phoenix {
 				auto r = pop_instance();
 
 				if (r != nullptr) {
-					auto& expected = typeid(typename R::element_type);
+					uint32_t expected = R::element_type::TYPE_ID;
 
-					if (!r->_m_type) {
-						throw DaedalusVmException {"Popping instance of unregistered type: " +
-						                           std::string {r->_m_type->name()} + ", expected " + expected.name()};
+					if (r->get_type_id()) {
+						throw DaedalusVmException {
+						    "Popping instance of unregistered type: " + std::to_string(r->get_type_id()) +
+						    ", expected " + std::to_string(expected)};
 					}
 
-					if (*r->_m_type != expected) {
-						throw DaedalusVmException {"Popping instance of wrong type: " +
-						                           std::string {r->_m_type->name()} + ", expected " + expected.name()};
+					if (r->get_type_id() != expected) {
+						throw DaedalusVmException {
+						    "Popping instance of wrong type: " + std::to_string(r->get_type_id()) + ", expected " +
+						    std::to_string(expected)};
 					}
 				}
 

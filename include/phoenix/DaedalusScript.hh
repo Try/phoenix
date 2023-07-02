@@ -273,6 +273,9 @@ namespace phoenix {
 			return _m_symbol_index;
 		}
 
+		/// \return A unique integer representing the type of the instance.
+		virtual uint32_t get_type_id() const noexcept = 0;
+
 		/// \brief A pointer which may be used by the user of this API
 		void* user_ptr = nullptr;
 
@@ -282,8 +285,10 @@ namespace phoenix {
 		friend class DaedalusVm;
 
 		uint32_t _m_symbol_index {unset};
-		const std::type_info* _m_type {nullptr};
 	};
+
+	template <typename T>
+	constexpr bool IsDaedalusInstance = std::is_base_of_v<DaedalusInstance, T>;
 
 	/// \brief The base class for all exceptions thrown by interacting with a script.
 	struct DaedalusScriptError : public Error {
@@ -395,14 +400,14 @@ namespace phoenix {
 	/// \brief An exception thrown if a member symbol is being accessed with a context instance it is not bound to.
 	struct DaedalusIllegalContextType final : public DaedalusIllegalAccess {
 	public:
-		PHOENIX_API DaedalusIllegalContextType(DaedalusSymbol const* sym, const std::type_info& context_type);
+		PHOENIX_API DaedalusIllegalContextType(DaedalusSymbol const* sym, uint32_t context_type);
 
 	public:
 		/// \brief The symbol being accessed.
 		DaedalusSymbol const* sym;
 
 		/// \brief The type of context currently set.
-		const std::type_info& context_type;
+		uint32_t context_type;
 	};
 
 	/// \brief Represents a compiled daedalus symbol.
@@ -508,10 +513,9 @@ namespace phoenix {
 		/// \tparam T The type of instance to check for.
 		/// \return <tt>true</tt> if the symbol contains an instance of the given type, <tt>false</tt> if not.
 		template <typename T>
-		PHOENIX_API typename std::enable_if<std::is_base_of_v<DaedalusInstance, T>,
-		                                    bool>::type inline is_instance_of() { // clang-format on
+		PHOENIX_API typename std::enable_if<IsDaedalusInstance<T>, bool>::type inline is_instance_of() {
 			return this->type() == DaedalusDataType::INSTANCE && this->get_instance() != nullptr &&
-			    this->get_instance()->_m_type == &typeid(T);
+			    this->get_instance()->get_type_id() == T::TYPE_ID;
 		}
 
 		/// \brief Tests whether the symbol is a constant.
@@ -616,8 +620,8 @@ namespace phoenix {
 			return _m_class_size;
 		}
 
-		[[nodiscard]] PHOENIX_API inline const std::type_info& registered_to() const noexcept {
-			return *_m_registered_to;
+		[[nodiscard]] PHOENIX_API inline uint32_t registered_to() const noexcept {
+			return _m_registered_to;
 		};
 
 	protected:
@@ -627,8 +631,8 @@ namespace phoenix {
 		inline const T* get_member_ptr(std::uint8_t index, const std::shared_ptr<DaedalusInstance>& context) const {
 			if (!_m_registered_to)
 				throw DaedalusUnboundMemberAccess(this);
-			if (*_m_registered_to != *context->_m_type)
-				throw DaedalusIllegalContextType {this, *context->_m_type};
+			if (_m_registered_to != context->get_type_id())
+				throw DaedalusIllegalContextType {this, context->get_type_id()};
 
 			std::uint32_t target_offset = offset_as_member() + index * sizeof(T);
 			return reinterpret_cast<const T*>(reinterpret_cast<const char*>(context.get()) + target_offset);
@@ -638,8 +642,8 @@ namespace phoenix {
 		inline T* get_member_ptr(std::uint8_t index, const std::shared_ptr<DaedalusInstance>& context) {
 			if (!_m_registered_to)
 				throw DaedalusUnboundMemberAccess(this);
-			if (*_m_registered_to != *context->_m_type)
-				throw DaedalusIllegalContextType {this, *context->_m_type};
+			if (_m_registered_to != context->get_type_id())
+				throw DaedalusIllegalContextType {this, context->get_type_id()};
 
 			std::uint32_t target_offset = offset_as_member() + index * sizeof(T);
 			return reinterpret_cast<T*>(reinterpret_cast<char*>(context.get()) + target_offset);
@@ -672,7 +676,7 @@ namespace phoenix {
 		std::uint32_t _m_class_size {unset};
 		DaedalusDataType _m_return_type {DaedalusDataType::VOID};
 		std::uint32_t _m_index {unset};
-		const std::type_info* _m_registered_to {nullptr};
+		uint32_t _m_registered_to {0};
 	};
 
 	/// \brief Represents a daedalus VM instruction.
@@ -715,18 +719,18 @@ namespace phoenix {
 		/// \throws DaedalusInvalidRegistrationDataType If the datatype of \p _member is different than that of the
 		/// symbol.
 		template <typename _class, typename _member, int N>
-		typename std::enable_if<std::is_same_v<_member, std::string> || std::is_same_v<_member, float> ||
-		                            std::is_same_v<_member, std::int32_t> ||
-		                            (std::is_enum_v<_member> && sizeof(_member) == 4),
+		typename std::enable_if<(std::is_same_v<_member, std::string> || std::is_same_v<_member, float> ||
+		                         std::is_same_v<_member, std::int32_t> ||
+		                         (std::is_enum_v<_member> && sizeof(_member) == 4)) &&
+		                            IsDaedalusInstance<_class>,
 		                        void>::type
-		register_member(std::string_view name, _member (_class::*field)[N]) { // clang-format on
-			auto* type = &typeid(_class);
-			auto* sym = _check_member<_class, _member, N>(name, type);
+		register_member(std::string_view name, _member (_class::*field)[N]) {
+			auto* sym = _check_member<_class, _member, N>(name, _class::TYPE_ID);
 
 			_class* base = 0;
 			auto member = &(base->*field);
 			sym->_m_member_offset = std::uint64_t(member) & 0xFFFFFFFF;
-			sym->_m_registered_to = type;
+			sym->_m_registered_to = _class::TYPE_ID;
 		}
 
 		/// \brief Registers a member offset
@@ -737,18 +741,17 @@ namespace phoenix {
 		/// \throws DaedalusInvalidRegistrationDataType If the datatype of \p _member is different than that of the
 		/// symbol.
 		template <typename _class, typename _member>
-		typename std::enable_if<std::is_same_v<_member, std::string> || std::is_same_v<_member, float> ||
-		                            std::is_same_v<_member, std::int32_t> ||
-		                            (std::is_enum_v<_member> && sizeof(_member) == 4),
+		typename std::enable_if<(std::is_same_v<_member, std::string> || std::is_same_v<_member, float> ||
+		                         std::is_same_v<_member, std::int32_t> ||
+		                         (std::is_enum_v<_member> && sizeof(_member) == 4)) == IsDaedalusInstance<_class>,
 		                        void>::type
 		register_member(std::string_view name, _member _class::*field) {
-			auto* type = &typeid(_class);
-			auto* sym = _check_member<_class, _member, 1>(name, type);
+			auto* sym = _check_member<_class, _member, 1>(name, _class::TYPE_ID);
 
 			_class* base = 0;
 			auto member = &(base->*field);
 			sym->_m_member_offset = std::uint64_t(member) & 0xFFFFFFFF;
-			sym->_m_registered_to = type;
+			sym->_m_registered_to = _class::TYPE_ID;
 		}
 
 		/// \return All symbols in the script
@@ -855,7 +858,7 @@ namespace phoenix {
 		PHOENIX_INTERNAL DaedalusScript() = default;
 
 		template <typename _class, typename _member, int N>
-		DaedalusSymbol* _check_member(std::string_view name, const std::type_info* type) {
+		DaedalusSymbol* _check_member(std::string_view name, uint32_t type) {
 			auto* sym = find_symbol_by_name(name);
 
 			if (sym == nullptr)
@@ -872,12 +875,12 @@ namespace phoenix {
 			if (parent == nullptr)
 				throw DaedalusMemberRegistrationError {sym, "no parent found"};
 
-			if (parent->_m_registered_to == nullptr) {
+			if (parent->_m_registered_to == 0) {
 				parent->_m_registered_to = type;
 			} else if (parent->_m_registered_to != type) {
 				throw DaedalusMemberRegistrationError {sym,
 				                                       "parent class is already registered with a different type (" +
-				                                           std::string {parent->_m_registered_to->name()} + ")"};
+				                                           std::to_string(parent->_m_registered_to) + ")"};
 			}
 
 			// check type matches

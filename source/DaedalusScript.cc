@@ -44,9 +44,10 @@ namespace phoenix {
 	DaedalusNoContextError::DaedalusNoContextError(const DaedalusSymbol* s)
 	    : DaedalusIllegalAccess("illegal access of member " + s->name() + " without a context set."), sym(s) {}
 
-	DaedalusIllegalContextType::DaedalusIllegalContextType(const DaedalusSymbol* s, const std::type_info& ctx)
-	    : DaedalusIllegalAccess("cannot access member " + s->name() + " on context instance of type " + ctx.name() +
-	                            " because this symbol is registered to instances of type " + s->registered_to().name()),
+	DaedalusIllegalContextType::DaedalusIllegalContextType(const DaedalusSymbol* s, uint32_t ctx)
+	    : DaedalusIllegalAccess("cannot access member " + s->name() + " on context instance of type " +
+	                            std::to_string(ctx) + " because this symbol is registered to instances of type " +
+	                            std::to_string(s->registered_to())),
 	      sym(s), context_type(ctx) {}
 
 	DaedalusInstruction DaedalusInstruction::decode(Buffer& in) {

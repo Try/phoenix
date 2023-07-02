@@ -9,15 +9,28 @@
 #define func int32_t
 
 // clang-format off
+
 #define FLAG(E)                                                                                                        \
 	inline E operator|(E a, E b) {                                                                                     \
 		return static_cast<E>(static_cast<std::uint32_t>(a) | static_cast<std::uint32_t>(b));                          \
 	}                                                                                                                  \
-	inline bool operator&(E a, E b) { return (static_cast<std::uint32_t>(a) & static_cast<std::uint32_t>(b)) != 0; }
+	inline bool operator&(E a, E b) {                                                                                  \
+		return (static_cast<std::uint32_t>(a) & static_cast<std::uint32_t>(b)) != 0;                                   \
+	}
+
+#define DEFINE_TYPEID(i)                                                                                               \
+public:                                                                                                                \
+	static constexpr uint32_t TYPE_ID = 0x50'58'00'00U | i;                                                            \
+	uint32_t get_type_id() const noexcept final {                                                                      \
+		return TYPE_ID;                                                                                                \
+	}
+
 // clang-format on
 
 namespace phoenix {
 	struct c_gil_values : public DaedalusInstance {
+		DEFINE_TYPEID(0x01);
+
 		static constexpr std::uint32_t count = 66;
 
 		var int32_t water_depth_knee[count];
@@ -123,6 +136,8 @@ namespace phoenix {
 	FLAG(npc_flag)
 
 	struct c_npc : public DaedalusInstance {
+		DEFINE_TYPEID(0x02);
+
 		static constexpr std::uint32_t hitchance_count =
 		    5; // -> TODO: one of "unknown", "one-handed", "two-handed", "bow", "crossbow"
 		static constexpr std::uint32_t name_count = 5;
@@ -166,6 +181,8 @@ namespace phoenix {
 	};
 
 	struct c_mission : public DaedalusInstance {
+		DEFINE_TYPEID(0x03);
+
 		var string name;
 		var string description;
 		var int32_t duration;
@@ -199,6 +216,8 @@ namespace phoenix {
 	FLAG(item_flags)
 
 	struct c_item : public DaedalusInstance {
+		DEFINE_TYPEID(0x04);
+
 		static constexpr std::uint32_t condition_count = 3;
 		static constexpr std::uint32_t state_count = 4;
 
@@ -251,6 +270,8 @@ namespace phoenix {
 	};
 
 	struct c_focus : public DaedalusInstance {
+		DEFINE_TYPEID(0x05);
+
 		var float npc_longrange;
 		var float npc_range1;
 		var float npc_range2;
@@ -280,6 +301,8 @@ namespace phoenix {
 	};
 
 	struct c_info : public DaedalusInstance {
+		DEFINE_TYPEID(0x06);
+
 		var int32_t npc;
 		var int32_t nr;
 		var int32_t important;
@@ -303,6 +326,8 @@ namespace phoenix {
 	};
 
 	struct c_item_react : public DaedalusInstance {
+		DEFINE_TYPEID(0x07);
+
 		var int32_t npc;
 		var int32_t trade_item;
 		var int32_t trade_amount;
@@ -315,6 +340,8 @@ namespace phoenix {
 	};
 
 	struct c_spell : public DaedalusInstance {
+		DEFINE_TYPEID(0x08);
+
 		var float time_per_mana;
 		var int32_t damage_per_level;
 		var int32_t damage_type;
@@ -332,6 +359,8 @@ namespace phoenix {
 	};
 
 	struct c_svm : public DaedalusInstance {
+		DEFINE_TYPEID(0x09);
+
 		var string MILGREETINGS;
 		var string PALGREETINGS;
 		var string WEATHER;
@@ -661,6 +690,7 @@ namespace phoenix {
 	FLAG(c_menu_flags)
 
 	struct c_menu : public DaedalusInstance {
+		DEFINE_TYPEID(0x0A);
 		static constexpr std::uint8_t item_count = 150;
 
 		var string back_pic;
@@ -733,6 +763,7 @@ namespace phoenix {
 	};
 
 	struct c_menu_item : public DaedalusInstance {
+		DEFINE_TYPEID(0x0B);
 		static constexpr std::uint32_t text_count = 10;
 		static constexpr std::uint32_t select_action_count = 5;
 		static constexpr std::uint32_t event_action_count = 10;
@@ -769,6 +800,8 @@ namespace phoenix {
 	};
 
 	struct c_camera : public DaedalusInstance {
+		DEFINE_TYPEID(0x0C);
+
 		var float best_range;
 		var float min_range;
 		var float max_range;
@@ -810,6 +843,8 @@ namespace phoenix {
 	enum class music_transition_subtype : std::uint32_t { unknown = 0, immediate = 1, beat = 2, measure = 3 };
 
 	struct c_music_system : public DaedalusInstance {
+		DEFINE_TYPEID(0x0D);
+
 		var float volume;
 		var int32_t bit_resolution;
 		var int32_t global_reverb_enabled;
@@ -821,6 +856,8 @@ namespace phoenix {
 	};
 
 	struct c_music_theme : public DaedalusInstance {
+		DEFINE_TYPEID(0x0E);
+
 		var string file;
 		var float vol;
 		var int32_t loop;
@@ -833,6 +870,8 @@ namespace phoenix {
 	};
 
 	struct c_music_jingle : public DaedalusInstance {
+		DEFINE_TYPEID(0x0F);
+
 		var string name;
 		var int32_t loop;
 		var float vol;
@@ -842,6 +881,8 @@ namespace phoenix {
 	};
 
 	struct c_particle_fx : public DaedalusInstance {
+		DEFINE_TYPEID(0x10);
+
 		var float pps_value;
 		var string pps_scale_keys_s;
 		var int32_t pps_is_looping;
@@ -904,6 +945,8 @@ namespace phoenix {
 	};
 
 	struct c_fx_base : public DaedalusInstance {
+		DEFINE_TYPEID(0x11);
+
 		static constexpr std::uint8_t user_string_count = 5;
 
 		var string vis_name_s;
@@ -957,6 +1000,8 @@ namespace phoenix {
 	};
 
 	struct c_particle_fx_emit_key : public DaedalusInstance {
+		DEFINE_TYPEID(0x12);
+
 		var string vis_name_s;
 		var float vis_size_scale;
 		var float scale_duration;
@@ -1015,6 +1060,8 @@ namespace phoenix {
 	};
 
 	struct c_fight_ai : public DaedalusInstance {
+		DEFINE_TYPEID(0x13);
+
 		static constexpr std::uint32_t move_count = 6;
 
 		var c_fight_ai_move move[move_count];
@@ -1023,6 +1070,8 @@ namespace phoenix {
 	};
 
 	struct c_sfx : public DaedalusInstance {
+		DEFINE_TYPEID(0x14);
+
 		var string file;
 		var int32_t pitch_off;
 		var int32_t pitch_var;
@@ -1037,6 +1086,8 @@ namespace phoenix {
 	};
 
 	struct c_sound_system : public DaedalusInstance {
+		DEFINE_TYPEID(0x15);
+
 		var float volume;
 		var int32_t bit_resolution;
 		var int32_t sample_rate;
@@ -1053,3 +1104,4 @@ namespace phoenix {
 #undef var
 #undef string
 #undef func
+#undef DEFINE_TYPEID
