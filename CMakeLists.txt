@@ -138,6 +138,7 @@ target_compile_options(phoenix PRIVATE ${PHOENIX_CXX_FLAGS})
 
 if (NOT MSVC)
     target_link_options(phoenix PUBLIC ${PHOENIX_CXX_FLAGS})
+    target_compile_options(phoenix PRIVATE -Wno-deprecated-declarations)
 endif ()
 
 set_target_properties(phoenix PROPERTIES
